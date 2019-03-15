@@ -51,11 +51,11 @@ $ wca analyze my-element.js --outFile my-element.json
 
 #### Options
 
-| Option               | Type             | Description                                                                  |
-| -------------------- | ---------------- | ---------------------------------------------------------------------------- |
-| `--format FORMAT`    | `markdown`       | `json` \| `vscode`                                                           | Specify output format. |
-| `--outFile FILE`     | `file path`      | Concatenate and emit output to a single file.                                |
-| `--outDir DIRECTORY` | `directory path` | Direct output to a directory where each file corresponds to a web component. |
+| Option               | Type                             | Description                                                                  |
+| -------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| `--format FORMAT`    | `markdown` \| `json` \| `vscode` | Specify output format.                                                       |
+| `--outFile FILE`     | `file path`                      | Concatenate and emit output to a single file.                                |
+| `--outDir DIRECTORY` | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
 
 ### Diagnose
 
