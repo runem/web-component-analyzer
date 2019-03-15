@@ -1,0 +1,26 @@
+{
+	"include": ["./src/**/*"],
+	"compilerOptions": {
+		"plugins": [
+			{
+				"name": "tslint-language-service",
+				"ignoreDefinitionFiles": true,
+				"alwaysShowRuleFailuresAsWarnings": false
+			}
+		],
+		"target": "es2017",
+		"importHelpers": false,
+		"module": "commonjs",
+		"lib": ["esnext", "dom"],
+		"outDir": "./lib",
+		"downlevelIteration": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"allowUnusedLabels": false,
+		"allowUnreachableCode": false,
+		"noUnusedLocals": true,
+		"pretty": true,
+		"declaration": true,
+		"declarationMap": true
+	}
+}

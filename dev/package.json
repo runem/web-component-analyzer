@@ -1,0 +1,27 @@
+{
+	"name": "dev",
+	"private": true,
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"@appnest/masonry-layout": "0.0.13",
+		"@ionic/core": "^4.1.1",
+		"@material/mwc-button": "^0.4.0",
+		"@material/mwc-checkbox": "^0.4.0",
+		"@polymer/app-layout": "^3.0.2",
+		"@polymer/iron-input": "^3.0.1",
+		"@polymer/paper-button": "^3.0.1",
+		"@vaadin/vaadin-button": "^2.1.4",
+		"@vaadin/vaadin-upload": "^4.2.1",
+		"elix": "^4.0.0",
+		"lit-element": "^2.0.1",
+		"lit-html": "^1.0.0",
+		"progress-ring-component": "0.0.12",
+		"wired-elements": "^0.8.2"
+	}
+}

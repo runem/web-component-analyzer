@@ -1,0 +1,10 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		"target": "es5",
+		"module": "commonjs",
+		"lib": ["esnext", "dom"],
+		"strict": true,
+		"esModuleInterop": true
+	}
+}
