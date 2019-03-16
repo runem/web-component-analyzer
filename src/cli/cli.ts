@@ -45,10 +45,8 @@ export async function cli() {
 			const exitCode = await command.run(args as WcaCliConfig, ...args._.slice(1));
 			process.exit(exitCode || 0);
 		} catch (error) {
-			// Print error messages on error.
 			if (error instanceof CommandError) {
 				console.log("Error: ", error.message, "\n");
-				printGlobalHelp();
 				return process.exit(1);
 			} else {
 				console.log(`Fatal error: `, error.message);

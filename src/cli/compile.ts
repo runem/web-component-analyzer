@@ -1,4 +1,4 @@
-import { CompilerOptions, createProgram, Diagnostic, getPreEmitDiagnostics, ModuleResolutionKind, Program, ScriptTarget, SourceFile } from "typescript";
+import { CompilerOptions, createProgram, Diagnostic, getPreEmitDiagnostics, ModuleKind, ModuleResolutionKind, Program, ScriptTarget, SourceFile } from "typescript";
 
 /**
  * The most general version of compiler options.
@@ -9,7 +9,7 @@ const defaultOptions: CompilerOptions = {
 	experimentalDecorators: true,
 	target: ScriptTarget.Latest,
 	downlevelIteration: true,
-	//module: ModuleKind.ESNext,
+	module: ModuleKind.ESNext,
 	//module: ModuleKind.CommonJS,
 	//lib: ["esnext", "dom"],
 	//strictNullChecks: true,

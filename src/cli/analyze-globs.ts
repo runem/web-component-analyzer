@@ -8,10 +8,12 @@ import { CompileResult, compileTypescript } from "./compile";
 import { flatten } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
 
-const DEFAULT_DIR_GLOB = "{,!(node_modules|web_modules)/}**/*.{js,jsx,ts,tsx}";
-const DEFAULT_FILE_GLOB = "*.{js,jsx,ts,tsx}";
+const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
+//const DEFAULT_DIR_GLOB = "{,!(node_modules|web_modules)/}**/*.{js,jsx,ts,tsx}";
+const DEFAULT_DIR_GLOB = "**/*.{js,jsx,ts,tsx}";
+//const DEFAULT_FILE_GLOB = "**/*.{js,jsx,ts,tsx}";
 
-const DEFAULT_GLOBS = [DEFAULT_DIR_GLOB, DEFAULT_FILE_GLOB];
+const DEFAULT_GLOBS = [DEFAULT_DIR_GLOB]; //, DEFAULT_FILE_GLOB];
 
 export interface AnalyzeGlobsContext {
 	didExpandGlobs?(filePaths: string[]): void;
@@ -103,7 +105,7 @@ async function expandGlobs(globs: string | string[]): Promise<string[]> {
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
 					if (dirExists) {
-						return async<string>([join(g, DEFAULT_FILE_GLOB), join(g, DEFAULT_DIR_GLOB)], {
+						return async<string>([...IGNORE_GLOBS, join(g, DEFAULT_DIR_GLOB)], {
 							absolute: true,
 							followSymlinkedDirectories: false
 						});
@@ -111,7 +113,7 @@ async function expandGlobs(globs: string | string[]): Promise<string[]> {
 				} catch (e) {}
 
 				// Return the result of globbing
-				return async<string>(g, { absolute: true, followSymlinkedDirectories: false });
+				return async<string>([...IGNORE_GLOBS, g], { absolute: true, followSymlinkedDirectories: false });
 			})
 		)
 	);
