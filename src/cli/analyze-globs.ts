@@ -35,7 +35,7 @@ export async function analyzeGlobs(globs: string[], config: WcaCliConfig, contex
 	}
 
 	// Expand the globs
-	const filePaths = await expandGlobs(globs);
+	const filePaths = await expandGlobs(globs, config);
 
 	if (config.debug) {
 		console.log(filePaths);
@@ -93,8 +93,9 @@ function analyzeComponentsInFile(file: SourceFile, program: Program, config: Wca
 /**
  * Expands the globs.
  * @param globs
+ * @param config
  */
-async function expandGlobs(globs: string | string[]): Promise<string[]> {
+async function expandGlobs(globs: string | string[], config: WcaCliConfig): Promise<string[]> {
 	globs = Array.isArray(globs) ? globs : [globs];
 
 	return flatten(
@@ -105,7 +106,7 @@ async function expandGlobs(globs: string | string[]): Promise<string[]> {
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
 					if (dirExists) {
-						return async<string>([...IGNORE_GLOBS, join(g, DEFAULT_DIR_GLOB)], {
+						return async<string>([...(config.analyzeLibraries ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
 							absolute: true,
 							followSymlinkedDirectories: false
 						});
@@ -113,7 +114,10 @@ async function expandGlobs(globs: string | string[]): Promise<string[]> {
 				} catch (e) {}
 
 				// Return the result of globbing
-				return async<string>([...IGNORE_GLOBS, g], { absolute: true, followSymlinkedDirectories: false });
+				return async<string>([...(config.analyzeLibraries ? [] : IGNORE_GLOBS), g], {
+					absolute: true,
+					followSymlinkedDirectories: false
+				});
 			})
 		)
 	);
