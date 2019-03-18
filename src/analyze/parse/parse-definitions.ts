@@ -88,5 +88,5 @@ export function parseComponentDefinitionResults(node: Node, flavors: ParseCompon
 		flavor.visitComponentDefinitions(node, definitionContext);
 	}
 
-	return [...resultMap.values()];
+	return [...resultMap];
 }
