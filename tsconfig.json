@@ -8,7 +8,7 @@
 				"alwaysShowRuleFailuresAsWarnings": false
 			}
 		],
-		"target": "es2017",
+		"target": "es5",
 		"importHelpers": false,
 		"module": "commonjs",
 		"lib": ["esnext", "dom"],
