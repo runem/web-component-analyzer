@@ -1,6 +1,6 @@
 {
 	"name": "web-component-analyzer",
-	"version": "0.0.33",
+	"version": "0.0.34",
 	"description": "CLI that analyzes web components",
 	"main": "lib/index.cjs.js",
 	"typings": "lib/index.cjs.d.ts",
