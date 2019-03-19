@@ -1,7 +1,7 @@
 import { Program } from "typescript";
-import { AnalyzeComponentsResult } from "../../../../analyze/analyze-components";
-import { flatten } from "../../../util";
-import { WcaCliConfig } from "../../../wca-cli-arguments";
+import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
+import { flatten } from "../util";
+import { WcaCliConfig } from "../wca-cli-arguments";
 
 /**
  * Transforms results to json.
@@ -10,9 +10,6 @@ import { WcaCliConfig } from "../../../wca-cli-arguments";
  * @param config
  */
 export function jsonTransformer(results: AnalyzeComponentsResult[], program: Program, config: WcaCliConfig): string {
-	console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-	console.log(`WARNING: The json transformer hasn't been finished yet. You can expect large changes in this output.`);
-	console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 	const definitions = flatten(results.map(res => res.componentDefinitions));
 	return JSON.stringify(stripTypescriptValues(definitions), null, 2);
 }

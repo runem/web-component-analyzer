@@ -1,14 +1,14 @@
 import { toTypeString } from "ts-simple-type";
 import { TypeChecker } from "typescript";
-import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
 
 /**
  * Pretty print the results for debugging.
  * @param results
  * @param checker
  */
-export function prettyPrintResults(results: AnalyzeComponentsResult[], checker: TypeChecker): void {
-	for (const result of results) {
+export function debugJsonTransformer(results: AnalyzeComponentsResult[], checker: TypeChecker): any[] {
+	return results.map(result => {
 		const tags = result.componentDefinitions.map(({ declaration, tagName }) => ({
 			fileName: declaration.node.getSourceFile().fileName,
 			tagName,
@@ -35,12 +35,10 @@ export function prettyPrintResults(results: AnalyzeComponentsResult[], checker: 
 
 		const events = result.globalEvents.map(event => event.name);
 
-		const pretty = {
+		return {
 			fileName: result.sourceFile.fileName,
 			tags,
 			events
 		};
-
-		console.dir(pretty, { depth: null });
-	}
+	});
 }

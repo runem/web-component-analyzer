@@ -3,8 +3,8 @@ import { existsSync, lstatSync } from "fs";
 import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
 import { analyzeComponents, AnalyzeComponentsResult } from "../analyze/analyze-components";
-import { prettyPrintResults } from "./cli-command/analyze/print-pretty-results";
 import { CompileResult, compileTypescript } from "./compile";
+import { debugJsonTransformer } from "./transformer/debug-json-transformer";
 import { flatten } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
 
@@ -63,7 +63,7 @@ export async function analyzeGlobs(globs: string[], config: WcaCliConfig, contex
 		const result = analyzeComponentsInFile(file, program, config);
 
 		if (config.debug) {
-			prettyPrintResults([result], program.getTypeChecker());
+			console.dir(debugJsonTransformer([result], program.getTypeChecker()), { depth: 10 });
 		}
 
 		// Callback

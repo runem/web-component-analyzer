@@ -1,8 +1,8 @@
 import { isSimpleType, SimpleType, SimpleTypeKind, toSimpleType } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
-import { AnalyzeComponentsResult } from "../../../../analyze/analyze-components";
-import { ComponentMemberAttribute } from "../../../../analyze/types/component-member";
-import { WcaCliConfig } from "../../../wca-cli-arguments";
+import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
+import { ComponentMemberAttribute } from "../../analyze/types/component-member";
+import { WcaCliConfig } from "../wca-cli-arguments";
 
 /**
  * Vscode json output format transformer.

@@ -1,12 +1,12 @@
 import { toTypeString } from "ts-simple-type";
 import { Program, TypeChecker } from "typescript";
-import { AnalyzeComponentsResult } from "../../../../analyze/analyze-components";
-import { ComponentCSSProperty } from "../../../../analyze/types/component-css-property";
-import { ComponentMemberAttribute, ComponentMemberProperty } from "../../../../analyze/types/component-member";
-import { ComponentSlot } from "../../../../analyze/types/component-slot";
-import { EventDeclaration } from "../../../../analyze/types/event-types";
-import { flatten } from "../../../util";
-import { WcaCliConfig } from "../../../wca-cli-arguments";
+import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
+import { ComponentCSSProperty } from "../../analyze/types/component-css-property";
+import { ComponentMemberAttribute, ComponentMemberProperty } from "../../analyze/types/component-member";
+import { ComponentSlot } from "../../analyze/types/component-slot";
+import { EventDeclaration } from "../../analyze/types/event-types";
+import { flatten } from "../util";
+import { WcaCliConfig } from "../wca-cli-arguments";
 
 /**
  * Transforms the component results to markdown

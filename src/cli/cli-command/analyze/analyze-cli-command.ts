@@ -3,11 +3,11 @@ import { extname, join } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
+import { jsonTransformer } from "../../transformer/json-transformer";
+import { markdownTransformer } from "../../transformer/markdown-transformer";
+import { vscodeTransformer } from "../../transformer/vscode-transformer";
 import { WcaCliConfig } from "../../wca-cli-arguments";
 import { CliCommand, CommandError } from "../cli-command";
-import { jsonTransformer } from "./transformer/json-transformer";
-import { markdownTransformer } from "./transformer/markdown-transformer";
-import { vscodeTransformer } from "./transformer/vscode-transformer";
 
 /**
  * A CLI command for analyzing components.
@@ -165,6 +165,9 @@ Options:
 			case "vscode":
 				return vscodeTransformer(results, program, config);
 			case "json":
+				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+				console.log(`WARNING: The json transformer hasn't been finished yet. You can expect large changes in this output.`);
+				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 				return jsonTransformer(results, program, config);
 			default:
 				throw new CommandError(`Invalid output format '${config.format}'`);
