@@ -23,14 +23,14 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 		if (name === "properties" && node.body != null) {
 			const returnStatement = node.body.statements.find<ReturnStatement>(ts.isReturnStatement.bind(ts));
 			if (returnStatement != null) {
-				return visitStaticProperties(returnStatement, context);
+				return parseStaticProperties(returnStatement, context);
 			}
 		}
 	}
 
 	// @property({type: String}) myProp = "hello";
 	else if ((ts.isSetAccessorDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && hasPublicSetter(node, ts)) {
-		visitPropertyDecorator(node, context);
+		return parsePropertyDecorator(node, context);
 	}
 }
 
@@ -39,7 +39,7 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
  * @param node
  * @param context
  */
-function visitPropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature, context: ParseComponentMembersContext): ComponentMember[] | undefined {
+function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature, context: ParseComponentMembersContext): ComponentMember[] | undefined {
 	const { ts, checker } = context;
 
 	// Parse the content of a possible lit "@property" decorator.
@@ -96,7 +96,7 @@ function visitPropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
  * @param returnStatement
  * @param context
  */
-function visitStaticProperties(returnStatement: ReturnStatement, context: FlavorVisitContext): ComponentMember[] {
+function parseStaticProperties(returnStatement: ReturnStatement, context: FlavorVisitContext): ComponentMember[] {
 	const { ts } = context;
 
 	const members: ComponentMember[] = [];
