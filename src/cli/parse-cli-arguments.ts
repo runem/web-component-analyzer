@@ -33,7 +33,7 @@ export function parseCliArguments(args: string[]): CliArguments {
 				}
 
 				// Parses: "--key", "-k"
-				result[key] = true;
+				assignValue(result, key, true);
 			}
 		}
 
@@ -50,8 +50,10 @@ export function parseCliArguments(args: string[]): CliArguments {
  * Transform a string to a primitive type.
  * @param value
  */
-function transformValue(value: string): string | boolean | number {
-	if (!isNaN(Number(value))) {
+function transformValue(value: any): string | boolean | number {
+	if (typeof value === "boolean") {
+		return value;
+	} else if (!isNaN(Number(value))) {
 		return Number(value);
 	} else if (value === "true" || value === "false") {
 		return value === "true";

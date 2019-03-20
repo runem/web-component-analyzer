@@ -5,7 +5,7 @@ import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
-import { isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
+import { isNodeHTMLElementDeclaration, isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { expandMembersFromJsDoc } from "./expand-from-js-doc";
 import { mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
@@ -206,8 +206,10 @@ function visitInheritedComponentDeclarations(node: InterfaceDeclaration | ClassL
 						context.emitExtends(declaration);
 					}
 
-					if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
-						visitComponentDeclaration(declaration, flavors, context);
+					if (context.config.analyzeLibDom || context.config.analyzeHTMLElement || !isNodeInLibDom(declaration)) {
+						if (context.config.analyzeHTMLElement || !isNodeHTMLElementDeclaration(declaration)) {
+							visitComponentDeclaration(declaration, flavors, context);
+						}
 					}
 				}
 			}

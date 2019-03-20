@@ -14,6 +14,10 @@ export async function cli() {
 	// Parse arguments
 	const args = parseCliArguments(process.argv.slice(2));
 
+	if ("debug" in args && args.debug) {
+		console.dir(args);
+	}
+
 	// Find the chosen command
 	const commandId = args._[0];
 	let command = commands.find(c => c.id === commandId);

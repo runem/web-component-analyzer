@@ -115,6 +115,10 @@ export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { t
 	return extensions;
 }
 
+export function isNodeHTMLElementDeclaration(node: Node | SourceFile): boolean {
+	return tsModule.isInterfaceDeclaration(node) && isNodeInLibDom(node) && node.name.text === "HTMLElement";
+}
+
 export function isNodeInLibDom(node: Node | SourceFile): boolean {
 	return ("fileName" in node ? node.fileName : node.getSourceFile().fileName).endsWith("/lib/lib.dom.d.ts");
 }
