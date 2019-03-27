@@ -80,7 +80,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	const mergedEvents = mergeEvents(events);
 	const mergedCSSProps = mergeCSSProps(cssProps);
 
-	const name = (context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null ? declarationNode.name.text : undefined;
+	const className = (context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null ? declarationNode.name.text : undefined;
 
 	return {
 		node: declarationNode,
@@ -90,7 +90,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		cssProperties: mergedCSSProps,
 		inheritNodes: Array.from(inheritNodes.values()),
 		inherits: Array.from(inherits.values()),
-		name,
+		className,
 		jsDoc
 	};
 }

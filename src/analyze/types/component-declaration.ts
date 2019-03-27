@@ -14,6 +14,6 @@ export interface ComponentDeclaration {
 	slots: ComponentSlot[];
 	cssProperties: ComponentCSSProperty[];
 	deprecated?: boolean | string;
-	name?: string;
+	className?: string;
 	jsDoc?: JsDoc;
 }
