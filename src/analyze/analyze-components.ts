@@ -29,7 +29,7 @@ export interface AnalyzeComponentsOptions {
 export interface AnalyzeComponentsConfig {
 	diagnostics?: boolean;
 	analyzeLibDom?: boolean;
-	analyzeHTMLElement?: boolean;
+	excludedDeclarationNames?: string[];
 }
 
 /**

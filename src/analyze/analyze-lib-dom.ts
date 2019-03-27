@@ -26,8 +26,7 @@ export function analyzeLibDomHtmlElement(program: Program, ts: typeof tsModule =
 		checker,
 		ts,
 		config: {
-			analyzeLibDom: true,
-			analyzeHTMLElement: true
+			analyzeLibDom: true
 		},
 		emitDiagnostics(diagnostic: ComponentDiagnostic): void {}
 	});

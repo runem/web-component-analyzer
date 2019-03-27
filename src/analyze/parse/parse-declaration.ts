@@ -5,7 +5,7 @@ import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
-import { isNodeHTMLElementDeclaration, isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
+import { isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { expandMembersFromJsDoc } from "./expand-from-js-doc";
 import { mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
@@ -66,7 +66,11 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	});
 
 	// Merge all jsdoc tags using inherited nodes.
-	const jsDoc = mergeJsDocs(getJsDoc(declarationNode, context.ts), Array.from(inheritNodes.values()).map(n => getJsDoc(n, context.ts)));
+	const mainJsDoc = isDeclarationExcluded(declarationNode, context) ? {} : getJsDoc(declarationNode, context.ts);
+	const inheritedJsDocs = Array.from(inheritNodes.values())
+		.filter(node => !isDeclarationExcluded(node, context))
+		.map(n => getJsDoc(n, context.ts));
+	const jsDoc = mergeJsDocs(mainJsDoc, inheritedJsDocs);
 
 	// Expand members using jsdoc annotations and merge all members.
 	const mergedMembers = mergeMembers(expandMembersFromJsDoc(members), context);
@@ -76,6 +80,8 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	const mergedEvents = mergeEvents(events);
 	const mergedCSSProps = mergeCSSProps(cssProps);
 
+	const name = (context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null ? declarationNode.name.text : undefined;
+
 	return {
 		node: declarationNode,
 		members: mergedMembers,
@@ -84,8 +90,25 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		cssProperties: mergedCSSProps,
 		inheritNodes: Array.from(inheritNodes.values()),
 		inherits: Array.from(inherits.values()),
+		name,
 		jsDoc
 	};
+}
+
+/**
+ * Function that tests if this declaration is excluded based on the configuration.
+ * @param node
+ * @param context
+ */
+function isDeclarationExcluded(node: Node, context: FlavorVisitContext): boolean {
+	if (!context.ts.isClassLike(node) && !context.ts.isInterfaceDeclaration(node)) return false;
+
+	if (context.config.excludedDeclarationNames == null) return false;
+
+	const name = (node.name != null && node.name.text) || "";
+
+	// Test if the name is excluded
+	return context.config.excludedDeclarationNames.includes(name);
 }
 
 /**
@@ -99,8 +122,13 @@ function visitComponentDeclaration(node: Node, flavors: ParseComponentFlavor[], 
 
 	const { ts } = context;
 
-	// Visit inherited nodes
+	// Skip visiting it's children if this name is excluded
+	if (isDeclarationExcluded(node, context)) {
+		return;
+	}
+
 	if (ts.isClassLike(node) || ts.isInterfaceDeclaration(node)) {
+		// Visit inherited nodes
 		visitInheritedComponentDeclarations(node, flavors, context);
 	}
 
@@ -206,10 +234,8 @@ function visitInheritedComponentDeclarations(node: InterfaceDeclaration | ClassL
 						context.emitExtends(declaration);
 					}
 
-					if (context.config.analyzeLibDom || context.config.analyzeHTMLElement || !isNodeInLibDom(declaration)) {
-						if (context.config.analyzeHTMLElement || !isNodeHTMLElementDeclaration(declaration)) {
-							visitComponentDeclaration(declaration, flavors, context);
-						}
+					if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
+						visitComponentDeclaration(declaration, flavors, context);
 					}
 				}
 			}

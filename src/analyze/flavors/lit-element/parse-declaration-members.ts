@@ -6,7 +6,7 @@ import { isValidAttributeName } from "../../util/is-valid-attribute-name";
 import { getJsDoc } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { FlavorVisitContext, ParseComponentMembersContext } from "../parse-component-flavor";
-import { getLitPropertyConfiguration, getLitPropertyOptions, LitPropertyConfiguration } from "./parse-lit-property-configuration";
+import { getLitElementPropertyDecorator, getLitPropertyConfiguration, getLitPropertyOptions, LitPropertyConfiguration } from "./parse-lit-property-configuration";
 
 /**
  * Parses lit-related declaration members.
@@ -60,7 +60,15 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 
 		// Look at diagnostics is on.
 		if (context.config.diagnostics) {
-			validateLitPropertyConfig(node, litConfig, { propName, simplePropType }, context);
+			validateLitPropertyConfig(
+				getLitElementPropertyDecorator(node, context) || node,
+				litConfig,
+				{
+					propName,
+					simplePropType
+				},
+				context
+			);
 		}
 
 		// Get the attribute name either by looking at "{attribute: ...}" or just taking the property name.
