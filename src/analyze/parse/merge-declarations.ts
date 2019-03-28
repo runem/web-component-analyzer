@@ -193,6 +193,7 @@ function mergeAttrIntoProp(prop: ComponentMemberProperty, attr: ComponentMemberA
 function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemberAttribute>(a: T, b: T, checker: TypeChecker): T {
 	return {
 		...b,
+		attrName: a.attrName || b.attrName,
 		type: mergeTypes(a.type, b.type, checker)
 	};
 }
