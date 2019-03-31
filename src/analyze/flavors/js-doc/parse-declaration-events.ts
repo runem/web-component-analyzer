@@ -16,13 +16,13 @@ export function parseDeclarationEvents(node: Node, context: ParseComponentMember
 		return parseJsDocForNode(
 			node,
 			"event",
-			parsed => {
+			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {
 						name: parsed.name,
 						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
 						type: { kind: SimpleTypeKind.ANY },
-						node
+						node: tagNode
 					} as EventDeclaration;
 				}
 			},

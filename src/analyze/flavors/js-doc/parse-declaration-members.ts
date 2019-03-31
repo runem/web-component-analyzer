@@ -17,14 +17,14 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 		const properties = parseJsDocForNode(
 			node,
 			["prop", "property"],
-			parsed => {
+			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {
 						kind: "property",
 						propName: parsed.name,
 						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
 						type: (parsed.type && parseJsDocTypeString(parsed.type)) || { kind: SimpleTypeKind.ANY },
-						node
+						node: tagNode
 					} as ComponentMemberProperty;
 				}
 			},
@@ -34,14 +34,14 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 		const attributes = parseJsDocForNode(
 			node,
 			["attr", "attribute"],
-			parsed => {
+			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {
 						kind: "attribute",
 						attrName: parsed.name,
 						jsDoc: parsed.comment && { comment: parsed.comment },
 						type: (parsed.type && parseJsDocTypeString(parsed.type)) || { kind: SimpleTypeKind.ANY },
-						node
+						node: tagNode
 					} as ComponentMemberAttribute;
 				}
 			},

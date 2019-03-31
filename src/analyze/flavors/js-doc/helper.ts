@@ -1,8 +1,13 @@
-import { Node } from "typescript";
+import { JSDocTag, Node } from "typescript";
 import { getJsDoc, ParsedJsDocTag, parseJsDocTag } from "../../util/js-doc-util";
 import { ParseComponentMembersContext } from "../parse-component-flavor";
 
-export function parseJsDocForNode<T>(node: Node, tagName: string | string[], transform: (tag: ParsedJsDocTag) => T | undefined, context: ParseComponentMembersContext): T[] | undefined {
+export function parseJsDocForNode<T>(
+	node: Node,
+	tagName: string | string[],
+	transform: (node: JSDocTag, tag: ParsedJsDocTag) => T | undefined,
+	context: ParseComponentMembersContext
+): T[] | undefined {
 	const { ts } = context;
 
 	const jsDoc = getJsDoc(node, ts);
@@ -12,7 +17,7 @@ export function parseJsDocForNode<T>(node: Node, tagName: string | string[], tra
 			.filter(tag => (Array.isArray(tagName) ? tagName.includes(tag.tag) : tag.tag === tagName))
 			.map(tag => {
 				const parsed = parseJsDocTag(tag);
-				return transform(parsed);
+				return transform(tag.node, parsed);
 			})
 			.filter((item): item is NonNullable<typeof item> => item != null);
 

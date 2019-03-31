@@ -15,7 +15,7 @@ export function parseDeclarationSlots(node: Node, context: ParseComponentMembers
 		return parseJsDocForNode(
 			node,
 			"slot",
-			parsed => {
+			(tagNode, parsed) => {
 				return {
 					name: parsed.name,
 					jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined

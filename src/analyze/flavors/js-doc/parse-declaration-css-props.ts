@@ -15,7 +15,7 @@ export function parseDeclarationCSSProps(node: Node, context: ParseComponentMemb
 		return parseJsDocForNode(
 			node,
 			["cssprop", "cssproperty"],
-			parsed => {
+			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {
 						name: parsed.name,
