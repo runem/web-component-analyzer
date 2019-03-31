@@ -31,6 +31,10 @@ export class MyElement extends LitElement {
 
 	static get properties() {
 		return {
+			/**
+			 * This is a comment
+			 * @type {red|green}
+			 */
 			myProp1: {
 				type: Object
 			}

@@ -13,8 +13,17 @@ export interface ParsedJsDocTag {
  * Parses a jsdoc tag into type, name and comment
  * @param tag
  */
-export function parseJsDocTag(tag: JsDocTag): ParsedJsDocTag {
-	if (tag.comment == null) return {};
+export function parseJsDocTag(tag: JsDocTag | string): ParsedJsDocTag {
+	if (typeof tag !== "string" && tag.comment == null) return {};
+
+	let text = typeof tag === "string" ? tag : tag.comment!;
+
+	if (text.trim().startsWith("@")) {
+		const trimResult = text.match(/\s?@.+\s(.+)/);
+		if (trimResult != null) {
+			text = trimResult[1];
+		}
+	}
 
 	/**
 	 * {MyType} MyName - MyComment
@@ -25,7 +34,7 @@ export function parseJsDocTag(tag: JsDocTag): ParsedJsDocTag {
 	 * MyComment
 	 */
 	const regex = /^(\s*?\{(?<type>.*)\})?(((?<name1>.+)(\s\-\s)(?<comment1>.+))|(\s?\-\s)(?<comment2>.+)|(?<name2>.*?))$/;
-	const result = tag.comment.trim().match(regex);
+	const result = text.trim().match(regex);
 	if (result == null || result.groups == null) return {};
 
 	const type = result.groups["type"];
@@ -54,9 +63,10 @@ export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined {
 				tags:
 					doc.tags == null
 						? []
-						: doc.tags.map(tag => ({
-								tag: String(tag.tagName.escapedText),
-								comment: tag.comment == null ? undefined : String(tag.comment)
+						: doc.tags.map(node => ({
+								node,
+								tag: String(node.tagName.escapedText),
+								comment: node.comment == null ? undefined : String(node.comment)
 						  }))
 			};
 		}
@@ -171,4 +181,23 @@ export function parseJsDocTypeString(str: string): SimpleType {
 	}
 
 	return { kind: SimpleTypeKind.ANY };
+}
+
+/**
+ * Finds a @type jsdoc tag in the jsdoc and returns the corresponding simple type
+ * @param jsDoc
+ */
+export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
+	if (jsDoc.tags != null) {
+		const typeTag = jsDoc.tags.find(t => t.tag === "type");
+
+		if (typeTag != null) {
+			// We get the text of the node because typescript strips the type jsdoc tag under certain circumstances
+			const parsedJsDoc = parseJsDocTag(typeTag.node.getText());
+
+			if (parsedJsDoc.type != null) {
+				return parseJsDocTypeString(parsedJsDoc.type);
+			}
+		}
+	}
 }

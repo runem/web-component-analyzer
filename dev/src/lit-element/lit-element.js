@@ -10,6 +10,13 @@ export class MyElement extends LitElement {
 
 	static get properties() {
 		return {
+			/**
+			 * This is a comment
+			 * @type {red|green}
+			 */
+			myColor: {
+				type: String
+			},
 			myNumber: {
 				type: Number
 			}

@@ -3,7 +3,7 @@ import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetA
 import { ComponentMember } from "../../types/component-member";
 import { hasModifier, hasPublicSetter, isPropertyRequired } from "../../util/ast-util";
 import { isValidAttributeName } from "../../util/is-valid-attribute-name";
-import { getJsDoc } from "../../util/js-doc-util";
+import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { FlavorVisitContext, ParseComponentMembersContext } from "../parse-component-flavor";
 import { getLitElementPropertyDecorator, getLitPropertyConfiguration, getLitPropertyOptions, LitPropertyConfiguration } from "./parse-lit-property-configuration";
@@ -80,6 +80,8 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 		// Find our if the property/attribute is required
 		const required = ("initializer" in node && isPropertyRequired(node, context.checker)) || undefined;
 
+		const jsDoc = getJsDoc(node, ts);
+
 		// Emit a property with "attrName"
 		return [
 			{
@@ -90,7 +92,7 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 				node,
 				default: def,
 				required,
-				jsDoc: getJsDoc(node, ts)
+				jsDoc
 			}
 		];
 	}
@@ -115,7 +117,9 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 			// Parse the lit property config for this property
 			const propConfig = ts.isPropertyAssignment(propNode) && ts.isObjectLiteralExpression(propNode.initializer) ? getLitPropertyOptions(propNode.initializer, context) : {};
 
-			const type = propConfig.type || { kind: SimpleTypeKind.ANY };
+			const jsDoc = getJsDoc(propNode, ts);
+
+			const type = (jsDoc && getJsDocType(jsDoc)) || propConfig.type || { kind: SimpleTypeKind.ANY };
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : "";
 			const attrName = typeof propConfig.attribute === "string" ? propConfig.attribute : propName;
 
@@ -129,7 +133,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 					type,
 					propName: propName,
 					attrName: emitAttribute ? attrName : undefined,
-					jsDoc: getJsDoc(propNode, ts),
+					jsDoc,
 					node: propNode
 				});
 			}
