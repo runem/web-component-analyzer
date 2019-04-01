@@ -51,7 +51,7 @@ export function resolveDeclarations(node: Node, checker: TypeChecker, ts: typeof
  * @param name
  */
 export function isPropNamePublic(name: string): boolean {
-	return !name.startsWith("_");
+	return !name.startsWith("_") && !name.startsWith("#");
 }
 
 /**
