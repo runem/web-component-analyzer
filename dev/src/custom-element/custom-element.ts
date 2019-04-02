@@ -1,3 +1,6 @@
+/**
+ * @event my-custom-event - Im event!
+ */
 export class CustomElement extends HTMLElement {
 	myProp = "hello";
 
@@ -6,6 +9,10 @@ export class CustomElement extends HTMLElement {
 	}
 
 	set attr1(val: string) {}
+
+	onClick() {
+		new CustomEvent("my-custom-event");
+	}
 }
 
 customElements.define("my-element", CustomElement);

@@ -6,6 +6,7 @@ import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
+import { JsDoc } from "../types/js-doc";
 import { mergeJsDocs } from "./merge-js-docs";
 
 /**
@@ -68,20 +69,24 @@ export function mergeCSSProps(cssProps: ComponentCSSProperty[]): ComponentCSSPro
  * Merges based on a name and a direction.
  * "first": Only keep the first found item.
  * "last": Only keep the last found item.
+ * This function always prefers one of the entries' jsDoc if defined
  * @param entries
  * @param direction
  */
-function nameMerge<T extends { name?: string }>(entries: T[], direction: "last" | "first"): T[] {
+function nameMerge<T extends { name?: string; jsDoc?: JsDoc }>(entries: T[], direction: "last" | "first"): T[] {
 	if (direction === "last") entries = entries.reverse();
 
-	const merged: T[] = [];
+	const merged = new Map<string, T>();
 	for (const slot of entries) {
-		const existing = merged.find(s => s.name === slot.name);
+		const existing = merged.get(slot.name || "");
+
 		if (existing == null) {
-			merged.push(slot);
+			merged.set(slot.name || "", slot);
+		} else if (existing.jsDoc == null && slot.jsDoc != null) {
+			merged.set(slot.name || "", { ...existing, jsDoc: slot.jsDoc });
 		}
 	}
-	return merged;
+	return Array.from(merged.values());
 }
 
 /**

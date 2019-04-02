@@ -1,6 +1,8 @@
 import { Node } from "typescript";
 import { ComponentMember } from "../../types/component-member";
+import { EventDeclaration } from "../../types/event-types";
 import { ParseComponentFlavor, ParseComponentMembersContext, ParseVisitContextGlobalEvents, VisitComponentDefinitionContext } from "../parse-component-flavor";
+import { parseDeclarationEvents } from "./parse-declaration-events";
 import { parseDeclarationMembers } from "./parse-declaration-members";
 import { visitComponentDefinitions } from "./visit-component-definitions";
 import { visitGlobalEvents } from "./visit-global-events";
@@ -16,6 +18,10 @@ export class CustomElementFlavor implements ParseComponentFlavor {
 
 	parseDeclarationMembers(node: Node, context: ParseComponentMembersContext): ComponentMember[] | undefined {
 		return parseDeclarationMembers(node, context);
+	}
+
+	parseDeclarationEvents(node: Node, context: ParseComponentMembersContext): EventDeclaration[] | undefined {
+		return parseDeclarationEvents(node, context);
 	}
 
 	visitGlobalEvents(node: Node, context: ParseVisitContextGlobalEvents): void {
