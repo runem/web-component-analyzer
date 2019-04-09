@@ -220,7 +220,7 @@ function validateLitPropertyConfig(
 	if (typeof litConfig.attribute === "string") {
 		if (!isValidAttributeName(litConfig.attribute)) {
 			context.emitDiagnostics({
-				node,
+				node: (litConfig.node && litConfig.node.attribute) || node,
 				severity: "error",
 				message: `Invalid attribute name '${litConfig.attribute}'`
 			});
