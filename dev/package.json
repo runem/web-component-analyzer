@@ -19,6 +19,7 @@
 		"@vaadin/vaadin-button": "^2.1.4",
 		"@vaadin/vaadin-upload": "^4.2.1",
 		"elix": "^5.0.0",
+		"@aybolit/material": "^0.1.0",
 		"lit-element": "^2.1.0",
 		"lit-html": "^1.0.0",
 		"progress-ring-component": "0.0.12",
