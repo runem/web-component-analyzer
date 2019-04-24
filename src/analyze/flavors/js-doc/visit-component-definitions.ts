@@ -20,14 +20,12 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 					context.emitDefinitionResult({
 						tagName: tag.comment,
 						declarationNode: node,
-						definitionNode: node
+						definitionNode: tag.node
 					});
 				}
 			}
 		}
 	}
 
-	node.forEachChild(child => {
-		visitComponentDefinitions(child, context);
-	});
+	node.forEachChild(child => visitComponentDefinitions(child, context));
 }
