@@ -1,10 +1,11 @@
-import { isAssignableToType, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/component-member";
 import { hasModifier, hasPublicSetter, isPropertyRequired } from "../../util/ast-util";
 import { isValidAttributeName } from "../../util/is-valid-attribute-name";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
+import { joinArray } from "../../util/text-util";
 import { FlavorVisitContext, ParseComponentMembersContext } from "../parse-component-flavor";
 import { getLitElementPropertyDecorator, getLitPropertyConfiguration, getLitPropertyOptions, LitPropertyConfiguration } from "./parse-lit-property-configuration";
 
@@ -144,6 +145,27 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 }
 
 /**
+ * Returns a string, that can be used in a lit @property decorator for the type key, representing the simple type kind.
+ * @param simpleTypeKind
+ */
+function toLitPropertyTypeString(simpleTypeKind: SimpleTypeKind): string {
+	switch (simpleTypeKind) {
+		case SimpleTypeKind.STRING:
+			return "String";
+		case SimpleTypeKind.NUMBER:
+			return "Number";
+		case SimpleTypeKind.BOOLEAN:
+			return "Boolean";
+		case SimpleTypeKind.ARRAY:
+			return "Array";
+		case SimpleTypeKind.OBJECT:
+			return "Object";
+		default:
+			return "";
+	}
+}
+
+/**
  * Runs through a lit configuration and validates against the "simplePropType".
  * Emits diagnostics through the context.
  * @param node
@@ -158,54 +180,78 @@ function validateLitPropertyConfig(
 	{ propName, simplePropType }: { propName: string; simplePropType: SimpleType },
 	context: ParseComponentMembersContext
 ) {
-	const { checker } = context;
+	// Test assignments to all possible type kinds
+	const isAssignableTo: Partial<Record<SimpleTypeKind, boolean>> = {
+		[SimpleTypeKind.STRING]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.STRING, SimpleTypeKind.STRING_LITERAL], { op: "or" }),
+		[SimpleTypeKind.NUMBER]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.NUMBER, SimpleTypeKind.NUMBER_LITERAL], { op: "or" }),
+		[SimpleTypeKind.BOOLEAN]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.BOOLEAN, SimpleTypeKind.BOOLEAN_LITERAL], { op: "or" }),
+		[SimpleTypeKind.ARRAY]: isAssignableToSimpleTypeKind(simplePropType, SimpleTypeKind.ARRAY),
+		[SimpleTypeKind.OBJECT]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.OBJECT, SimpleTypeKind.INTERFACE, SimpleTypeKind.CLASS], { op: "or" }),
+		[SimpleTypeKind.ANY]: isAssignableToSimpleTypeKind(simplePropType, SimpleTypeKind.ANY)
+	};
 
+	// Collect type kinds that can be used in as "type" in the @property decorator
+	const acceptedTypeKinds = Object.entries(isAssignableTo)
+		.filter(([, assignable]) => assignable)
+		.map(([kind]) => kind as SimpleTypeKind)
+		.filter(kind => kind !== SimpleTypeKind.ANY);
+
+	// Test the @property type against the actual type if a type has been provided
 	if (litConfig.type != null) {
-		if (!isAssignableToType(litConfig.type, simplePropType)) {
-			context.emitDiagnostics({
-				node: (litConfig.node && litConfig.node.type) || node,
-				message: `@property type '${toTypeString(simplePropType)}' is not assignable to '${toTypeString(litConfig.type)}'`,
-				severity: "warning"
-			});
+		// Report error if the @property type is not assignable to the actual type
+		if (isAssignableTo[litConfig.type.kind] === false) {
+			// Suggest what to use instead
+			if (acceptedTypeKinds.length >= 1) {
+				const potentialKindText = joinArray(acceptedTypeKinds.map(kind => `'${toLitPropertyTypeString(kind)}'`), ", ", "or");
+
+				context.emitDiagnostics({
+					node: (litConfig.node && litConfig.node.type) || node,
+					message: `@property type should be ${potentialKindText} instead of '${toLitPropertyTypeString(litConfig.type.kind)}'`,
+					severity: "warning"
+				});
+			}
+
+			// If no suggesting can be provided, report that they are not assignable
+			// The OBJECT @property type is an escape from this error
+			else if (litConfig.type.kind !== SimpleTypeKind.OBJECT) {
+				context.emitDiagnostics({
+					node: (litConfig.node && litConfig.node.type) || node,
+					message: `@property type '${toTypeString(litConfig.type)}' is not assignable to the actual type '${toTypeString(simplePropType)}'`,
+					severity: "warning"
+				});
+			}
 		}
 	}
 
-	if (litConfig.type == null && !litConfig.hasConverter && simplePropType.kind !== SimpleTypeKind.ANY) {
-		if (isAssignableToType({ kind: SimpleTypeKind.STRING }, simplePropType, checker)) {
-			//logger.debug(node.name.getText(), `You need to add {type: STRING}`);
-		} else if (isAssignableToType({ kind: SimpleTypeKind.NUMBER }, simplePropType, checker)) {
-			context.emitDiagnostics({
-				node,
-				severity: "warning",
-				message: `You need to add '{type: Number}' to @property decorator for '${propName}'`
-			});
-		} else if (isAssignableToType({ kind: SimpleTypeKind.BOOLEAN }, simplePropType, checker)) {
-			context.emitDiagnostics({
-				node,
-				severity: "warning",
-				message: `You need to add '{type: Boolean}' to @property decorator for '${propName}'`
-			});
-		} else if (
-			isAssignableToType(
-				{
-					kind: SimpleTypeKind.ARRAY,
-					type: { kind: SimpleTypeKind.ANY }
-				},
-				simplePropType,
-				checker
-			)
-		) {
-			context.emitDiagnostics({
-				node,
-				severity: "warning",
-				message: `You need to add '{type: Array}' to @property decorator for '${propName}'`
-			});
-		} else {
-			context.emitDiagnostics({
-				node,
-				severity: "warning",
-				message: `You need to add '{type: Object}' to @property decorator for '${propName}'`
-			});
+	// If no type has been specified, suggest what to use as the @property type
+	else {
+		if (!litConfig.hasConverter && litConfig.attribute !== false) {
+			// Don't do anything if there are multiple possibilities for a type.
+			if (isAssignableTo[SimpleTypeKind.ANY]) {
+			}
+
+			// Don't report errors because String conversion is default
+			else if (isAssignableTo[SimpleTypeKind.STRING]) {
+			}
+
+			// Suggest what to use instead if there are multiple accepted @property types for this property
+			else if (acceptedTypeKinds.length > 0) {
+				// Suggest types to use and include "{attribute: false}" if the @property type is ARRAY or OBJECT
+				const acceptedTypeText = joinArray(
+					[
+						...acceptedTypeKinds.map(kind => `'{type: ${toLitPropertyTypeString(kind)}}'`),
+						...(isAssignableTo[SimpleTypeKind.ARRAY] || isAssignableTo[SimpleTypeKind.OBJECT] ? ["'{attribute: false}'"] : [])
+					],
+					", ",
+					"or"
+				);
+
+				context.emitDiagnostics({
+					node,
+					severity: "warning",
+					message: `You need to add ${acceptedTypeText} to @property decorator for '${propName}'`
+				});
+			}
 		}
 	}
 
