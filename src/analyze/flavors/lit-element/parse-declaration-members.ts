@@ -185,7 +185,7 @@ function validateLitPropertyConfig(
 		[SimpleTypeKind.STRING]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.STRING, SimpleTypeKind.STRING_LITERAL], { op: "or" }),
 		[SimpleTypeKind.NUMBER]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.NUMBER, SimpleTypeKind.NUMBER_LITERAL], { op: "or" }),
 		[SimpleTypeKind.BOOLEAN]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.BOOLEAN, SimpleTypeKind.BOOLEAN_LITERAL], { op: "or" }),
-		[SimpleTypeKind.ARRAY]: isAssignableToSimpleTypeKind(simplePropType, SimpleTypeKind.ARRAY),
+		[SimpleTypeKind.ARRAY]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.ARRAY, SimpleTypeKind.TUPLE], { op: "or" }),
 		[SimpleTypeKind.OBJECT]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.OBJECT, SimpleTypeKind.INTERFACE, SimpleTypeKind.CLASS], { op: "or" }),
 		[SimpleTypeKind.ANY]: isAssignableToSimpleTypeKind(simplePropType, SimpleTypeKind.ANY)
 	};
@@ -249,7 +249,7 @@ function validateLitPropertyConfig(
 				context.emitDiagnostics({
 					node,
 					severity: "warning",
-					message: `You need to add ${acceptedTypeText} to @property decorator for '${propName}'`
+					message: `Please add ${acceptedTypeText} to @property decorator for '${propName}'`
 				});
 			}
 		}
