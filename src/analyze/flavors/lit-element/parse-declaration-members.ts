@@ -199,7 +199,7 @@ function validateLitPropertyConfig(
 	// Test the @property type against the actual type if a type has been provided
 	if (litConfig.type != null) {
 		// Report error if the @property type is not assignable to the actual type
-		if (isAssignableTo[litConfig.type.kind] === false) {
+		if (isAssignableTo[litConfig.type.kind] === false && isAssignableTo[SimpleTypeKind.ANY] === false) {
 			// Suggest what to use instead
 			if (acceptedTypeKinds.length >= 1) {
 				const potentialKindText = joinArray(acceptedTypeKinds.map(kind => `'${toLitPropertyTypeString(kind)}'`), ", ", "or");
