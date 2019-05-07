@@ -51,7 +51,8 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 		const propType = checker.getTypeAtLocation(node);
 		const simplePropType = toSimpleType(propType, checker);
 
-		const type = simplePropType.kind === SimpleTypeKind.ANY && litConfig.type != null ? litConfig.type : propType;
+		const inJavascriptFile = node.getSourceFile().fileName.endsWith(".js");
+		const type = inJavascriptFile ? litConfig.type || { kind: SimpleTypeKind.ANY } : propType;
 
 		// Don't emit anything if "attribute" is false.
 		// "Custom Element Flavor" takes care of parsing the property then.
@@ -249,7 +250,7 @@ function validateLitPropertyConfig(
 				context.emitDiagnostics({
 					node,
 					severity: "warning",
-					message: `Please add ${acceptedTypeText} to @property decorator for '${propName}'`
+					message: `Missing ${acceptedTypeText} on @property decorator for '${propName}'`
 				});
 			}
 		}
