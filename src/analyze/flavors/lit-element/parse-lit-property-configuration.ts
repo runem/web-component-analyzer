@@ -110,6 +110,10 @@ export function getLitPropertyOptions(node: ObjectLiteralExpression, context: Fl
 					case "ArrayConstructor":
 						config.type = { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
 						break;
+					case "Function":
+					case "FunctionConstructor":
+						config.type = { kind: SimpleTypeKind.FUNCTION };
+						break;
 					default:
 						config.type = { kind: SimpleTypeKind.OBJECT, members: [] };
 						break;

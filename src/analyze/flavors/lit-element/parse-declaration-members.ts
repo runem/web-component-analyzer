@@ -181,6 +181,19 @@ function validateLitPropertyConfig(
 	{ propName, simplePropType }: { propName: string; simplePropType: SimpleType },
 	context: ParseComponentMembersContext
 ) {
+	if (litConfig.type != null && litConfig.type.kind) {
+		if (litConfig.type.kind === SimpleTypeKind.FUNCTION) {
+			const isFunction = isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.FUNCTION], { op: "or" });
+
+			context.emitDiagnostics({
+				node: (litConfig.node && litConfig.node.type) || node,
+				message: `'Function' is not a valid default converter${isFunction ? ". Have you considered {attribute: false}?" : ""}'`,
+				severity: "warning"
+			});
+			return;
+		}
+	}
+
 	// Test assignments to all possible type kinds
 	const isAssignableTo: Partial<Record<SimpleTypeKind, boolean>> = {
 		[SimpleTypeKind.STRING]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.STRING, SimpleTypeKind.STRING_LITERAL], { op: "or" }),
