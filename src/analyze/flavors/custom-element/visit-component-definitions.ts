@@ -1,5 +1,6 @@
 import { Node } from "typescript";
 import { getInterfaceKeys, resolveDeclarations } from "../../util/ast-util";
+import { resolveNodeValue } from "../../util/resolve-node-value";
 import { DefinitionNodeResult, VisitComponentDefinitionContext } from "../parse-component-flavor";
 
 /**
@@ -10,7 +11,7 @@ import { DefinitionNodeResult, VisitComponentDefinitionContext } from "../parse-
 export function visitComponentDefinitions(node: Node, context: VisitComponentDefinitionContext): DefinitionNodeResult[] | undefined {
 	const { checker, ts } = context;
 
-	// customElement.define("my-element", MyElement)
+	// customElements.define("my-element", MyElement)
 	if (ts.isCallExpression(node)) {
 		if (ts.isPropertyAccessExpression(node.expression)) {
 			if (node.expression.name != null && ts.isIdentifier(node.expression.name)) {
@@ -19,8 +20,8 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 					const [tagNameNode, identifierNode] = node.arguments;
 
 					// ("my-element", MyElement)
-					if (identifierNode != null && tagNameNode != null && ts.isStringLiteralLike(tagNameNode)) {
-						const tagName = tagNameNode.text;
+					const tagName = resolveNodeValue(tagNameNode, { ts, checker });
+					if (identifierNode != null && typeof tagName === "string") {
 						const definitionNode = node;
 
 						// (___, MyElement)

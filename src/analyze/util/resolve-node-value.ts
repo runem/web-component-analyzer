@@ -71,5 +71,16 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 		return resolveNodeValue(node.expression, { ...context, depth });
 	}
 
+	// static get is() {
+	//    return "my-element";
+	// }
+	else if (ts.isGetAccessor(node) && node.body != null) {
+		for (const stm of node.body.statements) {
+			if (ts.isReturnStatement(stm)) {
+				return resolveNodeValue(stm.expression, { ...context, depth });
+			}
+		}
+	}
+
 	return undefined;
 }
