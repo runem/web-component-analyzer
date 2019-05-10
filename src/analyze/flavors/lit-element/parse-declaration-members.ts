@@ -52,7 +52,7 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 		const simplePropType = toSimpleType(propType, checker);
 
 		const inJavascriptFile = node.getSourceFile().fileName.endsWith(".js");
-		const type = inJavascriptFile ? litConfig.type || { kind: SimpleTypeKind.ANY } : propType;
+		const type = inJavascriptFile && litConfig.type && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
 
 		// Don't emit anything if "attribute" is false.
 		// "Custom Element Flavor" takes care of parsing the property then.
