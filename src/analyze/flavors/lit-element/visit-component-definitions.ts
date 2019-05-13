@@ -19,11 +19,13 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 				const decoratorIdentifierName = callExpression.expression.escapedText;
 				if (decoratorIdentifierName === "customElement") {
 					// Resolve the value of the first argument. This is the tag name.
-					const tagName = resolveNodeValue(callExpression.arguments[0], { ts, checker });
+					const identifierNode = callExpression.arguments[0];
+					const tagName = resolveNodeValue(identifierNode, { ts, checker });
 
 					if (typeof tagName === "string") {
 						context.emitDefinitionResult({
 							tagName: tagName,
+							identifierNode,
 							definitionNode: node,
 							declarationNode: node
 						});

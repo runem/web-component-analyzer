@@ -19,6 +19,7 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 				if (tag.tag === "customElement" && tag.comment) {
 					context.emitDefinitionResult({
 						tagName: tag.comment,
+						identifierNode: tag.node,
 						declarationNode: node,
 						definitionNode: tag.node
 					});

@@ -29,13 +29,23 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 							const declarationNodes = resolveDeclarations(identifierNode, checker, ts);
 
 							for (const declarationNode of declarationNodes) {
-								context.emitDefinitionResult({ tagName, definitionNode, declarationNode });
+								context.emitDefinitionResult({
+									tagName,
+									identifierNode,
+									definitionNode,
+									declarationNode
+								});
 							}
 						}
 
 						// (___, class { ... })
 						else if (ts.isClassLike(identifierNode) || ts.isInterfaceDeclaration(identifierNode)) {
-							context.emitDefinitionResult({ tagName, definitionNode, declarationNode: identifierNode });
+							context.emitDefinitionResult({
+								tagName,
+								identifierNode,
+								definitionNode,
+								declarationNode: identifierNode
+							});
 						}
 					}
 				}
@@ -48,8 +58,13 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 	// interface HTMLElementTagNameMap { "my-button": MyButton; }
 	if (ts.isInterfaceDeclaration(node) && ["HTMLElementTagNameMap", "ElementTagNameMap"].includes(node.name.text)) {
 		const extensions = getInterfaceKeys(node, context);
-		for (const [tagName, declaration] of extensions) {
-			context.emitDefinitionResult({ tagName, definitionNode: node, declarationNode: declaration });
+		for (const [tagName, declaration, identifierNode] of extensions) {
+			context.emitDefinitionResult({
+				tagName,
+				definitionNode: node,
+				identifierNode,
+				declarationNode: declaration
+			});
 		}
 		return;
 	}

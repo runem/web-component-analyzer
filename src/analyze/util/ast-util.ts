@@ -1,6 +1,6 @@
 import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { Declaration, InterfaceDeclaration, Node, PropertyDeclaration, PropertySignature, SetAccessorDeclaration, SourceFile, SyntaxKind, TypeChecker } from "typescript";
+import { Declaration, InterfaceDeclaration, Node, PropertyDeclaration, PropertySignature, SetAccessorDeclaration, SourceFile, StringLiteral, SyntaxKind, TypeChecker } from "typescript";
 
 export interface AstContext {
 	ts: typeof tsModule;
@@ -94,8 +94,8 @@ export function hasModifier(node: Node, modifierKind: SyntaxKind): boolean {
  * @param ts
  * @param checker
  */
-export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { ts, checker }: AstContext): [string, Declaration][] {
-	const extensions: [string, Declaration][] = [];
+export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { ts, checker }: AstContext): [string, Declaration, StringLiteral][] {
+	const extensions: [string, Declaration, StringLiteral][] = [];
 
 	for (const member of interfaceDeclaration.members) {
 		// { "my-button": MyButton; }
@@ -107,7 +107,7 @@ export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { t
 			const declaration = resolveDeclarations(typeName, checker, ts)[0];
 
 			if (declaration != null) {
-				extensions.push([key, declaration]);
+				extensions.push([key, declaration, member.name]);
 			}
 		}
 	}

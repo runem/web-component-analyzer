@@ -17,6 +17,7 @@ export interface FlavorVisitContext {
 
 export interface DefinitionNodeResult {
 	tagName: string;
+	identifierNode: Node;
 	definitionNode: Node;
 	declarationNode: Node;
 	declarationHandler?: ParseComponentFlavor["parseDeclarationMembers"];

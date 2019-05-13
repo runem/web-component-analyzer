@@ -3,6 +3,7 @@ import { DefinitionNodeResult, FlavorVisitContext, ParseComponentFlavor, VisitCo
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentDefinition } from "../types/component-definition";
 import { isNodeInLibDom } from "../util/ast-util";
+import { isValidCustomElementName } from "../util/is-valid-custom-element-name";
 import { expandDeclarationFromJsDoc } from "./expand-from-js-doc";
 import { mergeDeclarations } from "./merge-declarations";
 import { parseComponentDeclaration } from "./parse-declaration";
@@ -17,6 +18,19 @@ import { parseComponentDeclaration } from "./parse-declaration";
 export function parseComponentDefinitions(sourceFile: SourceFile, flavors: ParseComponentFlavor[], context: FlavorVisitContext): ComponentDefinition[] {
 	// Find all definitions in the file
 	const definitionResults = parseComponentDefinitionResults(sourceFile, flavors, context);
+
+	// Emit diagnostics for invalid custom element tag names.
+	if (context.config.diagnostics && !isNodeInLibDom(sourceFile)) {
+		for (const result of definitionResults) {
+			if (!isValidCustomElementName(result.tagName)) {
+				context.emitDiagnostics({
+					node: result.identifierNode,
+					message: `The tag name '${result.tagName}' is not a valid custom element name. Remember that a hyphen (-) is required.`,
+					severity: "warning"
+				});
+			}
+		}
+	}
 
 	// Go through each component declaration parsing and merging declarations.
 	// We can have many definition results for the same tag name but with different declaration nodes.

@@ -17,10 +17,11 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 		// interface HTMLElementTagNameMap { "my-button": MyButton; }
 		if (["StencilIntrinsicElements"].includes(node.name.text)) {
 			const extensions = getInterfaceKeys(node, context);
-			for (const [tagName, declaration] of extensions) {
+			for (const [tagName, declaration, identifierNode] of extensions) {
 				// Emit a definition result and set an explicit declaration handler
 				context.emitDefinitionResult({
 					tagName,
+					identifierNode,
 					definitionNode: node,
 					declarationNode: declaration,
 					declarationHandler: parseDeclarationMembers
