@@ -60,7 +60,7 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 			return;
 		}
 
-		// Look at diagnostics is on.
+		// Look at diagnostics if on.
 		if (context.config.diagnostics) {
 			validateLitPropertyConfig(
 				getLitElementPropertyDecorator(node, context) || node,
@@ -117,16 +117,29 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 		// Each property in the object literal expression coreesponds to a class property.
 		for (const propNode of returnStatement.expression.properties) {
 			// Parse the lit property config for this property
-			const propConfig = ts.isPropertyAssignment(propNode) && ts.isObjectLiteralExpression(propNode.initializer) ? getLitPropertyOptions(propNode.initializer, context) : {};
+			const litConfig = ts.isPropertyAssignment(propNode) && ts.isObjectLiteralExpression(propNode.initializer) ? getLitPropertyOptions(propNode.initializer, context) : {};
 
 			const jsDoc = getJsDoc(propNode, ts);
 
-			const type = (jsDoc && getJsDocType(jsDoc)) || propConfig.type || { kind: SimpleTypeKind.ANY };
+			const type = (jsDoc && getJsDocType(jsDoc)) || litConfig.type || { kind: SimpleTypeKind.ANY };
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : "";
-			const attrName = typeof propConfig.attribute === "string" ? propConfig.attribute : propName;
+			const attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
 
-			const emitAttribute = propConfig.attribute !== false;
+			const emitAttribute = litConfig.attribute !== false;
 			const emitProperty = propName != null;
+
+			// Look at diagnostics is on.
+			if (context.config.diagnostics) {
+				validateLitPropertyConfig(
+					propNode,
+					litConfig,
+					{
+						propName,
+						simplePropType: { kind: SimpleTypeKind.ANY }
+					},
+					context
+				);
+			}
 
 			// Emit either the attribute or the property
 			if (emitProperty) {
@@ -178,20 +191,33 @@ function toLitPropertyTypeString(simpleTypeKind: SimpleTypeKind): string {
 function validateLitPropertyConfig(
 	node: Node,
 	litConfig: LitPropertyConfiguration,
-	{ propName, simplePropType }: { propName: string; simplePropType: SimpleType },
-	context: ParseComponentMembersContext
+	{ propName, simplePropType }: { propName: string; simplePropType: SimpleType | undefined },
+	context: FlavorVisitContext
 ) {
+	if (typeof litConfig.attribute === "string") {
+		if (!isValidAttributeName(litConfig.attribute)) {
+			context.emitDiagnostics({
+				node: (litConfig.node && litConfig.node.attribute) || node,
+				severity: "error",
+				message: `Invalid attribute name '${litConfig.attribute}'`
+			});
+		}
+	}
+
 	if (litConfig.type != null && litConfig.type.kind) {
 		if (litConfig.type.kind === SimpleTypeKind.FUNCTION) {
-			const isFunction = isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.FUNCTION], { op: "or" });
-
 			context.emitDiagnostics({
 				node: (litConfig.node && litConfig.node.type) || node,
-				message: `'Function' is not a valid default converter${isFunction ? ". Have you considered {attribute: false}?" : ""}'`,
+				message: `'Function' is not a valid default converter. Have you considered {attribute: false} instead?`,
 				severity: "warning"
 			});
 			return;
 		}
+	}
+
+	// Don't continue if we don't know the property type (eg if we are in a js file)
+	if (simplePropType == null) {
+		return;
 	}
 
 	// Test assignments to all possible type kinds
@@ -276,14 +302,4 @@ function validateLitPropertyConfig(
 	 message: `You need to add '{attribute: false}' to @property decorator for '${propName}' because '${toTypeString(simplePropType)}' type is not a primitive`
 	 });
 	 }*/
-
-	if (typeof litConfig.attribute === "string") {
-		if (!isValidAttributeName(litConfig.attribute)) {
-			context.emitDiagnostics({
-				node: (litConfig.node && litConfig.node.attribute) || node,
-				severity: "error",
-				message: `Invalid attribute name '${litConfig.attribute}'`
-			});
-		}
-	}
 }
