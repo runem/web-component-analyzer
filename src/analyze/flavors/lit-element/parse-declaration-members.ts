@@ -52,7 +52,7 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 		const simplePropType = toSimpleType(propType, checker);
 
 		const inJavascriptFile = node.getSourceFile().fileName.endsWith(".js");
-		const type = inJavascriptFile && litConfig.type && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
+		const type = inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
 
 		// Don't emit anything if "attribute" is false.
 		// "Custom Element Flavor" takes care of parsing the property then.
@@ -121,7 +121,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 
 			const jsDoc = getJsDoc(propNode, ts);
 
-			const type = (jsDoc && getJsDocType(jsDoc)) || litConfig.type || { kind: SimpleTypeKind.ANY };
+			const type = (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : "";
 			const attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
 
@@ -204,19 +204,19 @@ function validateLitPropertyConfig(
 		}
 	}
 
-	if (litConfig.type != null && litConfig.type.kind) {
-		if (litConfig.type.kind === SimpleTypeKind.FUNCTION) {
-			context.emitDiagnostics({
-				node: (litConfig.node && litConfig.node.type) || node,
-				message: `'Function' is not a valid default converter. Have you considered {attribute: false} instead?`,
-				severity: "warning"
-			});
-			return;
-		}
+	// Check if "type" is one of the built in default type converter hint
+	if (typeof litConfig.type === "string" && !litConfig.hasConverter) {
+		context.emitDiagnostics({
+			node: (litConfig.node && litConfig.node.type) || node,
+			message: `'${litConfig.type}' is not a valid type for the default converter. Have you considered {attribute: false} instead?`,
+			severity: "warning"
+		});
+		return;
 	}
 
 	// Don't continue if we don't know the property type (eg if we are in a js file)
-	if (simplePropType == null) {
+	// Don't continue if this property has a custom converter (because then we don't know how the value will be converted)
+	if (simplePropType == null || litConfig.hasConverter || typeof litConfig.type !== "object") {
 		return;
 	}
 

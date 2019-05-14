@@ -3,7 +3,7 @@ import { CallExpression, Node, ObjectLiteralExpression } from "typescript";
 import { FlavorVisitContext } from "../parse-component-flavor";
 
 export interface LitPropertyConfiguration {
-	type?: SimpleType;
+	type?: SimpleType | string;
 	attribute?: string | boolean;
 	node?: {
 		type?: Node;
@@ -110,12 +110,13 @@ export function getLitPropertyOptions(node: ObjectLiteralExpression, context: Fl
 					case "ArrayConstructor":
 						config.type = { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
 						break;
-					case "Function":
-					case "FunctionConstructor":
-						config.type = { kind: SimpleTypeKind.FUNCTION };
+					case "Object":
+					case "ObjectConstructor":
+						config.type = { kind: SimpleTypeKind.OBJECT, members: [] };
 						break;
 					default:
-						config.type = { kind: SimpleTypeKind.OBJECT, members: [] };
+						// This is an unknown type, so set the name as a string
+						config.type = initializer.getText();
 						break;
 				}
 
