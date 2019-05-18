@@ -22,6 +22,7 @@ export class MyElement extends LitElement {
 	myProp2 = "hello";
 	@property({ attribute: "my-attr3" }) myProp3 = 12;
 	@property({ attribute: false }) myProp4 = 12;
+	@property() myDate = new Date();
 	/**
 	 * This is a great property!
 	 */

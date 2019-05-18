@@ -216,7 +216,7 @@ function validateLitPropertyConfig(
 
 	// Don't continue if we don't know the property type (eg if we are in a js file)
 	// Don't continue if this property has a custom converter (because then we don't know how the value will be converted)
-	if (simplePropType == null || litConfig.hasConverter || typeof litConfig.type !== "object") {
+	if (simplePropType == null || litConfig.hasConverter || typeof litConfig.type === "string") {
 		return;
 	}
 
@@ -226,7 +226,9 @@ function validateLitPropertyConfig(
 		[SimpleTypeKind.NUMBER]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.NUMBER, SimpleTypeKind.NUMBER_LITERAL], { op: "or" }),
 		[SimpleTypeKind.BOOLEAN]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.BOOLEAN, SimpleTypeKind.BOOLEAN_LITERAL], { op: "or" }),
 		[SimpleTypeKind.ARRAY]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.ARRAY, SimpleTypeKind.TUPLE], { op: "or" }),
-		[SimpleTypeKind.OBJECT]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.OBJECT, SimpleTypeKind.INTERFACE, SimpleTypeKind.CLASS], { op: "or" }),
+		[SimpleTypeKind.OBJECT]: isAssignableToSimpleTypeKind(simplePropType, [SimpleTypeKind.OBJECT, SimpleTypeKind.INTERFACE], {
+			op: "or"
+		}),
 		[SimpleTypeKind.ANY]: isAssignableToSimpleTypeKind(simplePropType, SimpleTypeKind.ANY)
 	};
 
@@ -290,6 +292,12 @@ function validateLitPropertyConfig(
 					node,
 					severity: "warning",
 					message: `Missing ${acceptedTypeText} on @property decorator for '${propName}'`
+				});
+			} else {
+				context.emitDiagnostics({
+					node,
+					severity: "warning",
+					message: `The built in converter doesn't handle the property type '${toTypeString(simplePropType)}'. Please add '{attribute: false}' on @property decorator for '${propName}'`
 				});
 			}
 		}
