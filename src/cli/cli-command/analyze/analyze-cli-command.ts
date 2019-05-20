@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from "fs";
-import { extname, join } from "path";
+import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
@@ -88,7 +88,7 @@ Options:
 					if (definition == null) return;
 
 					// The name of the file becomes the tagName of the first component definition in the file.
-					const path = join(process.cwd(), dirPath, definition.tagName) + extName;
+					const path = resolve(process.cwd(), dirPath, definition.tagName) + extName;
 					const transformed = this.transformResults(result, program, config);
 					writeFileSync(path, transformed);
 				}
@@ -117,7 +117,7 @@ Options:
 			const transformed = this.transformResults(results, program, config);
 
 			// Write the transformed the results to the file
-			const path = join(process.cwd(), config.outFile);
+			const path = resolve(process.cwd(), config.outFile);
 			writeFileSync(path, transformed);
 		}
 
