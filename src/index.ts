@@ -17,7 +17,7 @@ export * from "./cli/cli";
 export * from "./cli/wca-cli-arguments";
 export * from "./cli/cli-command/analyze/analyze-cli-command";
 
-export * from "./cli/transformer/debug-json-transformer";
-export * from "./cli/transformer/json-transformer";
-export * from "./cli/transformer/markdown-transformer";
-export * from "./cli/transformer/vscode-transformer";
+export * from "./cli/transformer/debug/debug-json-transformer";
+export * from "./cli/transformer/json/json-transformer";
+export * from "./cli/transformer/markdown/markdown-transformer";
+export * from "./cli/transformer/vscode/vscode-transformer";

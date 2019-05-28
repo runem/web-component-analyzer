@@ -3,9 +3,9 @@ import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
-import { jsonTransformer } from "../../transformer/json-transformer";
-import { markdownTransformer } from "../../transformer/markdown-transformer";
-import { vscodeTransformer } from "../../transformer/vscode-transformer";
+import { jsonTransformer } from "../../transformer/json/json-transformer";
+import { markdownTransformer } from "../../transformer/markdown/markdown-transformer";
+import { vscodeTransformer } from "../../transformer/vscode/vscode-transformer";
 import { WcaCliConfig } from "../../wca-cli-arguments";
 import { CliCommand, CommandError } from "../cli-command";
 

@@ -1,7 +1,7 @@
 import { Program } from "typescript";
-import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
-import { flatten } from "../util";
-import { WcaCliConfig } from "../wca-cli-arguments";
+import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { flatten } from "../../util";
+import { WcaCliConfig } from "../../wca-cli-arguments";
 
 /**
  * Transforms results to json.

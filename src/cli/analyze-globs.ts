@@ -4,7 +4,7 @@ import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
 import { analyzeComponents, AnalyzeComponentsResult } from "../analyze/analyze-components";
 import { CompileResult, compileTypescript } from "./compile";
-import { debugJsonTransformer } from "./transformer/debug-json-transformer";
+import { debugJsonTransformer } from "./transformer/debug/debug-json-transformer";
 import { flatten } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
 

@@ -1,6 +1,6 @@
 import { toTypeString } from "ts-simple-type";
 import { TypeChecker } from "typescript";
-import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
+import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 
 /**
  * Pretty print the results for debugging.
