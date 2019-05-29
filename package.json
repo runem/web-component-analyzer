@@ -12,6 +12,7 @@
 		"prepare": "npm run build",
 		"build": "rollup -c",
 		"watch": "rollup -c --watch",
+		"pretest": "cd dev && npm install",
 		"test": "ava",
 		"test:update": "ava --update-snapshots",
 		"test:watch": "ava --watch",
