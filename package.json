@@ -18,7 +18,7 @@
 		"test:watch": "ava --watch",
 		"prettier:check": "prettier --list-different \"src/**/*.{ts,tsx}\"",
 		"prettier:write": "prettier --write \"src/**/*.{ts,tsx}\"",
-		"readme:build": "readme"
+		"readme:build": "readme generate"
 	},
 	"repository": {
 		"type": "git",

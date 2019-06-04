@@ -15,7 +15,7 @@ export function parseDeclarationEvents(node: Node, context: ParseComponentMember
 	if (ts.isInterfaceDeclaration(node) || ts.isClassDeclaration(node)) {
 		return parseJsDocForNode(
 			node,
-			"event",
+			["event", "fires", "emits"],
 			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {

@@ -16,7 +16,7 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 
 		if (jsDoc != null && jsDoc.tags != null) {
 			for (const tag of jsDoc.tags) {
-				if (tag.tag === "customElement" && tag.comment) {
+				if (["customelement", "element"].includes(tag.tag.toLowerCase()) && tag.comment) {
 					context.emitDefinitionResult({
 						tagName: tag.comment,
 						identifierNode: tag.node,

@@ -14,7 +14,7 @@ export function parseDeclarationCSSProps(node: Node, context: ParseComponentMemb
 	if (ts.isInterfaceDeclaration(node) || ts.isClassDeclaration(node)) {
 		return parseJsDocForNode(
 			node,
-			["cssprop", "cssproperty"],
+			["cssprop", "cssproperty", "cssvar", "cssvariable"],
 			(tagNode, parsed) => {
 				if (parsed.name != null) {
 					return {

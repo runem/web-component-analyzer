@@ -14,7 +14,7 @@ export function parseJsDocForNode<T>(
 
 	if (jsDoc != null && jsDoc.tags != null) {
 		const items = jsDoc.tags
-			.filter(tag => (Array.isArray(tagName) ? tagName.includes(tag.tag) : tag.tag === tagName))
+			.filter(tag => (Array.isArray(tagName) ? tagName : [tagName]).includes(tag.tag.toLowerCase()))
 			.map(tag => {
 				const parsed = parseJsDocTag(tag);
 				return transform(tag.node, parsed);

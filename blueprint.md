@@ -93,10 +93,10 @@ Here's an example including all supported JSDoc tags. All tags are on the the fo
 /**
  * Here is a description of my web component.
  * 
- * @customElement my-element
+ * @element my-element
  * 
- * @event change - This jsdoc tag makes it possible to document events.
- * @event submit
+ * @fires change - This jsdoc tag makes it possible to document events.
+ * @fires submit
  * 
  * @attr {Boolean} disabled - This jsdoc tag documents an attribute.
  * @attr {on|off} switch - Here is an attribute with either the "on" or "off" value.
@@ -116,14 +116,14 @@ class MyElement extends HTMLElement {
 
  /**
   * This is a description of a property with an attribute with exactly the same name: "color".
-  * @type {red|green|blue}
+  * @type {"red"|"green"|"blue"}
   * @attr
   */
   color = "red";
 
   /**
    * This is a description of a property with an attribute called "my-prop".
-   * @type {Number}
+   * @type {number}
    * @deprecated
    * @attr my-prop
    */
