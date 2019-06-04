@@ -1,7 +1,7 @@
 import test from "ava";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 
-test("jsdoc: Discovers slots", t => {
+test("jsdoc: Discovers slots with @slots", t => {
 	const [{ result }] = analyzeComponentsInCode(`
 	/**
 	 * @element
@@ -18,7 +18,7 @@ test("jsdoc: Discovers slots", t => {
 	t.is(slots[0].jsDoc!.comment, "Here is a comment");
 });
 
-test("jsdoc: Permitted tag names on @slot", t => {
+test("jsdoc: Discovers permitted tag names on @slot", t => {
 	const [{ result }] = analyzeComponentsInCode(`
 	/**
 	 * @element

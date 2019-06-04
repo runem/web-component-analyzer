@@ -1,6 +1,6 @@
 /**
  * @attr {Boolean} disabled - Disables this element
- * @event change - Dispatched when this element changes
+ * @fires change - Dispatched when this element changes
  * @slot - Default content placed in the body of this element
  * @slot header - Content placed in the header of this element
  */

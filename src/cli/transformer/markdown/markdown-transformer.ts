@@ -1,4 +1,4 @@
-import { toTypeString } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind, SimpleTypeKind, toTypeString } from "ts-simple-type";
 import { Program, TypeChecker } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { ComponentCSSProperty } from "../../../analyze/types/component-css-property";
@@ -44,7 +44,7 @@ export function markdownTransformer(results: AnalyzeComponentsResult[], program:
 		}
 
 		if (events.length > 0) {
-			segmentText += "\n" + eventSection(events, config);
+			segmentText += "\n" + eventSection(events, config, program.getTypeChecker());
 		}
 
 		if (cssProps.length > 0) {
@@ -76,10 +76,17 @@ function cssPropSection(cssProperty: ComponentCSSProperty[], config: WcaCliConfi
  * Returns a markdown table with events
  * @param events
  * @param config
+ * @param checker
  */
-function eventSection(events: EventDeclaration[], config: WcaCliConfig): string {
-	const rows: string[][] = [["Event", "Description"]];
-	rows.push(...events.map(event => [(event.name && markdownHighlight(event.name)) || "", (event.jsDoc && event.jsDoc.comment) || ""]));
+function eventSection(events: EventDeclaration[], config: WcaCliConfig, checker: TypeChecker): string {
+	const rows: string[][] = [["Event", "Detail", "Description"]];
+	rows.push(
+		...events.map(event => [
+			(event.name && markdownHighlight(event.name)) || "",
+			isAssignableToSimpleTypeKind(event.type, SimpleTypeKind.ANY, checker) ? "" : markdownHighlight(toTypeString(event.type, checker)),
+			(event.jsDoc && event.jsDoc.comment) || ""
+		])
+	);
 	return markdownHeader("Events", 2, config) + "\n" + markdownTable(rows);
 }
 

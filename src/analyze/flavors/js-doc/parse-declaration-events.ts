@@ -1,11 +1,12 @@
 import { SimpleTypeKind } from "ts-simple-type";
 import { Node } from "typescript";
 import { EventDeclaration } from "../../types/event-types";
+import { parseJsDocTypeString } from "../../util/js-doc-util";
 import { ParseComponentMembersContext } from "../parse-component-flavor";
 import { parseJsDocForNode } from "./helper";
 
 /**
- * Parses @event js doc annotations on interface/class-like nodes.
+ * Parses @fires js doc annotations on interface/class-like nodes.
  * @param node
  * @param context
  */
@@ -21,7 +22,7 @@ export function parseDeclarationEvents(node: Node, context: ParseComponentMember
 					return {
 						name: parsed.name,
 						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
-						type: { kind: SimpleTypeKind.ANY },
+						type: (parsed.type && parseJsDocTypeString(parsed.type)) || { kind: SimpleTypeKind.ANY },
 						node: tagNode
 					} as EventDeclaration;
 				}
