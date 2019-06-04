@@ -164,7 +164,7 @@ export function parseJsDocTypeString(str: string): SimpleType {
 
 	// Match
 	//   {"red"}
-	const stringLiteralMatch = str.match(/^"(.+)"$/);
+	const stringLiteralMatch = str.match(/^["'](.+)["']$/);
 	if (stringLiteralMatch != null) {
 		return {
 			kind: SimpleTypeKind.STRING_LITERAL,

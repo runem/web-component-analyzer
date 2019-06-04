@@ -89,8 +89,14 @@ function eventSection(events: EventDeclaration[], config: WcaCliConfig): string 
  * @param config
  */
 function slotSection(slots: ComponentSlot[], config: WcaCliConfig): string {
-	const rows: string[][] = [["Name", "Description"]];
-	rows.push(...slots.map(slot => [(slot.name && markdownHighlight(slot.name)) || "", (slot.jsDoc && slot.jsDoc.comment) || ""]));
+	const rows: string[][] = [["Name", "Permitted Tag Names", "Description"]];
+	rows.push(
+		...slots.map(slot => [
+			(slot.name && markdownHighlight(slot.name)) || "",
+			(slot.permittedTagNames && slot.permittedTagNames.map(tagName => markdownHighlight(tagName)).join(" | ")) || "",
+			(slot.jsDoc && slot.jsDoc.comment) || ""
+		])
+	);
 	return markdownHeader("Slots", 2, config) + "\n" + markdownTable(rows);
 }
 

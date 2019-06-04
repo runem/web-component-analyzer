@@ -2,7 +2,7 @@ import test from "ava";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 
 test("jsdoc: Discovers custom elements with @element", t => {
-	const [result] = analyzeComponentsInCode(`
+	const [{ result }] = analyzeComponentsInCode(`
 	/**
 	 * @element my-element
 	 */
@@ -10,14 +10,12 @@ test("jsdoc: Discovers custom elements with @element", t => {
 	 }
 	 `);
 
-	t.is(result.result.componentDefinitions.length, 1);
-	t.is(result.result.componentDefinitions[0].tagName, "my-element");
-
-	t.pass();
+	t.is(result.componentDefinitions.length, 1);
+	t.is(result.componentDefinitions[0].tagName, "my-element");
 });
 
 test("jsdoc: Discovers custom elements with @customElement", t => {
-	const [result] = analyzeComponentsInCode(`
+	const [{ result }] = analyzeComponentsInCode(`
 	/**
 	 * @customElement my-element
 	 */
@@ -25,8 +23,19 @@ test("jsdoc: Discovers custom elements with @customElement", t => {
 	 }
 	 `);
 
-	t.is(result.result.componentDefinitions.length, 1);
-	t.is(result.result.componentDefinitions[0].tagName, "my-element");
+	t.is(result.componentDefinitions.length, 1);
+	t.is(result.componentDefinitions[0].tagName, "my-element");
+});
 
-	t.pass();
+test("jsdoc: Discovers custom elements with @element but without tag name", t => {
+	const [{ result }] = analyzeComponentsInCode(`
+	/**
+	 * @element
+	 */
+	 class MyElement extends HTMLElement { 
+	 }
+	 `);
+
+	t.is(result.componentDefinitions.length, 1);
+	t.is(result.componentDefinitions[0].tagName, "");
 });
