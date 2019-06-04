@@ -5,6 +5,7 @@
 	<a href="https://www.npmjs.com/package/web-component-analyzer"><img alt="NPM Version" src="https://img.shields.io/npm/v/web-component-analyzer.svg" height="20"/></a>
 	<a href="https://david-dm.org/runem/web-component-analyzer"><img alt="Dependencies" src="https://img.shields.io/david/runem/web-component-analyzer.svg" height="20"/></a>
 	<a href="https://github.com/runem/web-component-analyzer/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/runem/web-component-analyzer.svg" height="20"/></a>
+	[![CircleCI](https://circleci.com/gh/runem/web-component-analyzer.svg?style=svg)](https://circleci.com/gh/runem/web-component-analyzer)
 </p>
 
 <p align="center">
