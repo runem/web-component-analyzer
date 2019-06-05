@@ -1,11 +1,13 @@
-import { isSimpleType, SimpleType, SimpleTypeKind, toSimpleType } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { ComponentDefinition } from "../../../analyze/types/component-definition";
 import { ComponentMember } from "../../../analyze/types/component-member";
 import { EventDeclaration } from "../../../analyze/types/event-types";
+import { JsDoc } from "../../../analyze/types/js-doc";
 import { WcaCliConfig } from "../../wca-cli-arguments";
-import { VscodeHtmlData, HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag } from "./vscode-html-data";
+import { markdownHighlight } from "../util/markdown-util";
+import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./vscode-html-data";
 
 /**
  * Vscode json output format transformer.
@@ -34,20 +36,27 @@ export function vscodeTransformer(results: AnalyzeComponentsResult[], program: P
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker): HtmlDataTag {
 	// Transform all members into "attributes"
-	const attributes = definition.declaration.members.map(d => componentMemberToVscodeAttr(d, checker)).filter((val): val is NonNullable<typeof val> => val != null);
-	const eventAttributes = definition.declaration.events.map(componentEventToVscodeAttr).filter((val): val is NonNullable<typeof val> => val != null);
+	const customElementAttributes = definition.declaration.members.map(d => componentMemberToVscodeAttr(d, checker)).filter((val): val is NonNullable<typeof val> => val != null);
+	const eventAttributes = definition.declaration.events.map(e => componentEventToVscodeAttr(e, checker)).filter((val): val is NonNullable<typeof val> => val != null);
+
+	const attributes = [...customElementAttributes, ...eventAttributes];
 
 	return {
 		name: definition.tagName,
-		description: definition.declaration.jsDoc && definition.declaration.jsDoc.comment,
-		attributes: [...attributes, ...eventAttributes]
+		description: formatMetadata(definition.declaration.jsDoc, {
+			Events: definition.declaration.events.map(e => formatEntryRow(e.name, e.jsDoc, e.type, checker)),
+			Slots: definition.declaration.slots.map(s => formatEntryRow(s.name || " ", s.jsDoc, s.permittedTagNames && s.permittedTagNames.map(n => `"${markdownHighlight(n)}"`).join(" | "), checker)),
+			Attributes: definition.declaration.members.map(m => ("attrName" in m && m.attrName != null ? formatEntryRow(m.attrName, m.jsDoc, m.type, checker) : undefined)).filter(m => m != null),
+			Properties: definition.declaration.members.map(m => ("propName" in m && m.propName != null ? formatEntryRow(m.propName, m.jsDoc, m.type, checker) : undefined)).filter(m => m != null)
+		}),
+		attributes
 	};
 }
 
-function componentEventToVscodeAttr(event: EventDeclaration): HtmlDataAttr | undefined {
+function componentEventToVscodeAttr(event: EventDeclaration, checker: TypeChecker): HtmlDataAttr | undefined {
 	return {
 		name: `on${event.name}`,
-		description: (event.jsDoc && event.jsDoc.comment) || undefined
+		description: formatEntryRow(event.name, event.jsDoc, event.type, checker)
 	};
 }
 
@@ -61,7 +70,10 @@ function componentMemberToVscodeAttr(member: ComponentMember, checker: TypeCheck
 
 			return {
 				name: member.attrName,
-				description: (member.jsDoc && member.jsDoc.comment) || undefined,
+				description: formatMetadata(formatEntryRow(member.attrName, member.jsDoc, member.type, checker), {
+					Property: "propName" in member ? member.propName : undefined,
+					Default: member.default === undefined ? undefined : String(member.default)
+				}),
 				...(typeToVscodeValuePart(member.type, checker) || {})
 			};
 		case "method":
@@ -108,4 +120,54 @@ function typesToStringUnion(types: SimpleType[]): HtmlDataAttrValue[] {
 			}
 		})
 		.filter((val): val is NonNullable<typeof val> => val != null);
+}
+
+/**
+ * Formats description and metadata so that it can be used in documentation.
+ * @param doc
+ * @param metadata
+ */
+function formatMetadata(doc: string | undefined | JsDoc, metadata: { [key: string]: string | undefined | (string | undefined)[] }): string | undefined {
+	const metaText = Object.entries(metadata)
+		.map(([key, value]) => {
+			if (value == null) {
+				return undefined;
+			} else if (Array.isArray(value)) {
+				const filtered = value.filter((v): v is NonNullable<typeof v> => v != null);
+				if (filtered.length === 0) return undefined;
+
+				return `${key}:\n\n${filtered.map(v => `  * ${v}`).join(`\n\n`)}`;
+			} else if (typeof value === "string") {
+				return `${key}: ${value}`;
+			}
+		})
+		.filter((value): value is NonNullable<typeof value> => value != null)
+		.join(`\n\n`);
+
+	const comment = doc == null ? undefined : typeof doc === "string" ? doc : doc.comment && doc.comment;
+
+	return `${comment || ""}${metadata ? `${comment ? `\n\n` : ""}${metaText}` : ""}` || undefined;
+}
+
+/**
+ * Formats name, doc and type so that it can be presented in documentation
+ * @param name
+ * @param doc
+ * @param type
+ * @param checker
+ */
+function formatEntryRow(name: string, doc: JsDoc | string | undefined, type: Type | SimpleType | string | undefined, checker: TypeChecker): string {
+	const comment = doc == null ? undefined : typeof doc === "string" ? doc : doc.comment && doc.comment;
+	const typeText = type == null ? undefined : typeof type === "string" ? type : formatType(type, checker);
+
+	return `${markdownHighlight(name)}${typeText == null ? "" : ` \{${typeText}\}`}${comment == null ? "" : " - "}${comment || ""}`;
+}
+
+/**
+ * Formats a type to present in documentation
+ * @param type
+ * @param checker
+ */
+function formatType(type: Type | SimpleType, checker: TypeChecker): string | undefined {
+	return !isAssignableToSimpleTypeKind(type, SimpleTypeKind.ANY, checker) ? markdownHighlight(toTypeString(type, checker)) : undefined;
 }
