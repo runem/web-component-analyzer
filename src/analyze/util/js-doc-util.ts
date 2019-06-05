@@ -96,6 +96,9 @@ export function parseJsDocTypeString(str: string): SimpleType {
 			return { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
 		case "object":
 			return { kind: SimpleTypeKind.OBJECT, members: [] };
+		case "any":
+		case "*":
+			return { kind: SimpleTypeKind.ANY };
 	}
 
 	// Match
@@ -172,6 +175,8 @@ export function parseJsDocTypeString(str: string): SimpleType {
 		};
 	}
 
+	// Match
+	//   {[number]}
 	const arrayMatch = str.match(/^\[(.+)\]$/);
 	if (arrayMatch != null) {
 		return {
