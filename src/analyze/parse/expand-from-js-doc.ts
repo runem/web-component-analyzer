@@ -1,6 +1,6 @@
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
-import { parseJsDocTag } from "../util/js-doc-util";
+import { parseJsDocTagComment } from "../util/js-doc-util";
 
 /**
  * Run through all components expanding them with the associated jsdoc.
@@ -30,7 +30,7 @@ export function expandMemberFromJsDoc(member: ComponentMember): ComponentMember 
 	if (newMember.kind === "property" && newMember.attrName == null) {
 		const attrNameTag = member.jsDoc.tags.find(t => ["attr", "attribute"].includes(t.tag));
 		if (attrNameTag != null) {
-			newMember.attrName = parseJsDocTag(attrNameTag).name || newMember.propName;
+			newMember.attrName = parseJsDocTagComment(attrNameTag).name || newMember.propName;
 		}
 	}
 

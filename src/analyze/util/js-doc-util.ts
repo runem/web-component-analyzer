@@ -13,7 +13,7 @@ export interface ParsedJsDocTag {
  * Parses a jsdoc tag into type, name and comment
  * @param tag
  */
-export function parseJsDocTag(tag: JsDocTag | string): ParsedJsDocTag {
+export function parseJsDocTagComment(tag: JsDocTag | string): ParsedJsDocTag {
 	if (typeof tag !== "string" && tag.comment == null) return {};
 
 	let text = typeof tag === "string" ? tag : tag.comment!;
@@ -42,9 +42,9 @@ export function parseJsDocTag(tag: JsDocTag | string): ParsedJsDocTag {
 	const comment = result.groups["comment1"] || result.groups["comment2"];
 
 	return {
-		type: type && type.trim(),
-		name: name && name.trim(),
-		comment: comment && comment.trim()
+		type: (type && type.trim()) || undefined,
+		name: (name && name.trim()) || undefined,
+		comment: (comment && comment.trim()) || undefined
 	};
 }
 
@@ -198,7 +198,7 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 
 		if (typeTag != null) {
 			// We get the text of the node because typescript strips the type jsdoc tag under certain circumstances
-			const parsedJsDoc = parseJsDocTag(typeTag.node.getText());
+			const parsedJsDoc = parseJsDocTagComment(typeTag.node.getText());
 
 			if (parsedJsDoc.type != null) {
 				return parseJsDocTypeString(parsedJsDoc.type);
