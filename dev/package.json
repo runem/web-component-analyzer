@@ -12,7 +12,7 @@
 		"@appnest/masonry-layout": "^1.0.0",
 		"@aybolit/material": "^0.1.0",
 		"@ionic/core": "^4.4.2",
-		"@material/mwc-button": "^0.5.0",
+		"@material/mwc-button": "^0.6.0",
 		"@material/mwc-checkbox": "^0.6.0",
 		"@polymer/app-layout": "^3.0.2",
 		"@polymer/iron-input": "^3.0.1",
