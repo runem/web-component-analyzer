@@ -29,7 +29,7 @@ In addition to [custom elements](https://developer.mozilla.org/en-US/docs/Web/We
 
 <!-- prettier-ignore -->
 ```bash
-$ npm install -g web-component-analyer
+$ npm install -g web-component-analyzer
 ```
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#usage)
