@@ -80,6 +80,11 @@ export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined {
  * @param str
  */
 export function parseJsDocTypeString(str: string): SimpleType {
+	// Fail safe if "str" is somehow undefined
+	if (str == null) {
+		return { kind: SimpleTypeKind.ANY };
+	}
+
 	// Parse normal types
 	switch (str.toLowerCase()) {
 		case "undefined":
@@ -108,6 +113,27 @@ export function parseJsDocTypeString(str: string): SimpleType {
 	}
 
 	// Match:
+	//   {string|number}
+	if (str.includes("|")) {
+		return {
+			kind: SimpleTypeKind.UNION,
+			types: str.split("|").map(str => {
+				const childType = parseJsDocTypeString(str);
+
+				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
+				if (childType.kind === SimpleTypeKind.ANY) {
+					return {
+						kind: SimpleTypeKind.STRING_LITERAL,
+						value: str
+					} as SimpleTypeStringLiteral;
+				}
+
+				return childType;
+			})
+		};
+	}
+
+	// Match:
 	//  {?number}       (nullable)
 	//  {!number}       (not nullable)
 	//  {...number}     (array of)
@@ -115,7 +141,7 @@ export function parseJsDocTypeString(str: string): SimpleType {
 
 	if (prefixMatch != null) {
 		const modifier = prefixMatch[1];
-		const type = parseJsDocTypeString(prefixMatch[2]);
+		const type = parseJsDocTypeString(prefixMatch[3]);
 		switch (modifier) {
 			case "?":
 				return {
@@ -142,27 +168,6 @@ export function parseJsDocTypeString(str: string): SimpleType {
 	const parenMatch = str.match(/^\((.+)\)$/);
 	if (parenMatch != null) {
 		return parseJsDocTypeString(parenMatch[1]);
-	}
-
-	// Match:
-	//   {string|number}
-	if (str.includes("|")) {
-		return {
-			kind: SimpleTypeKind.UNION,
-			types: str.split("|").map(str => {
-				const childType = parseJsDocTypeString(str);
-
-				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
-				if (childType.kind === SimpleTypeKind.ANY) {
-					return {
-						kind: SimpleTypeKind.STRING_LITERAL,
-						value: str
-					} as SimpleTypeStringLiteral;
-				}
-
-				return childType;
-			})
-		};
 	}
 
 	// Match
