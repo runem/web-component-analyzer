@@ -77,13 +77,13 @@ function nameMerge<T extends { name?: string; jsDoc?: JsDoc }>(entries: T[], dir
 	if (direction === "last") entries = entries.reverse();
 
 	const merged = new Map<string, T>();
-	for (const slot of entries) {
-		const existing = merged.get(slot.name || "");
+	for (const entry of entries) {
+		const existing = merged.get(entry.name || "");
 
 		if (existing == null) {
-			merged.set(slot.name || "", slot);
-		} else if (existing.jsDoc == null && slot.jsDoc != null) {
-			merged.set(slot.name || "", { ...existing, jsDoc: slot.jsDoc });
+			merged.set(entry.name || "", entry);
+		} else if (existing.jsDoc == null && entry.jsDoc != null) {
+			merged.set(entry.name || "", { ...existing, jsDoc: entry.jsDoc });
 		}
 	}
 	return Array.from(merged.values());
@@ -105,7 +105,16 @@ export function mergeMembers(members: ComponentMember[], context: FlavorVisitCon
 		if (existing != null) {
 			// Remove the item from the list and add the merged member
 			mergedMembers.splice(mergedMembers.findIndex(m => m === existing), 1);
-			mergedMembers.push(mergeMember(existing, member, context.checker));
+			const mergedMember = mergeMember(existing, member, context.checker);
+			mergedMembers.push(mergedMember);
+
+			// If we are merging into a property we may need to remove a corresponding attribute if present, because it's not represented from the property.
+			if (mergedMember.kind === "property" && "attrName" in mergedMember) {
+				const indexWithAttrName = mergedMembers.findIndex(m => m.kind === "attribute" && m.attrName === mergedMember.attrName);
+				if (indexWithAttrName >= 0) {
+					mergedMembers.splice(indexWithAttrName, 1);
+				}
+			}
 		} else {
 			mergedMembers.push(member);
 		}

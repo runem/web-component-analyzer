@@ -1,5 +1,5 @@
 import { join } from "path";
-import { CompilerOptions, createProgram, createSourceFile, getDefaultLibFileName, ModuleKind, ScriptKind, ScriptTarget, SourceFile, sys } from "typescript";
+import { CompilerOptions, createProgram, createSourceFile, getDefaultLibFileName, ModuleKind, ScriptKind, ScriptTarget, SourceFile, sys, TypeChecker } from "typescript";
 import { analyzeComponents, AnalyzeComponentsResult } from "../../src/analyze/analyze-components";
 
 // tslint:disable:no-any
@@ -17,7 +17,7 @@ export type TestFile = ITestFile | string;
  * @param {ITestFile[]|TestFile} inputFiles
  * @returns {Promise<{fileName: string, result: AnalyzeComponentsResult}[]>}
  */
-export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { fileName: string; result: AnalyzeComponentsResult }[] {
+export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { fileName: string; result: AnalyzeComponentsResult; checker: TypeChecker }[] {
 	const cwd = process.cwd();
 
 	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
@@ -92,8 +92,13 @@ export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { fi
 		}
 	});
 
-	return program.getSourceFiles().map(sf => ({
-		fileName: sf.fileName,
-		result: analyzeComponents(sf, { checker: program.getTypeChecker() })
-	}));
+	const checker = program.getTypeChecker();
+
+	return files
+		.map(testFile => program.getSourceFile(testFile.fileName)!)
+		.map(sf => ({
+			fileName: sf.fileName,
+			result: analyzeComponents(sf, { checker }),
+			checker
+		}));
 }

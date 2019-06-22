@@ -1,9 +1,10 @@
-import { SimpleTypeKind } from "ts-simple-type";
-import { Node, ReturnStatement } from "typescript";
+import { SimpleTypeKind, toSimpleType } from "ts-simple-type";
+import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
 import { ComponentMember } from "../../types/component-member";
-import { hasModifier, hasPublicSetter, isPropertyRequired } from "../../util/ast-util";
+import { hasModifier, hasPublicSetter, isPropertyRequired, isPropNamePublic } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
+import { relaxType } from "../../util/type-util";
 import { ParseComponentMembersContext } from "../parse-component-flavor";
 
 export function parseDeclarationMembers(node: Node, context: ParseComponentMembersContext): ComponentMember[] | undefined {
@@ -88,6 +89,42 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 					node
 				}
 			];
+		}
+	}
+
+	// constructor { super(); this.title = "Hello"; }
+	else if (ts.isConstructorDeclaration(node)) {
+		if (node.body != null) {
+			const assignments = node.body.statements
+				.filter((stmt): stmt is ExpressionStatement => ts.isExpressionStatement(stmt))
+				.map(stmt => stmt.expression)
+				.filter((exp): exp is BinaryExpression => ts.isBinaryExpression(exp));
+
+			const members: ComponentMember[] = [];
+			for (const assignment of assignments) {
+				const { left, right } = assignment;
+
+				if (ts.isPropertyAccessExpression(left)) {
+					if (left.expression.kind === ts.SyntaxKind.ThisKeyword) {
+						const propName = left.name.getText();
+
+						const simpleType = relaxType(toSimpleType(checker.getTypeAtLocation(right), checker));
+
+						if (isPropNamePublic(propName)) {
+							members.push({
+								kind: "property",
+								propName,
+								type: simpleType,
+								jsDoc: getJsDoc(assignment.parent, ts),
+								required: false,
+								node
+							});
+						}
+					}
+				}
+			}
+
+			return members;
 		}
 	}
 
