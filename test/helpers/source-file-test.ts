@@ -37,12 +37,14 @@ function getSourceFile(fileName: RegExp | string): CompileResult {
 }
 
 export function testResult(testName: string, fileName: RegExp | string, callback: (result: AnalyzeComponentsResult, t: ExecutionContext) => ImplementationResult) {
-	const { files, program } = getSourceFile(fileName);
+	test(testName, t => {
+		const { files, program } = getSourceFile(fileName);
 
-	const checker = program.getTypeChecker();
-	const res = analyzeComponents(files[0], { checker });
+		const checker = program.getTypeChecker();
+		const res = analyzeComponents(files[0], { checker });
 
-	test(testName, t => callback(res, t));
+		callback(res, t);
+	});
 }
 
 export function testResultSnapshot(fileName: RegExp | string) {

@@ -108,12 +108,19 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 					if (left.expression.kind === ts.SyntaxKind.ThisKeyword) {
 						const propName = left.name.getText();
 
-						const simpleType = relaxType(toSimpleType(checker.getTypeAtLocation(right), checker));
+						const classFieldDeclaration = node.parent.members.find(
+							m => ts.isPropertyDeclaration(m) || ts.isPropertySignature(m) || (ts.isSetAccessor(node) && node.name.getText() === propName)
+						);
 
-						if (isPropNamePublic(propName)) {
+						const parsedClassField = classFieldDeclaration == null ? undefined : parseDeclarationMembers(classFieldDeclaration, context);
+
+						if (isPropNamePublic(propName) && (classFieldDeclaration == null || parsedClassField != null)) {
+							const simpleType = relaxType(toSimpleType(checker.getTypeAtLocation(right), checker));
+
 							members.push({
 								kind: "property",
 								propName,
+								default: resolveNodeValue(right, context),
 								type: simpleType,
 								jsDoc: getJsDoc(assignment.parent, ts),
 								required: false,

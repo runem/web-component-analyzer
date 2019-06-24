@@ -28,6 +28,16 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 		return node.text;
 	} else if (ts.isNumericLiteral(node)) {
 		return Number(node.text);
+	} else if (ts.isObjectLiteralExpression(node)) {
+		try {
+			// Try to parse object literal expressions as JSON by converting it to something parsable
+			const regex = /([a-zA-Z1-9]*?):/gm;
+			const json = node.getText().replace(regex, m => `"${m[0]}":`);
+			return JSON.parse(json);
+		} catch {
+			// If something crashes it probably means that the object is more complex.
+			// Therefore do nothing
+		}
 	} else if (node.kind === ts.SyntaxKind.TrueKeyword) {
 		return true;
 	} else if (node.kind === ts.SyntaxKind.FalseKeyword) {

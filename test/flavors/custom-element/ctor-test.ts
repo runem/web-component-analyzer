@@ -40,16 +40,19 @@ test("Property assignments in the constructor are picked up", t => {
 	t.truthy(titleProp);
 	t.is(titleProp!.jsDoc!.comment, "This is a property");
 	t.is(titleProp!.attrName, undefined);
+	t.is(titleProp!.default, "My title");
 	t.truthy(isAssignableToSimpleTypeKind(titleProp!.type, SimpleTypeKind.STRING, checker));
 
 	const darkModeProp = getComponentMemberWithName(members, "darkMode");
 	t.truthy(darkModeProp);
 	t.is(darkModeProp!.jsDoc!.comment, "This property also has an attribute");
 	t.is(darkModeProp!.attrName, "darkMode");
+	t.is(darkModeProp!.default, false);
 	t.truthy(isAssignableToSimpleTypeKind(darkModeProp!.type, SimpleTypeKind.BOOLEAN, checker));
 
 	const locationProp = getComponentMemberWithName(members, "location");
 	t.truthy(isAssignableToSimpleTypeKind(locationProp!.type, SimpleTypeKind.ANY, checker));
+	t.deepEqual(locationProp!.default, { x: 0, y: 0 });
 
 	t.is(getComponentMemberWithName(members, "#formatter"), undefined);
 	t.is(getComponentMemberWithName(members, "_timeout"), undefined);
@@ -81,11 +84,35 @@ test("Property assignments in the constructor are correctly merged", t => {
 		declaration: { members }
 	} = result.componentDefinitions[0];
 
+	t.log(members);
+
 	t.is(members.length, 1);
 
 	const fooProp = getComponentMemberWithName(members, "foo");
 	t.truthy(fooProp);
 	t.is(fooProp!.attrName, "my-attr");
+	t.is(fooProp!.default, "Bar");
+});
+
+test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
+	const [{ result }] = analyzeComponentsInCode(`
+		class MyElement extends HTMLElement {
+			private foo;
+			
+			constructor () {
+				super();
+				this.foo = "Bar";
+			}
+		}
+		
+		customElement.define("my-element", MyElement);
+	 `);
+
+	const {
+		declaration: { members }
+	} = result.componentDefinitions[0];
+
+	t.is(members.length, 0);
 });
 
 function getComponentMemberWithName(members: ComponentMember[], propName: string) {

@@ -13,7 +13,7 @@ export interface ComponentMemberBase {
 }
 
 export interface ComponentMemberSetterBase extends ComponentMemberBase {
-	default?: string | number | boolean | null;
+	default?: object | string | number | boolean | null;
 	required?: boolean;
 }
 
