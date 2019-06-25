@@ -17,7 +17,8 @@ interface VisitComponentDeclarationVisitContext extends FlavorVisitContext {
 	emitSlots(slots: ComponentSlot[]): void;
 	emitCSSProps(cssProperties: ComponentCSSProperty[]): void;
 	emitEvents(events: EventDeclaration[]): void;
-	emitExtends(node: Node): void;
+	emitInheritNode(node: Node): void;
+	emitInherit(name: string): void;
 }
 
 /**
@@ -38,20 +39,30 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	visitComponentDeclaration(declarationNode, flavors, {
 		...context,
 		declarationNode,
+		features: {
+			getCSSProps(): ComponentCSSProperty[] {
+				return cssProps;
+			},
+			getEvents(): EventDeclaration[] {
+				return events;
+			},
+			getInheritNodes(): Node[] {
+				return Array.from(inheritNodes);
+			},
+			getInherits(): string[] {
+				return Array.from(inherits);
+			},
+			getMembers(): ComponentMember[] {
+				return members;
+			},
+			getSlots(): ComponentSlot[] {
+				return slots;
+			}
+		},
 		emitMembers(newMembers: ComponentMember[]): void {
 			members.push(...newMembers);
 		},
-		emitExtends(node: Node): void {
-			// Only safe extends emit if it's an interface or class.
-			if (context.ts.isClassDeclaration(node) || context.ts.isInterfaceDeclaration(node)) {
-				const name = node.name && node.name.text;
-				if (name != null) {
-					inherits.add(name);
-				}
-			} else {
-				return;
-			}
-
+		emitInheritNode(node: Node): void {
 			inheritNodes.add(node);
 		},
 		emitCSSProps(newCSSProps: ComponentCSSProperty[]): void {
@@ -62,6 +73,9 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		},
 		emitSlots(newSlots: ComponentSlot[]): void {
 			slots.push(...newSlots);
+		},
+		emitInherit(name: string): void {
+			inherits.add(name);
 		}
 	});
 
@@ -80,7 +94,10 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	const mergedEvents = mergeEvents(events);
 	const mergedCSSProps = mergeCSSProps(cssProps);
 
-	const className = (context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null ? declarationNode.name.text : undefined;
+	const className =
+		(context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null
+			? declarationNode.name.text
+			: undefined;
 
 	return {
 		node: declarationNode,
@@ -178,9 +195,18 @@ function visitComponentDeclaration(node: Node, flavors: ParseComponentFlavor[], 
  * @param context
  */
 function executeFirstFlavor<
-	Key extends keyof ParseComponentFlavor & "parseDeclarationMembers" | "parseDeclarationEvents" | "parseDeclarationSlots" | "parseDeclarationCSSProps",
+	Key extends
+		| keyof ParseComponentFlavor & "parseDeclarationMembers"
+		| "parseDeclarationEvents"
+		| "parseDeclarationSlots"
+		| "parseDeclarationCSSProps",
 	Return extends ReturnType<NonNullable<ParseComponentFlavor[Key]>>
->(flavors: ParseComponentFlavor[], key: Key, node: Node, context: VisitComponentDeclarationVisitContext): { result: NonNullable<Return>; shouldContinue?: boolean } | undefined {
+>(
+	flavors: ParseComponentFlavor[],
+	key: Key,
+	node: Node,
+	context: VisitComponentDeclarationVisitContext
+): { result: NonNullable<Return>; shouldContinue?: boolean } | undefined {
 	// Loop through each flavor
 	for (const flavor of flavors) {
 		const func = flavor[key];
@@ -210,7 +236,11 @@ function executeFirstFlavor<
  * @param flavors
  * @param context
  */
-function visitInheritedComponentDeclarations(node: InterfaceDeclaration | ClassLikeDeclaration, flavors: ParseComponentFlavor[], context: VisitComponentDeclarationVisitContext) {
+function visitInheritedComponentDeclarations(
+	node: InterfaceDeclaration | ClassLikeDeclaration,
+	flavors: ParseComponentFlavor[],
+	context: VisitComponentDeclarationVisitContext
+) {
 	const { ts, checker } = context;
 
 	if (node.heritageClauses != null) {
@@ -219,7 +249,8 @@ function visitInheritedComponentDeclarations(node: InterfaceDeclaration | ClassL
 			// Don't visit interfaces if we are looking at a class, because the class already declares all things from the interface
 			if (ts.isClassLike(node) && heritage.token === ts.SyntaxKind.ImplementsKeyword) {
 				for (const type of heritage.types) {
-					context.emitExtends(type.expression);
+					context.emitInheritNode(type.expression);
+					context.emitInherit(type.expression.getText());
 				}
 				continue;
 			}
@@ -231,13 +262,16 @@ function visitInheritedComponentDeclarations(node: InterfaceDeclaration | ClassL
 				// Visit component declarations for each inherited node.
 				for (const declaration of declarations) {
 					if (ts.isInterfaceDeclaration(declaration) || ts.isClassLike(declaration)) {
-						context.emitExtends(declaration);
+						context.emitInheritNode(declaration);
 					}
 
 					if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
 						visitComponentDeclaration(declaration, flavors, context);
 					}
 				}
+
+				// Emit extends name
+				context.emitInherit(type.expression.getText());
 			}
 		}
 	}

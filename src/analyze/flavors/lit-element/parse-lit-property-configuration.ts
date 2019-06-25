@@ -1,5 +1,6 @@
 import { SimpleType, SimpleTypeKind } from "ts-simple-type";
-import { CallExpression, Node, ObjectLiteralExpression } from "typescript";
+import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
+import { resolveNodeValue } from "../../util/resolve-node-value";
 import { FlavorVisitContext } from "../parse-component-flavor";
 
 export interface LitPropertyConfiguration {
@@ -10,6 +11,7 @@ export interface LitPropertyConfiguration {
 		attribute?: Node;
 	};
 	hasConverter?: boolean;
+	default?: object | string | number | boolean | null;
 }
 
 /**
@@ -35,7 +37,7 @@ export function getLitElementPropertyDecorator(node: Node, context: FlavorVisitC
  * @param node
  * @param context
  */
-export function getLitPropertyConfiguration(node: Node, context: FlavorVisitContext): undefined | LitPropertyConfiguration {
+export function getLitElementPropertyDecoratorConfig(node: Node, context: FlavorVisitContext): undefined | LitPropertyConfiguration {
 	const { ts } = context;
 
 	// Get reference to a possible "@property" decorator.
@@ -58,75 +60,90 @@ export function getLitPropertyConfiguration(node: Node, context: FlavorVisitCont
 export function getLitPropertyOptions(node: ObjectLiteralExpression, context: FlavorVisitContext): LitPropertyConfiguration {
 	const { ts } = context;
 
-	const config: LitPropertyConfiguration = {};
-
 	// Build up the property configuration by looking at properties in the object literal expression
-	for (const property of node.properties) {
-		if (!ts.isPropertyAssignment(property)) continue;
+	return node.properties.reduce(
+		(config, property) => {
+			if (!ts.isPropertyAssignment(property)) return config;
 
-		const initializer = property.initializer;
-		const name = ts.isIdentifier(property.name) ? property.name.text : undefined;
+			const initializer = property.initializer;
+			const kind = ts.isIdentifier(property.name) ? property.name.text : undefined;
 
-		switch (name) {
-			case "converter": {
-				config.hasConverter = true;
-				break;
+			return parseLitPropertyOption({ kind, initializer, config }, context);
+		},
+		{} as LitPropertyConfiguration
+	);
+}
+
+export function parseLitPropertyOption(
+	{ kind, initializer, config }: { kind: string | undefined; initializer: Expression; config: LitPropertyConfiguration },
+	context: FlavorVisitContext
+): LitPropertyConfiguration {
+	const { ts, checker } = context;
+
+	// noinspection DuplicateCaseLabelJS
+	switch (kind) {
+		case "converter": {
+			return { ...config, hasConverter: true };
+		}
+
+		case "attribute": {
+			let attribute: LitPropertyConfiguration["attribute"] | undefined;
+
+			if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
+				attribute = true;
+			} else if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
+				attribute = false;
+			} else if (ts.isStringLiteral(initializer)) {
+				attribute = initializer.text;
 			}
 
-			case "attribute": {
-				if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
-					config.attribute = true;
-				} else if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
-					config.attribute = false;
-				} else if (ts.isStringLiteral(initializer)) {
-					config.attribute = initializer.text;
-				}
-
-				config.node = {
+			return {
+				...config,
+				attribute,
+				node: {
 					...(config.node || {}),
-					attribute: property
-				};
-
-				break;
-			}
-
-			case "type": {
-				const value = ts.isIdentifier(initializer) ? initializer.text : undefined;
-
-				switch (value) {
-					case "String":
-					case "StringConstructor":
-						config.type = { kind: SimpleTypeKind.STRING };
-						break;
-					case "Number":
-					case "NumberConstructor":
-						config.type = { kind: SimpleTypeKind.NUMBER };
-						break;
-					case "Boolean":
-					case "BooleanConstructor":
-						config.type = { kind: SimpleTypeKind.BOOLEAN };
-						break;
-					case "Array":
-					case "ArrayConstructor":
-						config.type = { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
-						break;
-					case "Object":
-					case "ObjectConstructor":
-						config.type = { kind: SimpleTypeKind.OBJECT, members: [] };
-						break;
-					default:
-						// This is an unknown type, so set the name as a string
-						config.type = initializer.getText();
-						break;
+					attribute: initializer.parent
 				}
+			};
+		}
 
-				config.node = {
-					...(config.node || {}),
-					type: property
-				};
+		case "type": {
+			let type: LitPropertyConfiguration["type"] | undefined;
+			const value = ts.isIdentifier(initializer) ? initializer.text : undefined;
 
-				break;
+			switch (value) {
+				case "String":
+				case "StringConstructor":
+					type = { kind: SimpleTypeKind.STRING };
+					break;
+				case "Number":
+				case "NumberConstructor":
+					type = { kind: SimpleTypeKind.NUMBER };
+					break;
+				case "Boolean":
+				case "BooleanConstructor":
+					type = { kind: SimpleTypeKind.BOOLEAN };
+					break;
+				case "Array":
+				case "ArrayConstructor":
+					type = { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
+					break;
+				case "Object":
+				case "ObjectConstructor":
+					type = { kind: SimpleTypeKind.OBJECT, members: [] };
+					break;
+				default:
+					// This is an unknown type, so set the name as a string
+					type = initializer.getText();
+					break;
 			}
+
+			return { ...config, type };
+		}
+
+		// Polymer specific field
+		case "value": {
+			return { ...config, default: resolveNodeValue(initializer, { ts, checker }) };
 		}
 	}
 

@@ -13,6 +13,16 @@ export interface FlavorVisitContext {
 	config: AnalyzeComponentsConfig;
 	emitContinue?(): void;
 	emitDiagnostics(diagnostic: ComponentDiagnostic): void;
+	features?: FlavorVisitContextFeatures;
+}
+
+export interface FlavorVisitContextFeatures {
+	getMembers(): ComponentMember[];
+	getSlots(): ComponentSlot[];
+	getCSSProps(): ComponentCSSProperty[];
+	getEvents(): EventDeclaration[];
+	getInheritNodes(): Node[];
+	getInherits(): string[];
 }
 
 export interface DefinitionNodeResult {

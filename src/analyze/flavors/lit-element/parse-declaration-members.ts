@@ -5,9 +5,15 @@ import { hasModifier, hasPublicSetter, isPropertyRequired } from "../../util/ast
 import { isValidAttributeName } from "../../util/is-valid-attribute-name";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { joinArray } from "../../util/text-util";
+import { camelToDashCase, joinArray } from "../../util/text-util";
 import { FlavorVisitContext, ParseComponentMembersContext } from "../parse-component-flavor";
-import { getLitElementPropertyDecorator, getLitPropertyConfiguration, getLitPropertyOptions, LitPropertyConfiguration } from "./parse-lit-property-configuration";
+import {
+	getLitElementPropertyDecorator,
+	getLitElementPropertyDecoratorConfig,
+	getLitPropertyOptions,
+	LitPropertyConfiguration,
+	parseLitPropertyOption
+} from "./parse-lit-property-configuration";
 
 /**
  * Parses lit-related declaration members.
@@ -40,11 +46,14 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
  * @param node
  * @param context
  */
-function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature, context: ParseComponentMembersContext): ComponentMember[] | undefined {
+function parsePropertyDecorator(
+	node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature,
+	context: ParseComponentMembersContext
+): ComponentMember[] | undefined {
 	const { ts, checker } = context;
 
 	// Parse the content of a possible lit "@property" decorator.
-	const litConfig = getLitPropertyConfiguration(node, context);
+	const litConfig = getLitElementPropertyDecoratorConfig(node, context);
 
 	if (litConfig != null) {
 		const propName = node.name.getText();
@@ -73,8 +82,8 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 			);
 		}
 
-		// Get the attribute name either by looking at "{attribute: ...}" or just taking the property name.
-		const attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
+		// Get the attribute based on the configuration
+		const attrName = getLitAttributeName(propName, litConfig, context);
 
 		// Find the default value for this property
 		const def = "initializer" in node && node.initializer != null ? resolveNodeValue(node.initializer, context) : undefined;
@@ -92,7 +101,7 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 				attrName,
 				type,
 				node,
-				default: def,
+				default: def || litConfig.default,
 				required,
 				jsDoc
 			}
@@ -100,6 +109,33 @@ function parsePropertyDecorator(node: SetAccessorDeclaration | PropertyLikeDecla
 	}
 
 	return undefined;
+}
+
+/**
+ * Returns if we are in a Polymer context.
+ * @param context
+ */
+function inPolymerFlavorContext(context: FlavorVisitContext): boolean {
+	const inherits = context.features != null ? context.features.getInherits() : [];
+	return inherits.includes("PolymerElement") || inherits.includes("Polymer.Element");
+}
+
+/**
+ * Returns an attribute name based on a property name and a lit-configuration
+ * @param propName
+ * @param litConfig
+ * @param context
+ */
+function getLitAttributeName(propName: string, litConfig: LitPropertyConfiguration, context: FlavorVisitContext): string {
+	// Get the attribute name either by looking at "{attribute: ...}" or just taking the property name.
+	let attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
+
+	if (inPolymerFlavorContext(context)) {
+		// From the documentation: https://polymer-library.polymer-project.org/3.0/docs/devguide/properties#attribute-reflection
+		attrName = camelToDashCase(attrName).toLowerCase();
+	}
+
+	return attrName;
 }
 
 /**
@@ -114,16 +150,34 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 	const members: ComponentMember[] = [];
 
 	if (returnStatement.expression != null && ts.isObjectLiteralExpression(returnStatement.expression)) {
-		// Each property in the object literal expression coreesponds to a class property.
+		const isPolymerFlavor = inPolymerFlavorContext(context);
+
+		// Each property in the object literal expression corresponds to a class field.
 		for (const propNode of returnStatement.expression.properties) {
 			// Parse the lit property config for this property
-			const litConfig = ts.isPropertyAssignment(propNode) && ts.isObjectLiteralExpression(propNode.initializer) ? getLitPropertyOptions(propNode.initializer, context) : {};
+			// Treat non-object-literal-expressions like the "type" (to support Polymer specific syntax)
+			const litConfig = ts.isPropertyAssignment(propNode)
+				? ts.isObjectLiteralExpression(propNode.initializer)
+					? getLitPropertyOptions(propNode.initializer, context)
+					: isPolymerFlavor
+					? parseLitPropertyOption(
+							{
+								kind: "type",
+								initializer: propNode.initializer,
+								config: {}
+							},
+							context
+					  )
+					: {}
+				: {};
 
-			const jsDoc = getJsDoc(propNode, ts);
-
-			const type = (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
+			// Get propName and attrName based on the litConfig
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : "";
-			const attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
+			const attrName = getLitAttributeName(propName, litConfig, context);
+
+			// Get more metadata
+			const jsDoc = getJsDoc(propNode, ts);
+			const type = (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
 
 			const emitAttribute = litConfig.attribute !== false;
 			const emitProperty = propName != null;
@@ -149,7 +203,8 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 					propName: propName,
 					attrName: emitAttribute ? attrName : undefined,
 					jsDoc,
-					node: propNode
+					node: propNode,
+					default: litConfig.default
 				});
 			}
 		}
@@ -297,7 +352,9 @@ function validateLitPropertyConfig(
 				context.emitDiagnostics({
 					node,
 					severity: "warning",
-					message: `The built in converter doesn't handle the property type '${toTypeString(simplePropType)}'. Please add '{attribute: false}' on @property decorator for '${propName}'`
+					message: `The built in converter doesn't handle the property type '${toTypeString(
+						simplePropType
+					)}'. Please add '{attribute: false}' on @property decorator for '${propName}'`
 				});
 			}
 		}
