@@ -102,7 +102,7 @@ export function parseLitPropertyOption(
 				attribute,
 				node: {
 					...(config.node || {}),
-					attribute: initializer.parent
+					attribute: initializer
 				}
 			};
 		}
@@ -138,7 +138,14 @@ export function parseLitPropertyOption(
 					break;
 			}
 
-			return { ...config, type };
+			return {
+				...config,
+				type,
+				node: {
+					...(config.node || {}),
+					type: initializer
+				}
+			};
 		}
 
 		// Polymer specific field
