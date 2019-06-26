@@ -1,7 +1,7 @@
 import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/component-member";
-import { hasModifier, hasPublicSetter, isPropertyRequired } from "../../util/ast-util";
+import { hasModifier, hasPublicSetter, isPropertyRequired, isPropNamePublic } from "../../util/ast-util";
 import { isValidAttributeName } from "../../util/is-valid-attribute-name";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -154,6 +154,12 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 
 		// Each property in the object literal expression corresponds to a class field.
 		for (const propNode of returnStatement.expression.properties) {
+			// Get propName
+			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : undefined;
+			if (propName == null || !isPropNamePublic(propName)) {
+				continue;
+			}
+
 			// Parse the lit property config for this property
 			// Treat non-object-literal-expressions like the "type" (to support Polymer specific syntax)
 			const litConfig = ts.isPropertyAssignment(propNode)
@@ -171,8 +177,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 					: {}
 				: {};
 
-			// Get propName and attrName based on the litConfig
-			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : "";
+			// Get attrName based on the litConfig
 			const attrName = getLitAttributeName(propName, litConfig, context);
 
 			// Get more metadata
@@ -180,7 +185,6 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 			const type = (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
 
 			const emitAttribute = litConfig.attribute !== false;
-			const emitProperty = propName != null;
 
 			// Look at diagnostics is on.
 			if (context.config.diagnostics) {
@@ -196,17 +200,15 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 			}
 
 			// Emit either the attribute or the property
-			if (emitProperty) {
-				members.push({
-					kind: "property",
-					type,
-					propName: propName,
-					attrName: emitAttribute ? attrName : undefined,
-					jsDoc,
-					node: propNode,
-					default: litConfig.default
-				});
-			}
+			members.push({
+				kind: "property",
+				type,
+				propName: propName,
+				attrName: emitAttribute ? attrName : undefined,
+				jsDoc,
+				node: propNode,
+				default: litConfig.default
+			});
 		}
 	}
 

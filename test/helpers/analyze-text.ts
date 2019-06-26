@@ -1,13 +1,24 @@
 import { join } from "path";
-import { CompilerOptions, createProgram, createSourceFile, getDefaultLibFileName, ModuleKind, ScriptKind, ScriptTarget, SourceFile, sys, TypeChecker } from "typescript";
+import {
+	CompilerOptions,
+	createProgram,
+	createSourceFile,
+	getDefaultLibFileName,
+	ModuleKind,
+	ScriptKind,
+	ScriptTarget,
+	SourceFile,
+	sys,
+	TypeChecker
+} from "typescript";
 import { analyzeComponents, AnalyzeComponentsResult } from "../../src/analyze/analyze-components";
 
 // tslint:disable:no-any
 
 export interface ITestFile {
 	fileName: string;
-	text: string;
-	entry: boolean;
+	text?: string;
+	entry?: boolean;
 }
 
 export type TestFile = ITestFile | string;
@@ -17,7 +28,9 @@ export type TestFile = ITestFile | string;
  * @param {ITestFile[]|TestFile} inputFiles
  * @returns {Promise<{fileName: string, result: AnalyzeComponentsResult}[]>}
  */
-export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { fileName: string; result: AnalyzeComponentsResult; checker: TypeChecker }[] {
+export function analyzeComponentsInCode(
+	inputFiles: TestFile[] | TestFile
+): { fileName: string; result: AnalyzeComponentsResult; checker: TypeChecker }[] {
 	const cwd = process.cwd();
 
 	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
@@ -32,7 +45,7 @@ export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { fi
 		)
 		.map(file => ({ ...file, fileName: join(cwd, file.fileName) }));
 
-	const entryFile = files.find(file => file.entry);
+	const entryFile = files.find(file => file.entry === true) || files[0];
 	if (entryFile == null) {
 		throw new ReferenceError(`No entry could be found`);
 	}

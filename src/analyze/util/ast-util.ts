@@ -1,6 +1,18 @@
 import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { Declaration, InterfaceDeclaration, Node, PropertyDeclaration, PropertySignature, SetAccessorDeclaration, SourceFile, StringLiteral, SyntaxKind, TypeChecker } from "typescript";
+import {
+	Declaration,
+	Identifier,
+	InterfaceDeclaration,
+	Node,
+	PropertyDeclaration,
+	PropertySignature,
+	SetAccessorDeclaration,
+	SourceFile,
+	StringLiteral,
+	SyntaxKind,
+	TypeChecker
+} from "typescript";
 
 export interface AstContext {
 	ts: typeof tsModule;
@@ -10,22 +22,38 @@ export interface AstContext {
 /**
  * Resolves all relevant declarations of a specific node. Defaults to "interfaces and classes".
  * @param node
- * @param checker
- * @param ts
+ * @param context
  */
-export function resolveDeclarations(node: Node, checker: TypeChecker, ts: typeof tsModule | ((node: Node) => boolean)[]): Declaration[] {
+export function resolveDeclarations(
+	node: Node,
+	context: { checker: TypeChecker; ts: typeof tsModule; tests?: ((node: Node) => boolean)[] }
+): Declaration[] {
+	if (node == null) return [];
+	const { checker, ts, tests } = context;
+
 	// Get the symbol
 	const symbol = checker.getSymbolAtLocation(node);
 	if (symbol == null) return [];
 
 	// Build an array with functions that tests the declaration
-	const declarationTests = Array.isArray(ts) ? ts : [ts.isInterfaceDeclaration, ts.isClassLike];
+	const declarationTests = tests || [ts.isInterfaceDeclaration, ts.isClassLike];
 
 	// Filters all declarations
-	const declarations = (symbol.getDeclarations() || []).filter(declaration => declarationTests.find(test => test(declaration)) != null);
+	const allDeclarations = symbol.getDeclarations() || [];
+	const validDeclarations = allDeclarations.filter(declaration => declarationTests.find(test => test(declaration)) != null);
 
-	if (declarations.length > 0) {
-		return declarations;
+	// If some of the declarations are identifiers, we need to resolve declarations recursively
+	const identifierDeclarations = allDeclarations
+		.map(declaration => resolveIdentifier(declaration, ts))
+		.filter((identifier): identifier is NonNullable<typeof identifier> => identifier != null);
+
+	if (identifierDeclarations.length > 0) {
+		return [
+			...validDeclarations,
+			...identifierDeclarations.map(identifier => resolveDeclarations(identifier, context)).reduce((acc, decls) => [...acc, ...decls], [])
+		];
+	} else if (validDeclarations.length > 0) {
+		return validDeclarations;
 	} else {
 		// Maybe the declaration is an Import symbol and we need to get the aliased symbol
 		try {
@@ -44,6 +72,17 @@ export function resolveDeclarations(node: Node, checker: TypeChecker, ts: typeof
 	}
 
 	return [];
+}
+
+function resolveIdentifier(node: Node, ts: typeof tsModule): Identifier | undefined {
+	if (node == null) {
+		return undefined;
+	} else if (ts.isIdentifier(node)) {
+		return node;
+	} else if (ts.isPropertyAssignment(node)) {
+		return resolveIdentifier(node.initializer, ts);
+	}
+	return undefined;
 }
 
 /**
@@ -104,7 +143,7 @@ export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { t
 			const typeName = member.type.typeName;
 
 			// { ____: MyButton; }
-			const declaration = resolveDeclarations(typeName, checker, ts)[0];
+			const declaration = resolveDeclarations(typeName, { checker, ts })[0];
 
 			if (declaration != null) {
 				extensions.push([key, declaration, member.name]);

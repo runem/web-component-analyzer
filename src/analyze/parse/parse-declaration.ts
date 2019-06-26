@@ -5,7 +5,7 @@ import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
-import { isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
+import { findChild, isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { expandMembersFromJsDoc } from "./expand-from-js-doc";
 import { mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
@@ -241,7 +241,7 @@ function visitInheritedComponentDeclarations(
 	flavors: ParseComponentFlavor[],
 	context: VisitComponentDeclarationVisitContext
 ) {
-	const { ts, checker } = context;
+	const { ts } = context;
 
 	if (node.heritageClauses != null) {
 		for (const heritage of node.heritageClauses || []) {
@@ -257,22 +257,53 @@ function visitInheritedComponentDeclarations(
 
 			// [extends|implements] MyBase
 			for (const type of heritage.types) {
-				const declarations = resolveDeclarations(type.expression, checker, ts);
-
-				// Visit component declarations for each inherited node.
-				for (const declaration of declarations) {
-					if (ts.isInterfaceDeclaration(declaration) || ts.isClassLike(declaration)) {
-						context.emitInheritNode(declaration);
-					}
-
-					if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
-						visitComponentDeclaration(declaration, flavors, context);
-					}
-				}
-
-				// Emit extends name
-				context.emitInherit(type.expression.getText());
+				resolveAndExtendHeritage(type.expression, flavors, context);
 			}
 		}
+	}
+}
+
+function resolveAndExtendHeritage(node: Node, flavors: ParseComponentFlavor[], context: VisitComponentDeclarationVisitContext) {
+	const { ts } = context;
+
+	// Emit extends name
+	context.emitInherit(node.getText());
+
+	if (ts.isCallExpression(node)) {
+		const { expression: identifier, arguments: args } = node;
+
+		for (const argument of args) {
+			resolveAndExtendHeritage(argument, flavors, context);
+		}
+
+		if (identifier != null) {
+			const declarations = resolveDeclarations(identifier, context);
+			for (const declaration of declarations) {
+				const clzDecl = findChild(declaration, ts.isClassLike);
+
+				if (clzDecl != null) {
+					extendWithDeclarationNode(clzDecl, flavors, context);
+				}
+			}
+		}
+	} else {
+		const declarations = resolveDeclarations(node, context);
+
+		// Visit component declarations for each inherited node.
+		for (const declaration of declarations) {
+			extendWithDeclarationNode(declaration, flavors, context);
+		}
+	}
+}
+
+function extendWithDeclarationNode(declaration: Node, flavors: ParseComponentFlavor[], context: VisitComponentDeclarationVisitContext) {
+	const { ts } = context;
+
+	if (ts.isInterfaceDeclaration(declaration) || ts.isClassLike(declaration)) {
+		context.emitInheritNode(declaration);
+	}
+
+	if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
+		visitComponentDeclaration(declaration, flavors, context);
 	}
 }

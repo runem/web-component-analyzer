@@ -26,7 +26,7 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 
 						// (___, MyElement)
 						if (ts.isIdentifier(identifierNode)) {
-							const declarationNodes = resolveDeclarations(identifierNode, checker, ts);
+							const declarationNodes = resolveDeclarations(identifierNode, { checker, ts });
 
 							for (const declarationNode of declarationNodes) {
 								context.emitDefinitionResult({
