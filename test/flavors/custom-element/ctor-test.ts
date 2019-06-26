@@ -30,8 +30,6 @@ test("Property assignments in the constructor are picked up", t => {
 		customElement.define("my-element", MyElement);
 	 `);
 
-	t.log(result.componentDefinitions[0].declaration);
-
 	const {
 		declaration: { members }
 	} = result.componentDefinitions[0];
@@ -83,8 +81,6 @@ test("Property assignments in the constructor are correctly merged", t => {
 	const {
 		declaration: { members }
 	} = result.componentDefinitions[0];
-
-	t.log(members);
 
 	t.is(members.length, 1);
 

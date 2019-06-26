@@ -13,10 +13,10 @@ for (let checkType = 0; checkType <= 1; checkType++) {
 				const expectedComment = checkComment ? parsedJsDocTag.comment : undefined;
 
 				// Generate a combination of: "{Type} Name - Comment"
-				const jsdocComment = `${expectedType ? `{${expectedType}} ` : ""}${expectedName ? expectedName : ""}${expectedComment ? ` - ${expectedComment}` : ""}`;
+				const jsdocComment = `${expectedType ? `{${expectedType}} ` : ""}${expectedName ? expectedName : ""}${
+					expectedComment ? ` - ${expectedComment}` : ""
+				}`;
 				const { type, name, comment } = parseJsDocTagComment(jsdocComment);
-
-				t.log("JsDoc Comment: ", jsdocComment);
 
 				t.is(type, expectedType);
 				t.is(name, expectedName);

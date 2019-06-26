@@ -23,8 +23,6 @@ test("Polymer components are correctly picked up", t => {
 		customElements.define('x-custom', XCustom);
 	 `);
 
-	t.log(result.componentDefinitions[0].declaration);
-
 	const {
 		declaration: { members }
 	} = result.componentDefinitions[0];
