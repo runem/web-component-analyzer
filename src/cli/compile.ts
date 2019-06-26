@@ -1,4 +1,14 @@
-import { CompilerOptions, createProgram, Diagnostic, getPreEmitDiagnostics, ModuleKind, ModuleResolutionKind, Program, ScriptTarget, SourceFile } from "typescript";
+import {
+	CompilerOptions,
+	createProgram,
+	Diagnostic,
+	getPreEmitDiagnostics,
+	ModuleKind,
+	ModuleResolutionKind,
+	Program,
+	ScriptTarget,
+	SourceFile
+} from "typescript";
 
 /**
  * The most general version of compiler options.

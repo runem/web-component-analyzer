@@ -1,7 +1,12 @@
 import { Node } from "typescript";
 import { ComponentMember } from "../../types/component-member";
 import { EventDeclaration } from "../../types/event-types";
-import { ParseComponentFlavor, ParseComponentMembersContext, ParseVisitContextGlobalEvents, VisitComponentDefinitionContext } from "../parse-component-flavor";
+import {
+	ParseComponentFlavor,
+	ParseComponentMembersContext,
+	ParseVisitContextGlobalEvents,
+	VisitComponentDefinitionContext
+} from "../parse-component-flavor";
 import { parseDeclarationEvents } from "./parse-declaration-events";
 import { parseDeclarationMembers } from "./parse-declaration-members";
 import { visitComponentDefinitions } from "./visit-component-definitions";

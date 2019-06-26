@@ -30,8 +30,12 @@ export function markdownTransformer(results: AnalyzeComponentsResult[], program:
 		if (declaration.jsDoc != null && declaration.jsDoc.comment != null) segmentText += `\n\n${declaration.jsDoc.comment}\n`;
 
 		// Grab all items from the component and add them as tables to the output.
-		const properties = declaration.members.filter((m): m is ComponentMemberProperty => m.kind === "property").sort((a, b) => (a.propName < b.propName ? -1 : 1));
-		const attributes = declaration.members.filter((m): m is ComponentMemberAttribute => m.kind === "attribute").sort((a, b) => (a.attrName < b.attrName ? -1 : 1));
+		const properties = declaration.members
+			.filter((m): m is ComponentMemberProperty => m.kind === "property")
+			.sort((a, b) => (a.propName < b.propName ? -1 : 1));
+		const attributes = declaration.members
+			.filter((m): m is ComponentMemberAttribute => m.kind === "attribute")
+			.sort((a, b) => (a.attrName < b.attrName ? -1 : 1));
 		const slots = declaration.slots.sort((a, b) => (a.name == null ? -1 : b.name == null ? 1 : a.name < b.name ? -1 : 1));
 		const events = declaration.events.sort((a, b) => (a.name < b.name ? -1 : 1));
 		const cssProps = declaration.cssProperties.sort((a, b) => (a.name < b.name ? -1 : 1));

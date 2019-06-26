@@ -15,7 +15,11 @@ import { parseComponentDeclaration } from "./parse-declaration";
  * @param flavors
  * @param context
  */
-export function parseComponentDefinitions(sourceFile: SourceFile, flavors: ParseComponentFlavor[], context: FlavorVisitContext): ComponentDefinition[] {
+export function parseComponentDefinitions(
+	sourceFile: SourceFile,
+	flavors: ParseComponentFlavor[],
+	context: FlavorVisitContext
+): ComponentDefinition[] {
 	// Find all definitions in the file
 	const definitionResults = parseComponentDefinitionResults(sourceFile, flavors, context);
 

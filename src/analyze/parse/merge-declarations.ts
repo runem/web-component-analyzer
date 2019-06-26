@@ -142,7 +142,10 @@ function findMemberToMerge(members: ComponentMember[], similar: ComponentMember)
 				return [attrName, propName].includes(member.attrName.toLowerCase());
 			case "property":
 				// If the member has an attrName compare it to the "attrName" of "similar"
-				return [attrName, propName].includes(member.propName.toLowerCase()) || (member.attrName != null ? member.attrName.toLowerCase() === attrName : false);
+				return (
+					[attrName, propName].includes(member.propName.toLowerCase()) ||
+					(member.attrName != null ? member.attrName.toLowerCase() === attrName : false)
+				);
 		}
 
 		return false;

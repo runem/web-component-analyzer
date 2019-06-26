@@ -30,7 +30,9 @@ export function parseDeclarationSlots(node: Node, context: ParseComponentMembers
 						case SimpleTypeKind.STRING_LITERAL:
 							return [permittedTagNameType.value];
 						case SimpleTypeKind.UNION:
-							return permittedTagNameType.types.filter((type): type is SimpleTypeStringLiteral => type.kind === SimpleTypeKind.STRING_LITERAL).map(type => type.value);
+							return permittedTagNameType.types
+								.filter((type): type is SimpleTypeStringLiteral => type.kind === SimpleTypeKind.STRING_LITERAL)
+								.map(type => type.value);
 						default:
 							return undefined;
 					}

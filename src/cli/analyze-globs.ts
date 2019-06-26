@@ -28,7 +28,11 @@ export interface AnalyzeGlobsContext {
  * @param config
  * @param context
  */
-export async function analyzeGlobs(globs: string[], config: WcaCliConfig, context: AnalyzeGlobsContext = {}): Promise<CompileResult & { results: AnalyzeComponentsResult[] }> {
+export async function analyzeGlobs(
+	globs: string[],
+	config: WcaCliConfig,
+	context: AnalyzeGlobsContext = {}
+): Promise<CompileResult & { results: AnalyzeComponentsResult[] }> {
 	// Set default glob
 	if (globs.length === 0) {
 		globs = DEFAULT_GLOBS;

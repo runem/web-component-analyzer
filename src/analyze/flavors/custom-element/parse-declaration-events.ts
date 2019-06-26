@@ -24,7 +24,9 @@ export function parseDeclarationEvents(node: Node, context: ParseComponentMember
 					(() => ts.isExpressionStatement(node.parent) && getJsDoc(node.parent, ts))() ||
 					undefined;
 
-				const type: SimpleType | Type = (typeArguments && typeArguments[0] && checker.getTypeFromTypeNode(typeArguments[0])) || { kind: SimpleTypeKind.ANY };
+				const type: SimpleType | Type = (typeArguments && typeArguments[0] && checker.getTypeFromTypeNode(typeArguments[0])) || {
+					kind: SimpleTypeKind.ANY
+				};
 
 				return [
 					{

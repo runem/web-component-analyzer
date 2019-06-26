@@ -36,8 +36,12 @@ export function vscodeTransformer(results: AnalyzeComponentsResult[], program: P
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker): HtmlDataTag {
 	// Transform all members into "attributes"
-	const customElementAttributes = definition.declaration.members.map(d => componentMemberToVscodeAttr(d, checker)).filter((val): val is NonNullable<typeof val> => val != null);
-	const eventAttributes = definition.declaration.events.map(e => componentEventToVscodeAttr(e, checker)).filter((val): val is NonNullable<typeof val> => val != null);
+	const customElementAttributes = definition.declaration.members
+		.map(d => componentMemberToVscodeAttr(d, checker))
+		.filter((val): val is NonNullable<typeof val> => val != null);
+	const eventAttributes = definition.declaration.events
+		.map(e => componentEventToVscodeAttr(e, checker))
+		.filter((val): val is NonNullable<typeof val> => val != null);
 
 	const attributes = [...customElementAttributes, ...eventAttributes];
 
@@ -45,9 +49,15 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		name: definition.tagName,
 		description: formatMetadata(definition.declaration.jsDoc, {
 			Events: definition.declaration.events.map(e => formatEntryRow(e.name, e.jsDoc, e.type, checker)),
-			Slots: definition.declaration.slots.map(s => formatEntryRow(s.name || " ", s.jsDoc, s.permittedTagNames && s.permittedTagNames.map(n => `"${markdownHighlight(n)}"`).join(" | "), checker)),
-			Attributes: definition.declaration.members.map(m => ("attrName" in m && m.attrName != null ? formatEntryRow(m.attrName, m.jsDoc, m.type, checker) : undefined)).filter(m => m != null),
-			Properties: definition.declaration.members.map(m => ("propName" in m && m.propName != null ? formatEntryRow(m.propName, m.jsDoc, m.type, checker) : undefined)).filter(m => m != null)
+			Slots: definition.declaration.slots.map(s =>
+				formatEntryRow(s.name || " ", s.jsDoc, s.permittedTagNames && s.permittedTagNames.map(n => `"${markdownHighlight(n)}"`).join(" | "), checker)
+			),
+			Attributes: definition.declaration.members
+				.map(m => ("attrName" in m && m.attrName != null ? formatEntryRow(m.attrName, m.jsDoc, m.type, checker) : undefined))
+				.filter(m => m != null),
+			Properties: definition.declaration.members
+				.map(m => ("propName" in m && m.propName != null ? formatEntryRow(m.propName, m.jsDoc, m.type, checker) : undefined))
+				.filter(m => m != null)
 		}),
 		attributes
 	};
@@ -127,7 +137,10 @@ function typesToStringUnion(types: SimpleType[]): HtmlDataAttrValue[] {
  * @param doc
  * @param metadata
  */
-function formatMetadata(doc: string | undefined | JsDoc, metadata: { [key: string]: string | undefined | (string | undefined)[] }): string | undefined {
+function formatMetadata(
+	doc: string | undefined | JsDoc,
+	metadata: { [key: string]: string | undefined | (string | undefined)[] }
+): string | undefined {
 	const metaText = Object.entries(metadata)
 		.map(([key, value]) => {
 			if (value == null) {
