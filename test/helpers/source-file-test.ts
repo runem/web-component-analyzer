@@ -15,7 +15,18 @@ export function testResult(
 
 		const nonEmptyResults = results.filter(result => result.componentDefinitions.length > 0);
 
-		callback(nonEmptyResults, t);
+		if (nonEmptyResults.length === 0) {
+			t.fail("Didn't find any components");
+		}
+
+		const sortedResults = nonEmptyResults
+			.sort((a, b) => (a.sourceFile.fileName < b.sourceFile.fileName ? -1 : 1))
+			.map(result => ({
+				...result,
+				componentDefinitions: result.componentDefinitions.sort((a, b) => (a.tagName < b.tagName ? -1 : 1))
+			}));
+
+		callback(sortedResults, t);
 	});
 }
 
