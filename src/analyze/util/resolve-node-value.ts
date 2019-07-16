@@ -69,7 +69,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 
 	// Resolve values of variables.
 	else if (ts.isIdentifier(node) && checker != null) {
-		const declaration = resolveDeclarations(node, { checker, ts, tests: [ts.isVariableDeclaration] });
+		const declaration = resolveDeclarations(node, { checker, ts }).filter(decl => ts.isVariableDeclaration(decl));
 		return resolveNodeValue(declaration[0], { ...context, depth });
 	}
 

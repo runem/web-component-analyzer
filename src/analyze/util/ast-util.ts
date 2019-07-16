@@ -2,7 +2,6 @@ import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
 import {
 	Declaration,
-	Identifier,
 	InterfaceDeclaration,
 	Node,
 	PropertyDeclaration,
@@ -10,6 +9,7 @@ import {
 	SetAccessorDeclaration,
 	SourceFile,
 	StringLiteral,
+	Symbol,
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
@@ -24,65 +24,35 @@ export interface AstContext {
  * @param node
  * @param context
  */
-export function resolveDeclarations(
-	node: Node,
-	context: { checker: TypeChecker; ts: typeof tsModule; tests?: ((node: Node) => boolean)[] }
-): Declaration[] {
+export function resolveDeclarations(node: Node, context: { checker: TypeChecker; ts: typeof tsModule }): Declaration[] {
 	if (node == null) return [];
-	const { checker, ts, tests } = context;
+	const { checker, ts } = context;
 
 	// Get the symbol
 	const symbol = checker.getSymbolAtLocation(node);
 	if (symbol == null) return [];
 
-	// Build an array with functions that tests the declaration
-	const declarationTests = tests || [ts.isInterfaceDeclaration, ts.isClassLike];
+	// Resolve aliased symbols
+	if (isAliasSymbol(symbol, ts)) {
+		const aliasedSymbol = checker.getAliasedSymbol(symbol);
+		const declaration = aliasedSymbol.valueDeclaration || (aliasedSymbol.getDeclarations() || [])[0];
+		return declaration != null ? [declaration] : [];
+	}
 
 	// Filters all declarations
 	const allDeclarations = symbol.getDeclarations() || [];
-	const validDeclarations = allDeclarations.filter(declaration => declarationTests.find(test => test(declaration)) != null);
+	const validDeclarations = allDeclarations.filter(declaration => !ts.isIdentifier(declaration));
 
-	// If some of the declarations are identifiers, we need to resolve declarations recursively
-	const identifierDeclarations = allDeclarations
-		.map(declaration => resolveIdentifier(declaration, ts))
-		.filter((identifier): identifier is NonNullable<typeof identifier> => identifier != null);
-
-	if (identifierDeclarations.length > 0) {
-		return [
-			...validDeclarations,
-			...identifierDeclarations.map(identifier => resolveDeclarations(identifier, context)).reduce((acc, decls) => [...acc, ...decls], [])
-		];
-	} else if (validDeclarations.length > 0) {
+	if (validDeclarations.length > 0) {
 		return validDeclarations;
 	} else {
-		// Maybe the declaration is an Import symbol and we need to get the aliased symbol
-		try {
-			// Can throw: "Error: Debug Failure. False expression: Should only get Alias here."
-			// Therefore try-catch
-			const declaration = checker.getAliasedSymbol(symbol).valueDeclaration;
-			if (declaration != null) {
-				return [declaration];
-			}
-		} catch {
-			const declaration = symbol.valueDeclaration;
-			if (declaration != null) {
-				return [declaration];
-			}
-		}
+		const declaration = symbol.valueDeclaration;
+		return declaration != null ? [declaration] : [];
 	}
-
-	return [];
 }
 
-function resolveIdentifier(node: Node, ts: typeof tsModule): Identifier | undefined {
-	if (node == null) {
-		return undefined;
-	} else if (ts.isIdentifier(node)) {
-		return node;
-	} else if (ts.isPropertyAssignment(node)) {
-		return resolveIdentifier(node.initializer, ts);
-	}
-	return undefined;
+function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
+	return (symbol.flags & ts.SymbolFlags.Alias) !== 0;
 }
 
 /**

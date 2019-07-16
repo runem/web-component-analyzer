@@ -3,7 +3,7 @@ import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 import { getAttributeNames, getComponentProp } from "../../helpers/util";
 
 test("Handles simple mixin", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		const MyMixin = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -30,7 +30,7 @@ test("Handles simple mixin", t => {
 });
 
 test("Handles 2 levels of mixins", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -65,7 +65,7 @@ test("Handles 2 levels of mixins", t => {
 });
 
 test("Handles mixins with properties", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		type Constructor<T = {}> = new (...args: any[]) => T;
 		const SomeMixin = <C extends Constructor<HTMLElement>>(Base: C) => {
 			class Mixin extends Base {
@@ -90,7 +90,7 @@ test("Handles mixins with properties", t => {
 });
 
 test("Handles mixins generated with factory functions", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		export const FieldCustomMixin = dedupeMixin(
 		superclass =>
 			class FieldCustomMixin extends superclass {
@@ -117,7 +117,7 @@ test("Handles mixins generated with factory functions", t => {
 });
 
 test("Handles nested mixin extends", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {

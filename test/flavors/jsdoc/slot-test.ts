@@ -2,7 +2,7 @@ import test from "ava";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 
 test("jsdoc: Discovers slots with @slots", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 	/**
 	 * @element
 	 * @slot myslot - Here is a comment
@@ -19,7 +19,7 @@ test("jsdoc: Discovers slots with @slots", t => {
 });
 
 test("jsdoc: Discovers permitted tag names on @slot", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 	/**
 	 * @element
 	 * @slot {"div"|"span"} myslot1

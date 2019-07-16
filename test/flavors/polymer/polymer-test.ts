@@ -4,7 +4,7 @@ import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("Polymer components are correctly picked up", t => {
-	const [{ result, checker }] = analyzeComponentsInCode(`
+	const { result, checker } = analyzeComponentsInCode(`
 		class XCustom extends PolymerElement {
 			static get properties() {
 				return {

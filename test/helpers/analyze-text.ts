@@ -28,9 +28,7 @@ export type TestFile = ITestFile | string;
  * @param {ITestFile[]|TestFile} inputFiles
  * @returns {Promise<{fileName: string, result: AnalyzeComponentsResult}[]>}
  */
-export function analyzeComponentsInCode(
-	inputFiles: TestFile[] | TestFile
-): { fileName: string; result: AnalyzeComponentsResult; checker: TypeChecker }[] {
+export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { result: AnalyzeComponentsResult; checker: TypeChecker } {
 	const cwd = process.cwd();
 
 	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
@@ -107,11 +105,11 @@ export function analyzeComponentsInCode(
 
 	const checker = program.getTypeChecker();
 
-	return files
-		.map(testFile => program.getSourceFile(testFile.fileName)!)
-		.map(sf => ({
-			fileName: sf.fileName,
-			result: analyzeComponents(sf, { checker }),
-			checker
-		}));
+	// Analyze the entry file
+	const entrySourceFile = program.getSourceFile(entryFile.fileName)!;
+
+	return {
+		checker,
+		result: analyzeComponents(entrySourceFile, { checker })
+	};
 }

@@ -2,7 +2,7 @@ import test from "ava";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 
 test("jsdoc: Discovers custom elements with @element", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 	/**
 	 * @element my-element
 	 */
@@ -15,7 +15,7 @@ test("jsdoc: Discovers custom elements with @element", t => {
 });
 
 test("jsdoc: Discovers custom elements with @element but without tag name", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 	/**
 	 * @element
 	 */

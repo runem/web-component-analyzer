@@ -270,6 +270,7 @@ function resolveAndExtendHeritage(node: Node, flavors: ParseComponentFlavor[], c
 	context.emitInherit(node.getText());
 
 	if (ts.isCallExpression(node)) {
+		// Mixins
 		const { expression: identifier, arguments: args } = node;
 
 		for (const argument of args) {

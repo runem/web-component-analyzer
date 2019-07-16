@@ -4,7 +4,7 @@ import { analyzeComponentsInCode } from "../../helpers/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("Property assignments in the constructor are picked up", t => {
-	const [{ result, checker }] = analyzeComponentsInCode(`
+	const { result, checker } = analyzeComponentsInCode(`
 		class MyElement extends HTMLElement {
 			constructor () {
 				super();
@@ -57,7 +57,7 @@ test("Property assignments in the constructor are picked up", t => {
 });
 
 test("Property assignments in the constructor are correctly merged", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 	    /**
 	     * @attribute my-attr
 	     */
@@ -91,7 +91,7 @@ test("Property assignments in the constructor are correctly merged", t => {
 });
 
 test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
-	const [{ result }] = analyzeComponentsInCode(`
+	const { result } = analyzeComponentsInCode(`
 		class MyElement extends HTMLElement {
 			private foo;
 			
