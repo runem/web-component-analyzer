@@ -39,6 +39,46 @@ declare global {
 	t.truthy(getComponentProp(members, "checked"));
 });
 
+test("Correctly extends interface with interface+value from different file", t => {
+	const { result } = analyzeComponentsInCode([
+		{
+			fileName: "base.ts",
+			text: `
+interface Checked {
+  checked: boolean;
+}
+declare const Checked: Checked;
+export {Checked};
+`
+		},
+		{
+			fileName: "main.ts",
+			entry: true,
+			text: `
+import {Checked} from "./base";
+
+interface CheckableElement extends HTMLElement, Checked {
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "checkable-element-with-value": CheckableElement;
+  }
+}`
+		}
+	]);
+
+	const {
+		componentDefinitions: [
+			{
+				declaration: { members }
+			}
+		]
+	} = result;
+
+	t.truthy(getComponentProp(members, "checked"));
+});
+
 test("Correctly extends class with class from different file", t => {
 	const { result } = analyzeComponentsInCode([
 		{
