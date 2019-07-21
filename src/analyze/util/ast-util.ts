@@ -29,14 +29,13 @@ export function resolveDeclarations(node: Node, context: { checker: TypeChecker;
 	const { checker, ts } = context;
 
 	// Get the symbol
-	const symbol = checker.getSymbolAtLocation(node);
+	let symbol = checker.getSymbolAtLocation(node);
 	if (symbol == null) return [];
 
 	// Resolve aliased symbols
 	if (isAliasSymbol(symbol, ts)) {
-		const aliasedSymbol = checker.getAliasedSymbol(symbol);
-		const declaration = aliasedSymbol.valueDeclaration || (aliasedSymbol.getDeclarations() || [])[0];
-		return declaration != null ? [declaration] : [];
+		symbol = checker.getAliasedSymbol(symbol);
+		if (symbol == null) return [];
 	}
 
 	// Filters all declarations
