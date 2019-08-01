@@ -110,7 +110,7 @@ async function expandGlobs(globs: string | string[], config: WcaCliConfig): Prom
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
 					if (dirExists) {
-						return async<string>([...(config.analyzeLibraries ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
+						return async<string>([...(config.analyzeLibraries || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
 							absolute: true,
 							followSymlinkedDirectories: false
 						});
@@ -118,7 +118,7 @@ async function expandGlobs(globs: string | string[], config: WcaCliConfig): Prom
 				} catch (e) {}
 
 				// Return the result of globbing
-				return async<string>([...(config.analyzeLibraries ? [] : IGNORE_GLOBS), g], {
+				return async<string>([...(config.analyzeLibraries || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
 					absolute: true,
 					followSymlinkedDirectories: false
 				});
