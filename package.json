@@ -45,7 +45,7 @@
 	"dependencies": {
 		"fast-glob": "^2.2.6",
 		"ts-simple-type": "~0.3.5",
-		"typescript": "^3.4.0"
+		"typescript": "^3.5.1"
 	},
 	"devDependencies": {
 		"@appnest/readme": "^1.2.3",
