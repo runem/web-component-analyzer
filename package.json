@@ -52,7 +52,7 @@
 		"@types/node": "^12.0.4",
 		"@wessberg/rollup-plugin-ts": "^1.1.54",
 		"ava": "^2.0.0",
-		"husky": "^2.3.0",
+		"husky": "^3.0.2",
 		"prettier": "^1.16.4",
 		"pretty-quick": "^1.10.0",
 		"rollup": "^1.13.1",
