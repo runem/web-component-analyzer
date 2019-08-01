@@ -166,7 +166,7 @@ Options:
 				return vscodeTransformer(results, program, config);
 			case "json":
 				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-				console.log(`WARNING: The json transformer hasn't been finished yet. You can expect large changes in this output.`);
+				console.log(`WARNING: The json transformer hasn't been finished yet. You can expect changes in this output.`);
 				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 				return jsonTransformer(results, program, config);
 			default:

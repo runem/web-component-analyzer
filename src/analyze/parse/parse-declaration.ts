@@ -80,7 +80,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	});
 
 	// Merge all jsdoc tags using inherited nodes.
-	const mainJsDoc = isDeclarationExcluded(declarationNode, context) ? {} : getJsDoc(declarationNode, context.ts);
+	const mainJsDoc = isDeclarationExcluded(declarationNode, context) ? undefined : getJsDoc(declarationNode, context.ts);
 	const inheritedJsDocs = Array.from(inheritNodes.values())
 		.filter(node => !isDeclarationExcluded(node, context))
 		.map(n => getJsDoc(n, context.ts));

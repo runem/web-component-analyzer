@@ -22,7 +22,7 @@ const defaultOptions: CompilerOptions = {
 	module: ModuleKind.ESNext,
 	//module: ModuleKind.CommonJS,
 	//lib: ["esnext", "dom"],
-	//strictNullChecks: true,
+	strictNullChecks: true,
 	moduleResolution: ModuleResolutionKind.NodeJs,
 	esModuleInterop: true,
 	noEmit: true,

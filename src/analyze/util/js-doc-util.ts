@@ -60,6 +60,7 @@ export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined {
 		if (ts.isJSDoc(doc)) {
 			return {
 				comment: doc.comment == null ? undefined : String(doc.comment),
+				node: doc,
 				tags:
 					doc.tags == null
 						? []

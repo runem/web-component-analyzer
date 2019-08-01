@@ -40,7 +40,7 @@ export function parseDeclarationSlots(node: Node, context: ParseComponentMembers
 
 				return {
 					name: parsed.name,
-					jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
+					jsDoc: parsed.comment != null ? ({ comment: parsed.comment } as const) : undefined,
 					permittedTagNames
 				} as ComponentSlot;
 			},
