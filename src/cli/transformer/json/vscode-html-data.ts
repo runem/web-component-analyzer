@@ -1,21 +1,22 @@
-export interface HtmlDataAttrValue {
+export interface HtmlDataValue {
 	name: string;
 	description?: string;
 }
 
 export interface HtmlDataValueSet {
 	name: string;
-	values: HtmlDataAttrValue[];
+	values: HtmlDataValue[];
 }
 
 export interface HtmlDataMember {
 	name: string;
 	description?: string;
-	values?: HtmlDataAttrValue[];
+	values?: HtmlDataValue[];
 	valueSet?: string;
-	type?: any;
+
+	// Suggested fields:
 	jsDoc?: string;
-	default?: string;
+	type?: any;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {}
@@ -31,6 +32,8 @@ export interface HtmlDataTag {
 	description?: string;
 	jsDoc?: string;
 	attributes?: HtmlDataAttribute[];
+
+	// Suggested fields:
 	properties?: HtmlDataProperty[];
 	slots?: HtmlDataSlot[];
 	events?: HtmlDataEvent[];
@@ -39,13 +42,15 @@ export interface HtmlDataTag {
 export interface HtmlDataV2 {
 	version: 2;
 	tags?: HtmlDataTag[];
+	valueSets?: HtmlDataValueSet[];
+
+	// Suggested fields:
 	global?: {
 		attributes?: HtmlDataMember[];
 		properties?: HtmlDataMember[];
 		slots?: HtmlDataMember[];
 		events?: HtmlDataMember[];
 	};
-	valueSets?: HtmlDataValueSet[];
 }
 
 export type HtmlData = HtmlDataV2;

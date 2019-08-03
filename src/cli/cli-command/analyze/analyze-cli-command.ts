@@ -118,6 +118,7 @@ Options:
 
 			// Write the transformed the results to the file
 			const path = resolve(process.cwd(), config.outFile);
+			console.log(`Writing result to "${config.outFile}"`);
 			writeFileSync(path, transformed);
 		}
 
@@ -165,9 +166,9 @@ Options:
 			case "vscode":
 				return vscodeTransformer(results, program, config);
 			case "json":
-				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-				console.log(`WARNING: The json transformer hasn't been finished yet. You can expect changes in this output.`);
-				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+				console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+				console.log(`WARNING: This json format is for experimental and demo purposes. You can expect changes to this format.`);
+				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n`);
 				return jsonTransformer(results, program, config);
 			default:
 				throw new CommandError(`Invalid output format '${config.format}'`);
