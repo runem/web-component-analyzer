@@ -1,5 +1,6 @@
 export * from "./analyze-components";
 export * from "./analyze-lib-dom";
+export * from "./constants";
 
 export * from "./types/component-css-property";
 export * from "./types/component-declaration";

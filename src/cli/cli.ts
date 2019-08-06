@@ -1,3 +1,4 @@
+import { VERSION } from "../analyze/constants";
 import { AnalyzeCliCommand } from "./cli-command/analyze/analyze-cli-command";
 import { CliCommand, CommandError } from "./cli-command/cli-command";
 import { DiagnoseCliCommand } from "./cli-command/diagnose/diagnose-cli-command";
@@ -24,7 +25,7 @@ export async function cli() {
 
 	// Print "version"
 	if ("version" in args) {
-		console.log("<@VERSION@>");
+		console.log(VERSION);
 		process.exit();
 	}
 
