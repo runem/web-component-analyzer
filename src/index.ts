@@ -3,6 +3,7 @@
 
 export * from "./analyze/analyze-components";
 export * from "./analyze/analyze-lib-dom";
+export * from "./analyze/constants";
 
 export * from "./analyze/types/component-css-property";
 export * from "./analyze/types/component-declaration";
