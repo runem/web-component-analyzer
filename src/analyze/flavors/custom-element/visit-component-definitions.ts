@@ -14,12 +14,17 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 	// customElements.define("my-element", MyElement)
 	if (ts.isCallExpression(node)) {
 		if (ts.isPropertyAccessExpression(node.expression)) {
-			const leftExpression = node.expression.expression;
+			let leftExpression = node.expression.expression;
 			if (
-				((ts.isIdentifier(leftExpression) && leftExpression.escapedText === "customElements") ||
-					(ts.isPropertyAccessExpression(leftExpression) &&
-						ts.isIdentifier(leftExpression.expression) &&
-						leftExpression.expression.escapedText === "window")) &&
+				ts.isPropertyAccessExpression(leftExpression) &&
+				ts.isIdentifier(leftExpression.expression) &&
+				leftExpression.expression.escapedText === "window"
+			) {
+				leftExpression = leftExpression.name;
+			}
+			if (
+				ts.isIdentifier(leftExpression) &&
+				leftExpression.escapedText === "customElements" &&
 				node.expression.name != null &&
 				ts.isIdentifier(node.expression.name)
 			) {
