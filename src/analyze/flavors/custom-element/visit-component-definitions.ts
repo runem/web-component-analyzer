@@ -14,7 +14,15 @@ export function visitComponentDefinitions(node: Node, context: VisitComponentDef
 	// customElements.define("my-element", MyElement)
 	if (ts.isCallExpression(node)) {
 		if (ts.isPropertyAccessExpression(node.expression)) {
-			if (node.expression.name != null && ts.isIdentifier(node.expression.name)) {
+			const leftExpression = node.expression.expression;
+			if (
+				((ts.isIdentifier(leftExpression) && leftExpression.escapedText === "customElements") ||
+					(ts.isPropertyAccessExpression(leftExpression) &&
+						ts.isIdentifier(leftExpression.expression) &&
+						leftExpression.expression.escapedText === "window")) &&
+				node.expression.name != null &&
+				ts.isIdentifier(node.expression.name)
+			) {
 				// define("my-element", MyElement)
 				if (node.expression.name.escapedText === "define") {
 					const [tagNameNode, identifierNode] = node.arguments;
