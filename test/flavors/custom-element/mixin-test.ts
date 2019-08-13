@@ -18,7 +18,7 @@ test("Handles simple mixin", t => {
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
@@ -53,7 +53,7 @@ test("Handles 2 levels of mixins", t => {
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
@@ -140,7 +140,7 @@ test("Handles nested mixin extends", t => {
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
