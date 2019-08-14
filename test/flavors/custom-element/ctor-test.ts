@@ -27,7 +27,7 @@ test("Property assignments in the constructor are picked up", t => {
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
@@ -75,7 +75,7 @@ test("Property assignments in the constructor are correctly merged", t => {
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
@@ -101,7 +101,7 @@ test("Property assignments in the constructor don't overwrite Typescript modifie
 			}
 		}
 		
-		customElement.define("my-element", MyElement);
+		customElements.define("my-element", MyElement);
 	 `);
 
 	const {
