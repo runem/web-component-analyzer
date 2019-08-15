@@ -1,6 +1,6 @@
 import test from "ava";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
-import { getAttributeNames, getComponentProp } from "../../helpers/util";
+import { getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
 test("Handles simple mixin", t => {
 	const { result } = analyzeComponentsInCode(`
@@ -148,4 +148,80 @@ test("Handles nested mixin extends", t => {
 	} = result.componentDefinitions[0];
 	const attributeNames = getAttributeNames(members);
 	t.deepEqual(attributeNames, ["d", "c", "a"]);
+});
+
+test("Handles nested mixin wrapper functions", t => {
+	const { result } = analyzeComponentsInCode(`
+
+	/* =============== Mixin 1 ===================== */
+	export function AtFormItemMixin<A>(base: A) {
+		abstract class AtFormItemMixinImplementation extends base {
+			a = "a";
+		}
+	}
+
+	/* =============== Mixin 2 ===================== */
+	function __AtInputOrTextareaFormItemMixin<A>(base: A) {
+		abstract class AtInputOrTextareaFormItemMixinImplementation extends base {
+			b = "b";
+		}
+	}
+
+	function AtInputOrTextareaFormItemMixin<A>(base: A) {
+		return __AtInputOrTextareaFormItemMixin(AtFormItemMixin(base));
+	}
+
+	/* =============== Mixin 3 ===================== */
+	function __AtInputFormItemMixin<A>(base: A) {
+		abstract class AtInputFormItemMixinImplementation extends base {
+			c = "c";
+		}
+
+		return AtInputFormItemMixinImplementation;
+	}	
+
+	function AtInputFormItemMixin<A>(base: A) {
+		return __AtInputFormItemMixin(AtInputOrTextareaFormItemMixin(base));
+	}
+	
+	/* =============== Mixin 4 ===================== */
+	function __AtTextFormItemMixin<A>(base: A) {
+		abstract class AtTextFormItemMixinImplementation extends base {
+			d = "d";
+		}
+	}
+	
+	function AtTextFormItemMixin<A>(base: A) {
+		return __AtTextFormItemMixin(AtInputFormItemMixin(base));
+	}
+	
+	/* =============== Mixin 5 ===================== */
+	function __AtTextFieldFormItemMixin<A>(base: A) {
+		class AtTextFieldFormItemMixinImplementation extends base {
+			e = "e";
+		}
+	}
+	
+	function AtTextFieldFormItemMixin<A>(base: A) {
+		return __AtTextFieldFormItemMixin(AtTextFormItemMixin(base));
+	}
+	
+	/* =============== Element =====================0 */
+	class AtFormField extends AtFormFieldMixin(HTMLElement) {
+		f = "f";
+	}
+	
+	export class AtTextField extends AtTextFieldFormItemMixin(AtFormField) {
+		g = "g";
+	}
+	
+	customElements.define("at-text-field", AtTextField);
+	 `);
+
+	const {
+		declaration: { members }
+	} = result.componentDefinitions[0];
+
+	const propertyNames = getPropertyNames(members);
+	t.deepEqual(propertyNames, ["f", "a", "b", "c", "d", "e", "g"]);
 });

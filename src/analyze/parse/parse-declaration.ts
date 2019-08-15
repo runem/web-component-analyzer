@@ -243,6 +243,21 @@ function visitInheritedComponentDeclarations(
 ) {
 	const { ts } = context;
 
+	/*function go (n: Type) {
+	 if ("instantiations" in t) {
+	 const tt = t as ConditionalRoot;
+	 console.log(`ConditionalRoot: instantiations`);
+	 tt.instantiations!.forEach((value, key) => {
+	 console.log(key, context.checker.typeToString(value));
+	 go(value);
+	 });
+	 }
+	 }
+
+	 const t = context.checker.getTypeAtLocation(node);
+	 console.log("Type: ", context.checker.typeToString(t));
+	 go(t);*/
+
 	if (node.heritageClauses != null) {
 		for (const heritage of node.heritageClauses || []) {
 			// class Test implements MyBase
@@ -273,17 +288,38 @@ function resolveAndExtendHeritage(node: Node, flavors: ParseComponentFlavor[], c
 		// Mixins
 		const { expression: identifier, arguments: args } = node;
 
+		// Extend classes given to the mixin
+		// Example: class MyElement extends MyMixin(MyBase) --> MyBase
+		// Example: class MyElement extends MyMixin(MyBase1, MyBase2) --> MyBase1, MyBase2
 		for (const argument of args) {
 			resolveAndExtendHeritage(argument, flavors, context);
 		}
 
+		// Resolve and traverse the mixin function
+		// Example: class MyElement extends MyMixin(MyBase) --> MyMixin
 		if (identifier != null) {
 			const declarations = resolveDeclarations(identifier, context);
 			for (const declaration of declarations) {
-				const clzDecl = findChild(declaration, ts.isClassLike);
+				// Extend right away if the node is a class declaration
+				if (ts.isClassLike(declaration)) {
+					extendWithDeclarationNode(declaration, flavors, context);
+					return;
+				}
 
+				// Else find the first class declaration in the block
+				// Note that we don't look for a return statement because this would complicate things
+				const clzDecl = findChild(declaration, ts.isClassLike);
 				if (clzDecl != null) {
 					extendWithDeclarationNode(clzDecl, flavors, context);
+					return;
+				}
+
+				// If we didn't find any class declarations, we might be in a function that wraps a mixin
+				// Therefore find the return statement and call this method recursively
+				const returnNode = findChild(declaration, ts.isReturnStatement);
+				if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
+					resolveAndExtendHeritage(returnNode.expression, flavors, context);
+					return;
 				}
 			}
 		}

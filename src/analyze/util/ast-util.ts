@@ -178,7 +178,7 @@ export function findParent<T = Node>(node: Node | undefined, test: (node: Node) 
  * @param node
  * @param test
  */
-export function findChild<T = Node>(node: Node | undefined, test: (node: Node) => boolean): T | undefined {
+export function findChild<T = Node>(node: Node | undefined, test: (node: Node) => node is T & Node): T | undefined {
 	if (!node) return;
 	if (test(node)) return (node as unknown) as T;
 	return node.forEachChild(child => findChild(child, test));

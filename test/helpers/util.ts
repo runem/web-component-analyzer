@@ -7,3 +7,7 @@ export function getComponentProp(members: ComponentMember[], propName: string) {
 export function getAttributeNames(members: ComponentMember[]): string[] {
 	return members.map(member => ("attrName" in member ? member.attrName : undefined)).filter((n): n is NonNullable<typeof n> => n != null);
 }
+
+export function getPropertyNames(members: ComponentMember[]): string[] {
+	return members.map(member => (member.kind === "property" ? member.propName : undefined)).filter((n): n is NonNullable<typeof n> => n != null);
+}
