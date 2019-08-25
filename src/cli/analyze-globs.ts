@@ -4,8 +4,7 @@ import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
 import { analyzeComponents, AnalyzeComponentsResult } from "../analyze/analyze-components";
 import { CompileResult, compileTypescript } from "./compile";
-import { debugJsonTransformer } from "./transformer/debug/debug-json-transformer";
-import { flatten } from "./util";
+import { flatten, prepareResultForPrettyPrint } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
 
 const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
@@ -67,7 +66,7 @@ export async function analyzeGlobs(
 		const result = analyzeComponentsInFile(file, program, config);
 
 		if (config.debug) {
-			console.dir(debugJsonTransformer([result], program.getTypeChecker()), { depth: 10 });
+			console.dir(prepareResultForPrettyPrint([result], program.getTypeChecker()), { depth: 10 });
 		}
 
 		// Callback

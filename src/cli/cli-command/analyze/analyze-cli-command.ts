@@ -3,6 +3,7 @@ import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
+import { debugJsonTransformer } from "../../transformer/debug/debug-json-transformer";
 import { jsonTransformer } from "../../transformer/json/json-transformer";
 import { markdownTransformer } from "../../transformer/markdown/markdown-transformer";
 import { vscodeTransformer } from "../../transformer/vscode/vscode-transformer";
@@ -165,6 +166,8 @@ Options:
 				return markdownTransformer(results, program, config);
 			case "vscode":
 				return vscodeTransformer(results, program, config);
+			case "debug":
+				return debugJsonTransformer(results, program, config);
 			case "json":
 				console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 				console.log(`WARNING: This json format is for experimental and demo purposes. You can expect changes to this format.`);
