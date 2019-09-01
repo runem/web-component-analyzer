@@ -16,7 +16,7 @@
 		"@lion/input": "^0.1.22",
 		"@lion/textarea": "^0.1.22",
 		"@material/mwc-button": "^0.6.0",
-		"@material/mwc-checkbox": "^0.6.0",
+		"@material/mwc-checkbox": "^0.7.1",
 		"@polymer/app-layout": "^3.0.2",
 		"@polymer/iron-input": "^3.0.1",
 		"@polymer/paper-button": "^3.0.1",
