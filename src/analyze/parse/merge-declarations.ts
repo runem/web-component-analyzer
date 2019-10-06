@@ -3,10 +3,11 @@ import { Type, TypeChecker } from "typescript";
 import { FlavorVisitContext } from "../flavors/parse-component-flavor";
 import { ComponentCSSProperty } from "../types/component-css-property";
 import { ComponentDeclaration } from "../types/component-declaration";
-import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../types/component-member";
+import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty, ComponentMemberVisibilityKind } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
 import { JsDoc } from "../types/js-doc";
+import { compareVisibility } from "../util/component-util";
 import { mergeJsDocs } from "./merge-js-docs";
 
 /**
@@ -196,7 +197,8 @@ function mergeAttrIntoProp(prop: ComponentMemberProperty, attr: ComponentMemberA
 		default: attr.default || prop.default,
 		required: attr.required || prop.required,
 		jsDoc: attr.jsDoc || prop.jsDoc,
-		attrName: attr.attrName
+		attrName: attr.attrName,
+		visibility: mergeVisibility(attr.visibility, prop.visibility)
 	};
 }
 
@@ -211,7 +213,8 @@ function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemb
 	return {
 		...b,
 		attrName: a.attrName || b.attrName,
-		type: mergeTypes(a.type, b.type, checker)
+		type: mergeTypes(a.type, b.type, checker),
+		visibility: mergeVisibility(a.visibility, b.visibility)
 	};
 }
 
@@ -237,4 +240,16 @@ function mergeTypes(typeA: SimpleType | Type, typeB: SimpleType | Type, checker:
 
 	// Else return "typeB"
 	return typeB;
+}
+
+/**
+ * Merges two visibilities. Picks the lowest visibility.
+ * @param visibilityA
+ * @param visibilityB
+ */
+export function mergeVisibility(
+	visibilityA: ComponentMemberVisibilityKind,
+	visibilityB: ComponentMemberVisibilityKind
+): ComponentMemberVisibilityKind {
+	return compareVisibility(visibilityA, visibilityB) < 0 ? visibilityA : visibilityB;
 }

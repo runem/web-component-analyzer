@@ -4,8 +4,15 @@ import { customElement, LitElement } from "lit-element";
 export class MyElement extends LitElement {
 	@property() myBoolean = true;
 
+	/**
+	 * @private
+	 */
 	myString = "hello";
 
+	/**
+	 * @protected
+	 * @type {string}
+	 */
 	myProp = "hejsa";
 
 	static get properties() {

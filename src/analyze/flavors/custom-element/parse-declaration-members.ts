@@ -1,7 +1,7 @@
 import { SimpleTypeKind, toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
 import { ComponentMember } from "../../types/component-member";
-import { hasModifier, hasPublicSetter, isPropertyRequired, isPropNamePublic } from "../../util/ast-util";
+import { hasModifier, isPropertyRequired, isNamePrivate, getMemberVisibility, isMemberAndWritable } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { relaxType } from "../../util/type-util";
@@ -26,6 +26,7 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 						members.push({
 							kind: "attribute",
 							attrName,
+							visibility: isNamePrivate(attrName) ? "private" : "public",
 							type: { kind: SimpleTypeKind.ANY },
 							node: attrNameNode
 						});
@@ -38,17 +39,19 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 	}
 
 	// class { myProp = "hello"; }
-	else if ((ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && hasPublicSetter(node, ts)) {
+	else if ((ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && isMemberAndWritable(node, ts)) {
 		const { name, initializer } = node;
 
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
 			// Find default value based on initializer
 			const def = "initializer" in node && node.initializer != null ? resolveNodeValue(initializer, context) : undefined;
+			const propName = name.text;
 
 			return [
 				{
 					kind: "property",
-					propName: name.text,
+					propName,
+					visibility: getMemberVisibility(node, ts),
 					type: checker.getTypeAtLocation(node),
 					required: isPropertyRequired(node, context.checker),
 					default: def,
@@ -61,10 +64,13 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 
 	// class { 'hello'?: number }
 	else if (ts.isConditionalExpression(node) && (ts.isStringLiteralLike(node.condition) || ts.isIdentifier(node.condition))) {
+		const propName = node.condition.text;
+
 		return [
 			{
 				kind: "property",
-				propName: node.condition.text,
+				propName,
+				visibility: isNamePrivate(propName) ? "private" : "public",
 				type: checker.getTypeAtLocation(node),
 				jsDoc: getJsDoc(node, ts),
 				node
@@ -73,16 +79,18 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 	}
 
 	// class { set myProp(value: string) { ... } }
-	else if (ts.isSetAccessor(node) && hasPublicSetter(node, ts)) {
+	else if (ts.isSetAccessor(node) && isMemberAndWritable(node, ts)) {
 		const { name, parameters } = node;
 
 		if (ts.isIdentifier(name) && parameters.length > 0) {
 			const parameter = parameters[0];
+			const propName = name.text;
 
 			return [
 				{
 					kind: "property",
-					propName: name.text,
+					propName,
+					visibility: getMemberVisibility(node, ts),
 					type: context.checker.getTypeAtLocation(parameter),
 					jsDoc: getJsDoc(node, ts),
 					required: false,
@@ -114,13 +122,14 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 
 						const parsedClassField = classFieldDeclaration == null ? undefined : parseDeclarationMembers(classFieldDeclaration, context);
 
-						if (isPropNamePublic(propName) && (classFieldDeclaration == null || parsedClassField != null)) {
+						if (classFieldDeclaration == null || parsedClassField != null) {
 							const simpleType = relaxType(toSimpleType(checker.getTypeAtLocation(right), checker));
 
 							members.push({
 								kind: "property",
 								propName,
 								default: resolveNodeValue(right, context),
+								visibility: isNamePrivate(propName) ? "private" : "public",
 								type: simpleType,
 								jsDoc: getJsDoc(assignment.parent, ts),
 								required: false,

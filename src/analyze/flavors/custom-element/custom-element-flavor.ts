@@ -1,6 +1,7 @@
 import { Node } from "typescript";
 import { ComponentMember } from "../../types/component-member";
 import { EventDeclaration } from "../../types/event-types";
+import { isNodeInLibDom } from "../../util/ast-util";
 import {
 	ParseComponentFlavor,
 	ParseComponentMembersContext,
@@ -31,5 +32,11 @@ export class CustomElementFlavor implements ParseComponentFlavor {
 
 	visitGlobalEvents(node: Node, context: ParseVisitContextGlobalEvents): void {
 		visitGlobalEvents(node, context);
+	}
+
+	isNodeInLib(node: Node) {
+		if (isNodeInLibDom(node)) {
+			return true;
+		}
 	}
 }

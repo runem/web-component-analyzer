@@ -5,7 +5,8 @@ import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
 import { ComponentSlot } from "../types/component-slot";
 import { EventDeclaration } from "../types/event-types";
-import { findChild, isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
+import { findChild, resolveDeclarations } from "../util/ast-util";
+import { compareVisibility } from "../util/component-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { expandMembersFromJsDoc } from "./expand-from-js-doc";
 import { mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
@@ -80,14 +81,16 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	});
 
 	// Merge all jsdoc tags using inherited nodes.
-	const mainJsDoc = isDeclarationExcluded(declarationNode, context) ? undefined : getJsDoc(declarationNode, context.ts);
+	const mainJsDoc = isDeclarationNameExcluded(declarationNode, context) ? undefined : getJsDoc(declarationNode, context.ts);
 	const inheritedJsDocs = Array.from(inheritNodes.values())
-		.filter(node => !isDeclarationExcluded(node, context))
+		.filter(node => !isDeclarationNameExcluded(node, context))
 		.map(n => getJsDoc(n, context.ts));
 	const jsDoc = mergeJsDocs(mainJsDoc, inheritedJsDocs);
 
 	// Expand members using jsdoc annotations and merge all members.
 	const mergedMembers = mergeMembers(expandMembersFromJsDoc(members), context);
+
+	const visibleMembers = mergedMembers.filter(member => compareVisibility(member.visibility, context.config.visibility || "public") >= 0);
 
 	// Merge slots, events and css properties
 	const mergedSlots = mergeSlots(slots);
@@ -101,7 +104,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 
 	return {
 		node: declarationNode,
-		members: mergedMembers,
+		members: visibleMembers,
 		slots: mergedSlots,
 		events: mergedEvents,
 		cssProperties: mergedCSSProps,
@@ -117,10 +120,10 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
  * @param node
  * @param context
  */
-function isDeclarationExcluded(node: Node, context: FlavorVisitContext): boolean {
-	if (!context.ts.isClassLike(node) && !context.ts.isInterfaceDeclaration(node)) return false;
-
+function isDeclarationNameExcluded(node: Node, context: FlavorVisitContext): boolean {
 	if (context.config.excludedDeclarationNames == null) return false;
+
+	if (!context.ts.isClassLike(node) && !context.ts.isInterfaceDeclaration(node)) return false;
 
 	const name = (node.name != null && node.name.text) || "";
 
@@ -139,8 +142,16 @@ function visitComponentDeclaration(node: Node, flavors: ParseComponentFlavor[], 
 
 	const { ts } = context;
 
-	// Skip visiting it's children if this name is excluded
-	if (isDeclarationExcluded(node, context)) {
+	if (context.config.analyzeLibDom !== true) {
+		// Skip visiting it's children if this declaration is in lib
+		const libResult = executeFirstFlavor(flavors, "isNodeInLib", node, context);
+		if (libResult != null) {
+			if (!libResult.shouldContinue) return;
+		}
+	}
+
+	// Skip visiting it's children if this declaration is excluded from the config
+	if (isDeclarationNameExcluded(node, context)) {
 		return;
 	}
 
@@ -199,7 +210,8 @@ function executeFirstFlavor<
 		| keyof ParseComponentFlavor & "parseDeclarationMembers"
 		| "parseDeclarationEvents"
 		| "parseDeclarationSlots"
-		| "parseDeclarationCSSProps",
+		| "parseDeclarationCSSProps"
+		| "isNodeInLib",
 	Return extends ReturnType<NonNullable<ParseComponentFlavor[Key]>>
 >(
 	flavors: ParseComponentFlavor[],
@@ -243,21 +255,6 @@ function visitInheritedComponentDeclarations(
 ) {
 	const { ts } = context;
 
-	/*function go (n: Type) {
-	 if ("instantiations" in t) {
-	 const tt = t as ConditionalRoot;
-	 console.log(`ConditionalRoot: instantiations`);
-	 tt.instantiations!.forEach((value, key) => {
-	 console.log(key, context.checker.typeToString(value));
-	 go(value);
-	 });
-	 }
-	 }
-
-	 const t = context.checker.getTypeAtLocation(node);
-	 console.log("Type: ", context.checker.typeToString(t));
-	 go(t);*/
-
 	if (node.heritageClauses != null) {
 		for (const heritage of node.heritageClauses || []) {
 			// class Test implements MyBase
@@ -282,7 +279,7 @@ function resolveAndExtendHeritage(node: Node, flavors: ParseComponentFlavor[], c
 	const { ts } = context;
 
 	// Emit extends name
-	context.emitInherit(node.getText());
+	context.emitInherit(context.ts.isCallExpression(node) ? node.expression.getText() : node.getText());
 
 	if (ts.isCallExpression(node)) {
 		// Mixins
@@ -340,7 +337,5 @@ function extendWithDeclarationNode(declaration: Node, flavors: ParseComponentFla
 		context.emitInheritNode(declaration);
 	}
 
-	if (context.config.analyzeLibDom || !isNodeInLibDom(declaration)) {
-		visitComponentDeclaration(declaration, flavors, context);
-	}
+	visitComponentDeclaration(declaration, flavors, context);
 }

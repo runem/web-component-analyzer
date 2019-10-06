@@ -4,10 +4,13 @@ import { JsDoc } from "./js-doc";
 
 export type ComponentMemberKind = "property" | "attribute" | "method";
 
+export type ComponentMemberVisibilityKind = "public" | "protected" | "private";
+
 export interface ComponentMemberBase {
 	kind: ComponentMemberKind;
 	node: Node;
 	type: Type | SimpleType;
+	visibility: ComponentMemberVisibilityKind;
 	deprecated?: boolean | string;
 	jsDoc?: JsDoc;
 }

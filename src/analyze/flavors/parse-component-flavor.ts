@@ -11,9 +11,9 @@ export interface FlavorVisitContext {
 	checker: TypeChecker;
 	ts: typeof tsModule;
 	config: AnalyzeComponentsConfig;
+	features?: FlavorVisitContextFeatures;
 	emitContinue?(): void;
 	emitDiagnostics(diagnostic: ComponentDiagnostic): void;
-	features?: FlavorVisitContextFeatures;
 }
 
 export interface FlavorVisitContextFeatures {
@@ -53,4 +53,6 @@ export interface ParseComponentFlavor {
 	parseDeclarationCSSProps?(node: Node, context: ParseComponentMembersContext): ComponentCSSProperty[] | undefined;
 
 	visitGlobalEvents?(node: Node, context: ParseVisitContextGlobalEvents): void;
+
+	isNodeInLib?(node: Node, context: ParseComponentMembersContext): boolean | undefined;
 }

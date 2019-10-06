@@ -1,7 +1,7 @@
 import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/component-member";
-import { hasModifier, hasPublicSetter, isPropertyRequired, isPropNamePublic } from "../../util/ast-util";
+import { getMemberVisibility, hasModifier, isMemberAndWritable, isNamePrivate, isPropertyRequired } from "../../util/ast-util";
 import { isValidAttributeName } from "../../util/is-valid-attribute-name";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -36,7 +36,7 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 	}
 
 	// @property({type: String}) myProp = "hello";
-	else if ((ts.isSetAccessorDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && hasPublicSetter(node, ts)) {
+	else if ((ts.isSetAccessorDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && isMemberAndWritable(node, ts)) {
 		return parsePropertyDecorator(node, context);
 	}
 }
@@ -101,6 +101,7 @@ function parsePropertyDecorator(
 				attrName,
 				type,
 				node,
+				visibility: getMemberVisibility(node, ts),
 				default: def || litConfig.default,
 				required,
 				jsDoc
@@ -156,7 +157,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 		for (const propNode of returnStatement.expression.properties) {
 			// Get propName
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : undefined;
-			if (propName == null || !isPropNamePublic(propName)) {
+			if (propName == null) {
 				continue;
 			}
 
@@ -203,6 +204,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Flavor
 			members.push({
 				kind: "property",
 				type,
+				visibility: isNamePrivate(propName) ? "private" : "public",
 				propName: propName,
 				attrName: emitAttribute ? attrName : undefined,
 				jsDoc,

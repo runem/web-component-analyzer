@@ -1,5 +1,6 @@
 import { Node } from "typescript";
 import { ComponentMember } from "../../types/component-member";
+import { isNamePrivate } from "../../util/ast-util";
 import { ParseComponentMembersContext } from "../parse-component-flavor";
 
 /**
@@ -20,10 +21,12 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 	if (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node) || ts.isConditionalExpression(node)) {
 		const name = ts.isConditionalExpression(node) ? node.condition : node.name;
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
+			const attrName = name.text;
 			return [
 				{
 					kind: "attribute",
-					attrName: name.text,
+					attrName,
+					visibility: isNamePrivate(attrName) ? "private" : "public",
 					type: checker.getTypeAtLocation(node),
 					node
 				}

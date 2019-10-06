@@ -9,6 +9,7 @@ import { parseComponentDefinitions } from "./parse/parse-definitions";
 import { parseGlobalEvents } from "./parse/parse-global-events";
 import { ComponentDefinition } from "./types/component-definition";
 import { ComponentDiagnostic } from "./types/component-diagnostic";
+import { ComponentMemberVisibilityKind } from "./types/component-member";
 import { EventDeclaration } from "./types/event-types";
 
 const DEFAULT_FLAVORS = [new LitElementFlavor(), new CustomElementFlavor(), new JsDocFlavor(), new StencilFlavor()];
@@ -28,6 +29,7 @@ export interface AnalyzeComponentsOptions {
  */
 export interface AnalyzeComponentsConfig {
 	diagnostics?: boolean;
+	visibility?: ComponentMemberVisibilityKind;
 	analyzeLibDom?: boolean;
 	excludedDeclarationNames?: string[];
 }

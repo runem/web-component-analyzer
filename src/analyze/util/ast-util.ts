@@ -13,6 +13,7 @@ import {
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
+import { ComponentMemberVisibilityKind } from "../types/component-member";
 
 export interface AstContext {
 	ts: typeof tsModule;
@@ -55,11 +56,21 @@ function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
 }
 
 /**
- * Returns if a name is public (doesn't start with "_");
+ * Returns if a name is private (starts with "_" or "#");
  * @param name
  */
-export function isPropNamePublic(name: string): boolean {
-	return !name.startsWith("_") && !name.startsWith("#");
+export function isNamePrivate(name: string): boolean {
+	return name.startsWith("_") || name.startsWith("#");
+}
+
+/**
+ * Returns if a node is not readable and static.
+ * This function is used because modifiers have not been added to the output yet.
+ * @param node
+ * @param ts
+ */
+export function isMemberAndWritable(node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration, ts: typeof tsModule): boolean {
+	return !hasModifier(node, ts.SyntaxKind.ReadonlyKeyword) && !hasModifier(node, ts.SyntaxKind.StaticKeyword);
 }
 
 /**
@@ -67,14 +78,17 @@ export function isPropNamePublic(name: string): boolean {
  * @param node
  * @param ts
  */
-export function hasPublicSetter(node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration, ts: typeof tsModule): boolean {
-	return (
-		!hasModifier(node, ts.SyntaxKind.ProtectedKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.PrivateKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.ReadonlyKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.StaticKeyword) &&
-		(ts.isIdentifier(node.name) ? isPropNamePublic(node.name.text) : true)
-	);
+export function getMemberVisibility(
+	node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration | Node,
+	ts: typeof tsModule
+): ComponentMemberVisibilityKind {
+	if (hasModifier(node, ts.SyntaxKind.PrivateKeyword) || ("name" in node && ts.isIdentifier(node.name) && isNamePrivate(node.name.text))) {
+		return "private";
+	} else if (hasModifier(node, ts.SyntaxKind.ProtectedKeyword)) {
+		return "protected";
+	} else {
+		return "public";
+	}
 }
 
 /**

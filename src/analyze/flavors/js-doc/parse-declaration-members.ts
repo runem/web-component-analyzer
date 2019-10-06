@@ -1,6 +1,7 @@
 import { SimpleTypeKind } from "ts-simple-type";
 import { Node } from "typescript";
 import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/component-member";
+import { isNamePrivate } from "../../util/ast-util";
 import { parseJsDocTypeString } from "../../util/js-doc-util";
 import { ParseComponentMembersContext } from "../parse-component-flavor";
 import { parseJsDocForNode } from "./helper";
@@ -18,10 +19,13 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 			node,
 			["prop", "property"],
 			(tagNode, parsed) => {
-				if (parsed.name != null) {
+				const propName = parsed.name;
+
+				if (propName != null) {
 					return {
 						kind: "property",
-						propName: parsed.name,
+						propName,
+						visibility: isNamePrivate(propName) ? "private" : "public",
 						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
 						type: (parsed.type && parseJsDocTypeString(parsed.type)) || { kind: SimpleTypeKind.ANY },
 						node: tagNode
@@ -35,10 +39,12 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 			node,
 			["attr", "attribute"],
 			(tagNode, parsed) => {
-				if (parsed.name != null) {
+				const attrName = parsed.name;
+				if (attrName != null) {
 					return {
 						kind: "attribute",
-						attrName: parsed.name,
+						attrName,
+						visibility: isNamePrivate(attrName) ? "private" : "public",
 						jsDoc: parsed.comment && { comment: parsed.comment },
 						type: (parsed.type && parseJsDocTypeString(parsed.type)) || { kind: SimpleTypeKind.ANY },
 						node: tagNode

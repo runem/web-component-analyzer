@@ -145,7 +145,7 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 
 	// Add properties as rows one by one
 	for (const member of members) {
-		const propName = markdownHighlight(member.propName);
+		const propName = markdownHighlight(member.propName) + " - " + member.visibility;
 		const attrName = (member.attrName && markdownHighlight(member.attrName)) || "";
 		const type = markdownHighlight(toTypeString(member.type, checker));
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";

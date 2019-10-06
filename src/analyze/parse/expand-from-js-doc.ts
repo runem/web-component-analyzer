@@ -26,6 +26,12 @@ export function expandMemberFromJsDoc(member: ComponentMember): ComponentMember 
 		newMember.deprecated = deprecatedTag.comment || true;
 	}
 
+	// Check "@private" and "@protected
+	const visibilityTag = member.jsDoc.tags.find(t => t.tag === "private" || t.tag === "protected");
+	if (visibilityTag != null) {
+		newMember.visibility = visibilityTag.tag === "private" ? "private" : "protected";
+	}
+
 	// Check "@prop {Number} myProp - My comment"
 	if (newMember.kind === "property" && newMember.attrName == null) {
 		const attrNameTag = member.jsDoc.tags.find(t => ["attr", "attribute"].includes(t.tag));

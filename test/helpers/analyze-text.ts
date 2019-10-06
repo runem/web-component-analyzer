@@ -11,7 +11,7 @@ import {
 	sys,
 	TypeChecker
 } from "typescript";
-import { analyzeComponents, AnalyzeComponentsResult } from "../../src/analyze/analyze-components";
+import { analyzeComponents, AnalyzeComponentsConfig, AnalyzeComponentsResult } from "../../src/analyze/analyze-components";
 
 // tslint:disable:no-any
 
@@ -26,9 +26,13 @@ export type TestFile = ITestFile | string;
 /**
  * Analyzes components in code
  * @param {ITestFile[]|TestFile} inputFiles
+ * @param config
  * @returns {Promise<{fileName: string, result: AnalyzeComponentsResult}[]>}
  */
-export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { result: AnalyzeComponentsResult; checker: TypeChecker } {
+export function analyzeComponentsInCode(
+	inputFiles: TestFile[] | TestFile,
+	config?: AnalyzeComponentsConfig
+): { result: AnalyzeComponentsResult; checker: TypeChecker } {
 	const cwd = process.cwd();
 
 	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
@@ -110,6 +114,6 @@ export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { re
 
 	return {
 		checker,
-		result: analyzeComponents(entrySourceFile, { checker })
+		result: analyzeComponents(entrySourceFile, { checker, config })
 	};
 }
