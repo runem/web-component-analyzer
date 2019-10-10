@@ -1,5 +1,5 @@
 import { SimpleType, toTypeString } from "ts-simple-type";
-import { Program, Type, TypeChecker } from "typescript";
+import { Program, Type, TypeChecker, Node } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
 import { ComponentDefinition } from "../../../analyze/types/component-definition";
 import { ComponentMember } from "../../../analyze/types/component-member";
@@ -50,10 +50,15 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		.map(e => componentSlotToHtmlDataSlot(e, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
+	const declaration = definition.declaration;
+
 	return {
 		name: definition.tagName,
-		description: getDescriptionFromJsDoc(definition.declaration.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(definition.declaration.jsDoc),
+		description: getDescriptionFromJsDoc(declaration.jsDoc),
+		example: getExamplesFromJsDoc(declaration.jsDoc),
+		//jsDoc: getJsDocTextFromJsDoc(definition.declaration.jsDoc),
+		path: getPathFromNode(definition.node),
+		deprecated: declaration.deprecated,
 		attributes,
 		properties,
 		events,
@@ -65,7 +70,9 @@ function componentSlotToHtmlDataSlot(slot: ComponentSlot, checker: TypeChecker):
 	return {
 		name: slot.name || "",
 		description: getDescriptionFromJsDoc(slot.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(slot.jsDoc)
+		example: getExamplesFromJsDoc(slot.jsDoc)
+		//deprecated: slot.deprecated,
+		//jsDoc: getJsDocTextFromJsDoc(slot.jsDoc)
 	};
 }
 
@@ -73,7 +80,9 @@ function componentEventToHtmlDataEvent(event: EventDeclaration, checker: TypeChe
 	return {
 		name: event.name,
 		description: getDescriptionFromJsDoc(event.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(event.jsDoc)
+		example: getExamplesFromJsDoc(event.jsDoc)
+		//deprecated: event.deprecated,
+		//jsDoc: getJsDocTextFromJsDoc(event.jsDoc)
 	};
 }
 
@@ -88,7 +97,9 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 			return {
 				name: member.attrName,
 				description: getDescriptionFromJsDoc(member.jsDoc),
-				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
+				example: getExamplesFromJsDoc(member.jsDoc),
+				//jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
+				deprecated: member.deprecated,
 				type: getJsDocTypeFromType(member.type, checker)
 			};
 	}
@@ -102,8 +113,13 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 			return {
 				name: member.propName,
 				description: getDescriptionFromJsDoc(member.jsDoc),
-				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-				type: getJsDocTypeFromType(member.type, checker)
+				//jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
+				example: getExamplesFromJsDoc(member.jsDoc),
+				type: getJsDocTypeFromType(member.type, checker),
+				attribute: member.attrName,
+				default: member.default,
+				deprecated: member.deprecated,
+				reflect: member.attrName == null ? undefined : "both" // fixed for now
 			};
 	}
 
@@ -114,8 +130,25 @@ function getDescriptionFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	return jsDoc != null ? jsDoc.comment : undefined;
 }
 
-function getJsDocTextFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
+/*function getJsDocTextFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	return jsDoc != null && jsDoc.node != null ? jsDoc.node.getText() : undefined;
+}*/
+
+function getPathFromNode(node: Node): string {
+	return node.getSourceFile().fileName.replace(process.cwd(), "");
+}
+
+function getExamplesFromJsDoc(jsDoc: JsDoc | undefined): string[] | undefined {
+	if (jsDoc == null || jsDoc.node == null || jsDoc.node.tags == null) {
+		return undefined;
+	}
+
+	const exampleTags = jsDoc.node.tags.filter(tag => tag.tagName.getText() === "example" && tag.comment != null);
+	if (exampleTags.length === 0) {
+		return undefined;
+	}
+
+	return exampleTags.map(tag => tag.comment || "");
 }
 
 function getJsDocTypeFromType(type: Type | SimpleType | undefined, checker: TypeChecker): string | undefined {

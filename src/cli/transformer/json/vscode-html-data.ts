@@ -15,13 +15,19 @@ export interface HtmlDataMember {
 	valueSet?: string;
 
 	// Suggested fields:
-	jsDoc?: string;
+	example?: string[];
+	deprecated?: string | boolean;
 	type?: any;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {}
 
-export interface HtmlDataProperty extends HtmlDataMember {}
+export interface HtmlDataProperty extends HtmlDataMember {
+	// Suggested fields:
+	attribute?: string;
+	reflect?: "both" | "to-attribute" | "to-property";
+	default?: any;
+}
 
 export interface HtmlDataSlot extends HtmlDataMember {}
 
@@ -30,10 +36,12 @@ export interface HtmlDataEvent extends HtmlDataMember {}
 export interface HtmlDataTag {
 	name: string;
 	description?: string;
-	jsDoc?: string;
 	attributes?: HtmlDataAttribute[];
 
 	// Suggested fields:
+	path?: string;
+	example?: string[];
+	deprecated?: string | boolean;
 	properties?: HtmlDataProperty[];
 	slots?: HtmlDataSlot[];
 	events?: HtmlDataEvent[];
