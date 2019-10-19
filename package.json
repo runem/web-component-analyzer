@@ -14,6 +14,7 @@
 		"watch": "rollup -c --watch",
 		"pretest": "cd dev && npm install",
 		"test": "ava",
+		"lint": "",
 		"test:update": "ava --update-snapshots",
 		"test:watch": "ava --watch",
 		"prettier:check": "prettier --list-different \"src/**/*.{ts,tsx}\"",
