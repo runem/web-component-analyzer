@@ -27,6 +27,8 @@ export interface HtmlDataSlot extends HtmlDataMember {}
 
 export interface HtmlDataEvent extends HtmlDataMember {}
 
+export interface HtmlDataCssProperty extends HtmlDataMember {}
+
 export interface HtmlDataTag {
 	name: string;
 	description?: string;
@@ -37,6 +39,7 @@ export interface HtmlDataTag {
 	properties?: HtmlDataProperty[];
 	slots?: HtmlDataSlot[];
 	events?: HtmlDataEvent[];
+	cssProperties?: HtmlDataCssProperty[];
 }
 
 export interface HtmlDataV2 {
