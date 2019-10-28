@@ -8,7 +8,8 @@ import { EventDeclaration } from "../../../analyze/types/event-types";
 import { JsDoc } from "../../../analyze/types/js-doc";
 import { flatten } from "../../util";
 import { WcaCliConfig } from "../../wca-cli-arguments";
-import { HtmlData, HtmlDataAttribute, HtmlDataEvent, HtmlDataProperty, HtmlDataSlot, HtmlDataTag } from "./vscode-html-data";
+import { HtmlData, HtmlDataAttribute, HtmlDataEvent, HtmlDataProperty, HtmlDataSlot, HtmlDataTag, HtmlDataCssProperty } from "./vscode-html-data";
+import { ComponentCSSProperty } from "../../../analyze";
 
 /**
  * Transforms results to json.
@@ -49,7 +50,9 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 	const slots = definition.declaration.slots
 		.map(e => componentSlotToHtmlDataSlot(e, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
-
+	const cssProperties = definition.declaration.cssProperties
+		.map(p => componentCssPropToHtmlCssProp(p, checker))
+		.filter((val): val is NonNullable<typeof val> => val != null);
 	return {
 		name: definition.tagName,
 		description: getDescriptionFromJsDoc(definition.declaration.jsDoc),
@@ -57,7 +60,16 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		attributes,
 		properties,
 		events,
-		slots
+		slots,
+		cssProperties
+	};
+}
+
+function componentCssPropToHtmlCssProp(prop: ComponentCSSProperty, checker: TypeChecker): HtmlDataCssProperty | undefined {
+	return {
+		name: prop.name || "",
+		description: getDescriptionFromJsDoc(prop.jsDoc),
+		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc)
 	};
 }
 
