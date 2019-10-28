@@ -5,7 +5,6 @@
 	<a href="https://www.npmjs.com/package/web-component-analyzer"><img alt="NPM Version" src="https://img.shields.io/npm/v/web-component-analyzer.svg" height="20"/></a>
 	<a href="https://david-dm.org/runem/web-component-analyzer"><img alt="Dependencies" src="https://img.shields.io/david/runem/web-component-analyzer.svg" height="20"/></a>
 	<a href="https://github.com/runem/web-component-analyzer/graphs/contributors"><img alt="Contributors" src="https://img.shields.io/github/contributors/runem/web-component-analyzer.svg" height="20"/></a>
-	<a href="https://circleci.com/gh/runem/web-component-analyzer"><img src="https://circleci.com/gh/runem/web-component-analyzer.svg?style=svg"></a>
 </p>
 
 <p align="center">
@@ -17,11 +16,11 @@
 
 In addition to [custom elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) this tool supports web components built with the following libraries:
 
--   [lit-element](https://github.com/Polymer/lit-element)
--   [polymer](https://github.com/Polymer/polymer)
--   [stencil](https://github.com/ionic-team/stencil) (partial)
--   [skatejs](https://github.com/skatejs/skatejs) (coming soon)
--   [open an issue for library requests](https://github.com/runem/web-component-analyzer/issues)
+- [lit-element](https://github.com/Polymer/lit-element)
+- [polymer](https://github.com/Polymer/polymer)
+- [stencil](https://github.com/ionic-team/stencil) (partial)
+- [skatejs](https://github.com/skatejs/skatejs) (coming soon)
+- [open an issue for library requests](https://github.com/runem/web-component-analyzer/issues)
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#installation)
 
