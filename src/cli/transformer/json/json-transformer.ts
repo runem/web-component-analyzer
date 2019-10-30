@@ -140,7 +140,8 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 				name: member.propName,
 				description: getDescriptionFromJsDoc(member.jsDoc),
 				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-				type: getJsDocTypeFromType(member.type, checker)
+				type: getJsDocTypeFromType(member.type, checker),
+				default: (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || ""
 			};
 	}
 
