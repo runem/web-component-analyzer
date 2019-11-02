@@ -17,11 +17,34 @@ jobs:
         with:
           node-version: 10.x
 
+      - name: Cache
+        uses: actions/cache@preview
+        id: cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install
-        run: npm ci && cd dev && npm ci
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: npm ci
 
       - name: Lint
         run: npm run lint
+
+      - name: Cache Dev
+        uses: actions/cache@preview
+        id: cache-dev
+        with:
+          path: ./dev/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/dev/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Dev
+        if: steps.cache-dev.outputs.cache-hit != 'true'
+        run: cd dev && npm ci
 
       - name: Test
         run: npm test
