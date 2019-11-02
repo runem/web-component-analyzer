@@ -1,5 +1,6 @@
 import { ClassLikeDeclaration, InterfaceDeclaration, Node } from "typescript";
 import { FlavorVisitContext, ParseComponentFlavor } from "../flavors/parse-component-flavor";
+import { ComponentCSSPart } from "../types/component-css-part";
 import { ComponentCSSProperty } from "../types/component-css-property";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember } from "../types/component-member";
@@ -8,7 +9,7 @@ import { EventDeclaration } from "../types/event-types";
 import { findChild, isNodeInLibDom, resolveDeclarations } from "../util/ast-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { expandMembersFromJsDoc } from "./expand-from-js-doc";
-import { mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
+import { mergeCSSParts, mergeCSSProps, mergeEvents, mergeMembers, mergeSlots } from "./merge-declarations";
 import { mergeJsDocs } from "./merge-js-docs";
 
 interface VisitComponentDeclarationVisitContext extends FlavorVisitContext {
@@ -16,6 +17,7 @@ interface VisitComponentDeclarationVisitContext extends FlavorVisitContext {
 	emitMembers(members: ComponentMember[]): void;
 	emitSlots(slots: ComponentSlot[]): void;
 	emitCSSProps(cssProperties: ComponentCSSProperty[]): void;
+	emitCSSParts(cssParts: ComponentCSSPart[]): void;
 	emitEvents(events: EventDeclaration[]): void;
 	emitInheritNode(node: Node): void;
 	emitInherit(name: string): void;
@@ -32,6 +34,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	const members: ComponentMember[] = [];
 	const events: EventDeclaration[] = [];
 	const cssProps: ComponentCSSProperty[] = [];
+	const cssParts: ComponentCSSPart[] = [];
 	const inherits = new Set<string>();
 	const inheritNodes = new Set<Node>();
 
@@ -42,6 +45,9 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		features: {
 			getCSSProps(): ComponentCSSProperty[] {
 				return cssProps;
+			},
+			getCSSParts(): ComponentCSSPart[] {
+				return cssParts;
 			},
 			getEvents(): EventDeclaration[] {
 				return events;
@@ -68,6 +74,9 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		emitCSSProps(newCSSProps: ComponentCSSProperty[]): void {
 			cssProps.push(...newCSSProps);
 		},
+		emitCSSParts(newCSSParts: ComponentCSSPart[]): void {
+			cssParts.push(...newCSSParts);
+		},
 		emitEvents(newEvents: EventDeclaration[]): void {
 			events.push(...newEvents);
 		},
@@ -93,6 +102,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 	const mergedSlots = mergeSlots(slots);
 	const mergedEvents = mergeEvents(events);
 	const mergedCSSProps = mergeCSSProps(cssProps);
+	const mergedCSSParts = mergeCSSParts(cssParts);
 
 	const className =
 		(context.ts.isClassDeclaration(declarationNode) || context.ts.isInterfaceDeclaration(declarationNode)) && declarationNode.name != null
@@ -105,6 +115,7 @@ export function parseComponentDeclaration(declarationNode: Node, flavors: ParseC
 		slots: mergedSlots,
 		events: mergedEvents,
 		cssProperties: mergedCSSProps,
+		cssParts: mergedCSSParts,
 		inheritNodes: Array.from(inheritNodes.values()),
 		inherits: Array.from(inherits.values()),
 		className,
@@ -173,6 +184,13 @@ function visitComponentDeclaration(node: Node, flavors: ParseComponentFlavor[], 
 		if (!cssPropertiesResult.shouldContinue) return;
 	}
 
+	// Emit css parts
+	const cssPartsResult = executeFirstFlavor(flavors, "parseDeclarationCSSParts", node, context);
+	if (cssPartsResult != null) {
+		context.emitCSSParts(cssPartsResult.result);
+		if (!cssPartsResult.shouldContinue) return;
+	}
+
 	// Emit slots
 	const slotsResult = executeFirstFlavor(flavors, "parseDeclarationSlots", node, context);
 	if (slotsResult != null) {
@@ -199,7 +217,8 @@ function executeFirstFlavor<
 		| keyof ParseComponentFlavor & "parseDeclarationMembers"
 		| "parseDeclarationEvents"
 		| "parseDeclarationSlots"
-		| "parseDeclarationCSSProps",
+		| "parseDeclarationCSSProps"
+		| "parseDeclarationCSSParts",
 	Return extends ReturnType<NonNullable<ParseComponentFlavor[Key]>>
 >(
 	flavors: ParseComponentFlavor[],

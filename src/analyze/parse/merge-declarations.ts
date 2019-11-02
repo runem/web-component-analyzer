@@ -1,6 +1,7 @@
 import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, SimpleTypeKind, toSimpleType } from "ts-simple-type";
 import { Type, TypeChecker } from "typescript";
 import { FlavorVisitContext } from "../flavors/parse-component-flavor";
+import { ComponentCSSPart } from "../types/component-css-part";
 import { ComponentCSSProperty } from "../types/component-css-property";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../types/component-member";
@@ -63,6 +64,14 @@ export function mergeEvents(events: EventDeclaration[]): EventDeclaration[] {
  */
 export function mergeCSSProps(cssProps: ComponentCSSProperty[]): ComponentCSSProperty[] {
 	return nameMerge(cssProps, "last");
+}
+
+/**
+ * Merges css parts
+ * @param cssParts
+ */
+export function mergeCSSParts(cssParts: ComponentCSSPart[]): ComponentCSSPart[] {
+	return nameMerge(cssParts, "last");
 }
 
 /**

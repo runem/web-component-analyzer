@@ -1,6 +1,7 @@
 import { isAssignableToSimpleTypeKind, SimpleTypeKind, toTypeString } from "ts-simple-type";
 import { Program, TypeChecker } from "typescript";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { ComponentCSSPart } from "../../../analyze/types/component-css-part";
 import { ComponentCSSProperty } from "../../../analyze/types/component-css-property";
 import { ComponentMemberAttribute, ComponentMemberProperty } from "../../../analyze/types/component-member";
 import { ComponentSlot } from "../../../analyze/types/component-slot";
@@ -39,6 +40,7 @@ export function markdownTransformer(results: AnalyzeComponentsResult[], program:
 		const slots = declaration.slots.sort((a, b) => (a.name == null ? -1 : b.name == null ? 1 : a.name < b.name ? -1 : 1));
 		const events = declaration.events.sort((a, b) => (a.name < b.name ? -1 : 1));
 		const cssProps = declaration.cssProperties.sort((a, b) => (a.name < b.name ? -1 : 1));
+		const cssParts = declaration.cssParts.sort((a, b) => (a.name < b.name ? -1 : 1));
 
 		if (attributes.length > 0) {
 			segmentText += "\n" + memberAttributeSection(attributes, program.getTypeChecker(), config);
@@ -52,12 +54,16 @@ export function markdownTransformer(results: AnalyzeComponentsResult[], program:
 			segmentText += "\n" + eventSection(events, config, program.getTypeChecker());
 		}
 
-		if (cssProps.length > 0) {
-			segmentText += "\n" + cssPropSection(cssProps, config);
-		}
-
 		if (slots.length > 0) {
 			segmentText += "\n" + slotSection(slots, config);
+		}
+
+		if (cssParts.length > 0) {
+			segmentText += "\n" + cssPartSection(cssParts, config);
+		}
+
+		if (cssProps.length > 0) {
+			segmentText += "\n" + cssPropSection(cssProps, config);
 		}
 
 		return segmentText;
@@ -75,6 +81,17 @@ function cssPropSection(cssProperty: ComponentCSSProperty[], config: WcaCliConfi
 	const rows: string[][] = [["Property", "Description"]];
 	rows.push(...cssProperty.map(prop => [(prop.name && markdownHighlight(prop.name)) || "", (prop.jsDoc && prop.jsDoc.comment) || ""]));
 	return markdownHeader("CSS Custom Properties", 2, config) + "\n" + markdownTable(rows);
+}
+
+/**
+ * Returns a markdown table with css parts
+ * @param cssPart
+ * @param config
+ */
+function cssPartSection(cssPart: ComponentCSSPart[], config: WcaCliConfig): string {
+	const rows: string[][] = [["Part", "Description"]];
+	rows.push(...cssPart.map(part => [(part.name && markdownHighlight(part.name)) || "", (part.jsDoc && part.jsDoc.comment) || ""]));
+	return markdownHeader("CSS Shadow Parts", 2, config) + "\n" + markdownTable(rows);
 }
 
 /**

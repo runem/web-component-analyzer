@@ -1,12 +1,16 @@
 {
 	"supported_jsdocs": [
 		["JSDoc Tag", "Description"],
-		["`@element`", "Gives your component a tag name. This JSDoc tag is especially useful if your 'customElements.define` is called dynamically eg. using a custom function."],
+		[
+			"`@element`",
+			"Gives your component a tag name. This JSDoc tag is especially useful if your 'customElements.define` is called dynamically eg. using a custom function."
+		],
 		["`@fires`", "Documents events."],
 		["`@slot`", "Documents slots. Using an empty name here documents the unnamed (default) slot."],
 		["`@attr` or `@attribute`", "Documents an attribute on your component."],
 		["`@prop` or `@property`", "Documents a property on your component."],
-		["`@cssprop` or `@cssproperty`", "Documents a css custom property on your component."]
+		["`@cssprop` or `@cssproperty`", "Documents a css custom property on your component."],
+		["`@csspart`", "Documents a css shadow part on your component."]
 	],
 	"usage_analyze_options": [
 		["Option", "Type", "Description"],

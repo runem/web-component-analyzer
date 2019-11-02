@@ -1,6 +1,8 @@
 import { SimpleType, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
+import { ComponentCSSProperty } from "../../../analyze";
 import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { ComponentCSSPart } from "../../../analyze/types/component-css-part";
 import { ComponentDefinition } from "../../../analyze/types/component-definition";
 import { ComponentMember } from "../../../analyze/types/component-member";
 import { ComponentSlot } from "../../../analyze/types/component-slot";
@@ -8,8 +10,16 @@ import { EventDeclaration } from "../../../analyze/types/event-types";
 import { JsDoc } from "../../../analyze/types/js-doc";
 import { flatten } from "../../util";
 import { WcaCliConfig } from "../../wca-cli-arguments";
-import { HtmlData, HtmlDataAttribute, HtmlDataEvent, HtmlDataProperty, HtmlDataSlot, HtmlDataTag, HtmlDataCssProperty } from "./vscode-html-data";
-import { ComponentCSSProperty } from "../../../analyze";
+import {
+	HtmlData,
+	HtmlDataAttribute,
+	HtmlDataCssPart,
+	HtmlDataCssProperty,
+	HtmlDataEvent,
+	HtmlDataProperty,
+	HtmlDataSlot,
+	HtmlDataTag
+} from "./vscode-html-data";
 
 /**
  * Transforms results to json.
@@ -50,9 +60,15 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 	const slots = definition.declaration.slots
 		.map(e => componentSlotToHtmlDataSlot(e, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
+
 	const cssProperties = definition.declaration.cssProperties
 		.map(p => componentCssPropToHtmlCssProp(p, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
+
+	const cssParts = definition.declaration.cssParts
+		.map(p => componentCssPropToHtmlCssPart(p, checker))
+		.filter((val): val is NonNullable<typeof val> => val != null);
+
 	return {
 		name: definition.tagName,
 		description: getDescriptionFromJsDoc(definition.declaration.jsDoc),
@@ -61,7 +77,8 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		properties,
 		events,
 		slots,
-		cssProperties
+		cssProperties,
+		cssParts
 	};
 }
 
@@ -70,6 +87,14 @@ function componentCssPropToHtmlCssProp(prop: ComponentCSSProperty, checker: Type
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc)
+	};
+}
+
+function componentCssPropToHtmlCssPart(part: ComponentCSSPart, checker: TypeChecker): HtmlDataCssPart | undefined {
+	return {
+		name: part.name || "",
+		description: getDescriptionFromJsDoc(part.jsDoc),
+		jsDoc: getJsDocTextFromJsDoc(part.jsDoc)
 	};
 }
 

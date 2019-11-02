@@ -1,10 +1,12 @@
 import { Node } from "typescript";
+import { ComponentCSSPart } from "../../types/component-css-part";
 import { ComponentCSSProperty } from "../../types/component-css-property";
 import { ComponentMember } from "../../types/component-member";
 import { ComponentSlot } from "../../types/component-slot";
 import { EventDeclaration } from "../../types/event-types";
 import { ParseComponentFlavor, ParseComponentMembersContext, VisitComponentDefinitionContext } from "../parse-component-flavor";
 import { parseDeclarationCSSProps } from "./parse-declaration-css-props";
+import { parseDeclarationCSSParts } from "./parse-declaration-css-parts";
 import { parseDeclarationEvents } from "./parse-declaration-events";
 import { parseDeclarationMembers } from "./parse-declaration-members";
 import { parseDeclarationSlots } from "./parse-declaration-slots";
@@ -33,5 +35,9 @@ export class JsDocFlavor implements ParseComponentFlavor {
 
 	parseDeclarationCSSProps(node: Node, context: ParseComponentMembersContext): ComponentCSSProperty[] | undefined {
 		return parseDeclarationCSSProps(node, context);
+	}
+
+	parseDeclarationCSSParts(node: Node, context: ParseComponentMembersContext): ComponentCSSPart[] | undefined {
+		return parseDeclarationCSSParts(node, context);
 	}
 }

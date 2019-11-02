@@ -1,6 +1,7 @@
 import * as tsModule from "typescript";
 import { Node, TypeChecker } from "typescript";
 import { AnalyzeComponentsConfig } from "../analyze-components";
+import { ComponentCSSPart } from "../types/component-css-part";
 import { ComponentCSSProperty } from "../types/component-css-property";
 import { ComponentDiagnostic } from "../types/component-diagnostic";
 import { ComponentMember } from "../types/component-member";
@@ -20,6 +21,7 @@ export interface FlavorVisitContextFeatures {
 	getMembers(): ComponentMember[];
 	getSlots(): ComponentSlot[];
 	getCSSProps(): ComponentCSSProperty[];
+	getCSSParts(): ComponentCSSPart[];
 	getEvents(): EventDeclaration[];
 	getInheritNodes(): Node[];
 	getInherits(): string[];
@@ -51,6 +53,7 @@ export interface ParseComponentFlavor {
 	parseDeclarationEvents?(node: Node, context: ParseComponentMembersContext): EventDeclaration[] | undefined;
 	parseDeclarationSlots?(node: Node, context: ParseComponentMembersContext): ComponentSlot[] | undefined;
 	parseDeclarationCSSProps?(node: Node, context: ParseComponentMembersContext): ComponentCSSProperty[] | undefined;
+	parseDeclarationCSSParts?(node: Node, context: ParseComponentMembersContext): ComponentCSSPart[] | undefined;
 
 	visitGlobalEvents?(node: Node, context: ParseVisitContextGlobalEvents): void;
 }

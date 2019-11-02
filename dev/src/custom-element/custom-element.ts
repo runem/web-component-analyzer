@@ -1,5 +1,6 @@
 /**
  * @fires my-custom-event - Im event!
+ * @csspart mypart - Hello
  */
 export class CustomElement extends HTMLElement {
 	myProp = "hello";

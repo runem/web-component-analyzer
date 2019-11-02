@@ -125,6 +125,8 @@ Here's an example including all supported JSDoc tags. All tags are on the the fo
  * 
  * @cssprop --main-bg-color - This jsdoc tag can be used to document css custom properties.
  * @cssprop --main-color
+
+ * @csspart container 
  */
 class MyElement extends HTMLElement {
 
@@ -156,6 +158,7 @@ class MyElement extends HTMLElement {
 | `@attr` or `@attribute`      | Documents an attribute on your component.                                                                                                               |
 | `@prop` or `@property`       | Documents a property on your component.                                                                                                                 |
 | `@cssprop` or `@cssproperty` | Documents a css custom property on your component.                                                                                                      |
+| `@csspart`                   | Documents a css shadow part on your component.                                                                                                          |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#contributors)
 
