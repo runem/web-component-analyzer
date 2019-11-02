@@ -101,7 +101,7 @@ function parsePropertyDecorator(
 				attrName,
 				type,
 				node,
-				default: def || litConfig.default,
+				default: def !== undefined ? def : litConfig.default,
 				required,
 				jsDoc
 			}
