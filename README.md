@@ -84,6 +84,8 @@ wca analyze src --format vscode --outFile vscode-html-custom-data.json
 
 VSCode supports a JSON format called [vscode custom data](https://github.com/microsoft/vscode-custom-data) for the built in html editor which is set using `html.customData` vscode setting. Web Component Analyzer can output this format.
 
+[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
+
 ## ➤ API
 
 You can also use the underlying functionality of this tool if you don't want to use the CLI. Documentation will be added as soon as the API is considered stable.
