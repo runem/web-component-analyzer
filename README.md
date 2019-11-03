@@ -12,14 +12,13 @@
 
 </p>
 
-`web-component-analyzer` is a CLI that makes it possible to easily analyze web components. It analyzes your code and jsdoc in order to extract `properties`, `attributes`, `methods`, `events`, `slots` and `css custom properties`. Works with both javascript and typescript.
+`web-component-analyzer` is a CLI that makes it possible to easily analyze web components. It analyzes your code and jsdoc in order to extract `properties`, `attributes`, `methods`, `events`, `slots`, `css shadow parts` and `css custom properties`. Works with both javascript and typescript.
 
-In addition to [custom elements](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) this tool supports web components built with the following libraries:
+In addition to [vanilla web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) this tool supports web components built with the following libraries:
 
 - [lit-element](https://github.com/Polymer/lit-element)
 - [polymer](https://github.com/Polymer/polymer)
 - [stencil](https://github.com/ionic-team/stencil) (partial)
-- [skatejs](https://github.com/skatejs/skatejs) (coming soon)
 - [open an issue for library requests](https://github.com/runem/web-component-analyzer/issues)
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#installation)
@@ -33,9 +32,7 @@ $ npm install -g web-component-analyzer
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#usage)
 
-## ➤ Usage
-
-### Analyze
+## Analyze
 
 The analyze command analyses an optional `input glob` and emits the output to the console as default. When the `input glob` is omitted it will find all components excluding `node_modules`. The default format is `markdown`.
 
@@ -46,10 +43,10 @@ The analyze command analyses an optional `input glob` and emits the output to th
 $ wca analyze
 $ wca analyze src --format markdown
 $ wca analyze "src/**/*.{js,ts}" --outDir components
-$ wca analyze my-element.js --outFile my-element.json
+$ wca analyze my-element.js --outFile custom-elements.json
 ```
 
-#### Options
+### Options
 
 | Option               | Type                             | Description                                                                  |
 | -------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
@@ -57,25 +54,40 @@ $ wca analyze my-element.js --outFile my-element.json
 | `--outFile FILE`     | `file path`                      | Concatenate and emit output to a single file.                                |
 | `--outDir DIRECTORY` | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
 
-### Diagnose
+[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#api)
 
-The diagnose command analyses components and emits diagnostics. Right now it only emits diagnostics for LitElement's. When the optional `input glob` is omitted it analyzes all components excluding `node_modules`. If any diagnostics are emitted this command exits with a non zero exit code.
+## Output Formats
 
-<img src="https://user-images.githubusercontent.com/5372940/54445382-efeac700-4744-11e9-9a7b-92c5d251e124.gif" />
+### json
 
-<!-- prettier-ignore -->
 ```bash
-$ wca diagnose
-$ wca diagnose src
-$ wca diagnose "./src/**/*.{js,ts}"
-$ wca diagnose my-element.js
+wca analyze src --format json --outFile custom-elements.json
 ```
 
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#api)
+This json format is for experimental and demo purposes, and is still being actively discussed. You can expect changes to this format. Please follow and contribute to the discussion at:
+
+- https://github.com/webcomponents/custom-elements-json
+- https://github.com/w3c/webcomponents/issues/776
+
+### markdown
+
+```bash
+wca analyze src --format markdown --outDir readme
+```
+
+Web Component Analyzer can output markdown documentation of your web components. This can either be output into a single file using `--outFile` or into multiple files using `--outDir`.
+
+### vscode
+
+```bash
+wca analyze src --format vscode --outFile vscode-html-custom-data.json
+```
+
+VSCode supports a JSON format called [vscode custom data](https://github.com/microsoft/vscode-custom-data) for the built in html editor which is set using `html.customData` vscode setting. Web Component Analyzer can output this format.
 
 ## ➤ API
 
-You can also use the underlying functionality of this tool if you don't want to use the CLI. More documentation coming soon.
+You can also use the underlying functionality of this tool if you don't want to use the CLI. Documentation will be added as soon as the API is considered stable.
 
 <!-- prettier-ignore -->
 ```typescript
@@ -90,7 +102,7 @@ analyzeComponents(sourceFile, { checker });
 
 This tool extract information about your components by looking at your code directly and by looking at your JSDoc comments.
 
-**Code**: In addition to `custom elements` this tool supports `lit-element`, `stencil`, `polymer` and `skatejs` web components. [Click here](https://github.com/runem/web-component-analyzer/blob/master/ANALYZE.md) for an overview of how each web component type is analyzed.
+**Code**: Web Component Analyzer supports multiple libraries. [Click here](https://github.com/runem/web-component-analyzer/blob/master/ANALYZE.md) for an overview of how each library is analyzed.
 
 **JSDoc**: Read next section to learn more about how JSDoc is analyzed.
 
@@ -98,9 +110,9 @@ This tool extract information about your components by looking at your code dire
 
 ## ➤ How to document your components using JSDoc
 
-In addition to analyzing properties on your components this library also use JSDoc to construct the documentation. It's especially a good idea to use JSDoc for documenting `slots`, `events` and `cssprops` as these are under no circumstances analyzed statically by this tool as of now.
+In addition to analyzing the code of your components, this library also use JSDoc to construct the documentation. It's especially a good idea to use JSDoc for documenting `slots`, `events`, `css custom properties` and `css shadow parts` as these not analyzed statically by this tool as of now (except when constructing a CustomEvent within your component).
 
-Here's an example including all supported JSDoc tags. All tags are on the the form `@tag {type} name - comment`.
+Here's an example including all supported JSDoc tags. All JSDoc tags are on the the form `@tag {type} name - comment`.
 
 <!-- prettier-ignore -->
 ```javascript
@@ -150,15 +162,15 @@ class MyElement extends HTMLElement {
 
 ### Overview of supported JSDoc tags
 
-| JSDoc Tag                    | Description                                                                                                                                             |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@element`                   | Gives your component a tag name. This JSDoc tag is especially useful if your 'customElements.define` is called dynamically eg. using a custom function. |
-| `@fires`                     | Documents events.                                                                                                                                       |
-| `@slot`                      | Documents slots. Using an empty name here documents the unnamed (default) slot.                                                                         |
-| `@attr` or `@attribute`      | Documents an attribute on your component.                                                                                                               |
-| `@prop` or `@property`       | Documents a property on your component.                                                                                                                 |
-| `@cssprop` or `@cssproperty` | Documents a css custom property on your component.                                                                                                      |
-| `@csspart`                   | Documents a css shadow part on your component.                                                                                                          |
+| JSDoc Tag                    | Description                                                                                                                                  |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@element`                   | Gives your component a tag name. This JSDoc tag is useful if your 'customElements.define` is called dynamically eg. using a custom function. |
+| `@fires`                     | Documents events.                                                                                                                            |
+| `@slot`                      | Documents slots. Using an empty name here documents the unnamed (default) slot.                                                              |
+| `@attr` or `@attribute`      | Documents an attribute on your component.                                                                                                    |
+| `@prop` or `@property`       | Documents a property on your component.                                                                                                      |
+| `@cssprop` or `@cssproperty` | Documents a css custom property on your component.                                                                                           |
+| `@csspart`                   | Documents a css shadow part on your component.                                                                                               |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#contributors)
 

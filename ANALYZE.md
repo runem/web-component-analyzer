@@ -2,7 +2,7 @@
 
 # Overview of what this library can analyze
 
-This library is designed to analyze components no matter where they are found. This means it needs to find and analyze components in both javascript, typescript and in typescript definition (when consumed from a library).
+This library is designed to analyze components no matter where they are found. This means it needs to find and analyze components in both javascript, typescript and in typescript definition files (when consumed from a library).
 
 As you can see we loose a lot of information when the element is defined in a typescript definition file.
 
@@ -27,9 +27,9 @@ export class MyElement extends HTMLElement {
 customElements.define("my-element", MyElement);
 ```
 
--   **Tag name**: `my-element`
--   **Properties**: `value`, `myProp (String)`
--   **Attributes**: `attr1`, `attr2`
+- **Tag name**: `my-element`
+- **Properties**: `value`, `myProp (String)`
+- **Attributes**: `attr1`, `attr2`
 
 #### In typescript definition files
 
@@ -48,9 +48,9 @@ declare global {
 }
 ```
 
--   **Tag name**: `my-element`
--   **Properties**: `value (String)`, `myProp (String)`
--   **Attributes**: No attributes because `observedAttributes` is just a function that returns `string[]`
+- **Tag name**: `my-element`
+- **Properties**: `value (String)`, `myProp (String)`
+- **Attributes**: No attributes because `observedAttributes` is just a function that returns `string[]`
 
 ## [LitElement](https://lit-element.polymer-project.org/guide)
 
@@ -78,9 +78,9 @@ export class MyElement extends LitElement {
 }
 ```
 
--   **Tag name**: `my-element`
--   **Properties**: `myProp (String)`, `prop1 (String)`, `prop2 (Number)`, `prop3 (Boolean)`, `prop4 (String)`, `prop5 (Boolean)`
--   **Attributes**: `prop1 (String)`, `prop-two (Number)`, `prop4 (String)`, `prop-5 (Boolean)`,
+- **Tag name**: `my-element`
+- **Properties**: `myProp (String)`, `prop1 (String)`, `prop2 (Number)`, `prop3 (Boolean)`, `prop4 (String)`, `prop5 (Boolean)`
+- **Attributes**: `prop1 (String)`, `prop-two (Number)`, `prop4 (String)`, `prop-5 (Boolean)`,
 
 #### In typescript definition files
 
@@ -136,10 +136,10 @@ export class MyEmbeddedComponent {
 }
 ```
 
--   **Tag name**: `my-embedded-component`
--   **Properties**: `color (String)`
--   **Attributes**: `color (String)`
--   **Events**: `change`, `todoCompleted`
+- **Tag name**: `my-embedded-component`
+- **Properties**: `color (String)`
+- **Attributes**: `color (String)`
+- **Events**: `change`, `todoCompleted`
 
 ### In typescript definition files
 
@@ -179,28 +179,8 @@ declare global {
 }
 ```
 
--   **Tag name**: `progress-ring`
--   **Properties**: `decimalSize (Number)`
--   **Attributes**: `decimalSize (Number)`
+- **Tag name**: `progress-ring`
+- **Properties**: `decimalSize (Number)`
+- **Attributes**: `decimalSize (Number)`
 
-## [SkateJS](https://skatejs.netlify.com/)
-
-<h5 style="color: red">This is not supported yet.</h5>
-
-```javascript
-class MyElement extends Element {
-	static props = {
-		name: String
-	};
-}
-```
-
-```javascript
-class MyElement extends Element {
-	static get props() {
-		return {
-			todos: Array
-		};
-	}
-}
-```
+In addition, the entire content of HTMLElement is copied into the interfaces, so WCA makes sure to filter that out.

@@ -18,8 +18,7 @@
 		"test:update": "ava --update-snapshots",
 		"test:watch": "ava --watch",
 		"prettier:check": "prettier --list-different \"src/**/*.{ts,tsx}\"",
-		"prettier:write": "prettier --write \"src/**/*.{ts,tsx}\"",
-		"readme:build": "readme generate"
+		"prettier:write": "prettier --write \"src/**/*.{ts,tsx}\""
 	},
 	"repository": {
 		"type": "git",
@@ -49,7 +48,6 @@
 		"typescript": "^3.6.4"
 	},
 	"devDependencies": {
-		"@appnest/readme": "^1.2.4",
 		"@types/node": "^12.11.1",
 		"@wessberg/rollup-plugin-ts": "^1.1.72",
 		"ava": "^2.4.0",
