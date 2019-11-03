@@ -19,7 +19,7 @@ import {
 	HtmlDataProperty,
 	HtmlDataSlot,
 	HtmlDataTag
-} from "./vscode-html-data";
+} from "./custom-elements-json-data";
 
 /**
  * Transforms results to json.
@@ -73,12 +73,12 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		name: definition.tagName,
 		description: getDescriptionFromJsDoc(definition.declaration.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(definition.declaration.jsDoc),
-		attributes,
-		properties,
-		events,
-		slots,
-		cssProperties,
-		cssParts
+		attributes: attributes.length === 0 ? undefined : attributes,
+		properties: properties.length === 0 ? undefined : properties,
+		events: events.length === 0 ? undefined : events,
+		slots: slots.length === 0 ? undefined : slots,
+		cssProperties: cssProperties.length === 0 ? undefined : cssProperties,
+		cssParts: cssParts.length === 0 ? undefined : cssParts
 	};
 }
 
