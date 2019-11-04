@@ -126,7 +126,9 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 				name: member.attrName,
 				description: getDescriptionFromJsDoc(member.jsDoc),
 				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-				type: getJsDocTypeFromType(member.type, checker)
+				type: getJsDocTypeFromType(member.type, checker),
+				default: member.default !== undefined ? JSON.stringify(member.default) : undefined,
+				required: member.required
 			};
 	}
 
@@ -141,7 +143,8 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 				description: getDescriptionFromJsDoc(member.jsDoc),
 				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
 				type: getJsDocTypeFromType(member.type, checker),
-				default: (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || ""
+				default: member.default !== undefined ? JSON.stringify(member.default) : undefined,
+				required: member.required
 			};
 	}
 

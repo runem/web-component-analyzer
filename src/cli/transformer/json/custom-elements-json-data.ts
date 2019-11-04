@@ -18,6 +18,7 @@ export interface HtmlDataMember {
 	jsDoc?: string;
 	type?: any;
 	default?: any;
+	required?: boolean;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {}
