@@ -1,1 +1,49 @@
-<h1>Test</h1>
+<body>
+  <head>
+    <meta charset="UTF-8" />
+    <base href="/" />
+    <title>Web Component Analyzer Playground</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <meta name="description" content="Playground for analyzing web components" />
+    <meta name="keywords" content="Web,Components,Library,Lit,lit-html,lit-element,Javascript,Typescript" />
+    <meta name="author" content="Rune Mehlsen" />
+
+    <meta property="og:description" content="Playground for analyzing web components" />
+    <meta property="og:title" content="Web Component Analyzer Playground" />
+    <meta property="og:url" content="https://github.com/runem/web-component-analyzer" />
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet" />
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: "Open Sans", sans-serif;
+        --font-family-serif: "Open Sans", sans-serif;
+        --font-family-sans-serif: "Open Sans", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      wca-playground {
+        height: 100vh;
+      }
+    </style>
+
+    <script
+      crossorigin=""
+      src="https://polyfill.app/api/polyfill?features=template,shadow-dom,custom-elements,intersection-observer,web-animations,adopted-style-sheets"
+    ></script>
+  </head>
+
+  <body>
+    <wca-playground></wca-playground>
+  </body>
+
+  <script src="web-component-analyzer/bundle.js" type="application/javascript"></script>
+</body>
