@@ -1,0 +1,17 @@
+{
+	"name": "wca-playground",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "echo 'Build command coming soon...'; sleep 10;",
+		"deploy": "npm run deploy:prepare && npm run build && npm run deploy:push && npm run deploy:cleanup",
+		"deploy:prepare": "if [ -d \"dist\" ]; then git worktree remove dist; fi && git worktree add dist gh-pages",
+		"deploy:push": "cd dist && git pull origin gh-pages && git add --all && git commit --no-verify -m \"Deploy updates\" && git push origin gh-pages",
+		"deploy:cleanup": "git worktree remove dist"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "MIT"
+}
