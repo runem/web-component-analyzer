@@ -317,16 +317,16 @@ const xt=new WeakMap,_t=s(t=>e=>{if(!(e instanceof A)||e instanceof N||"class"!=
           padding: var(--code-editor-padding, 0);
         }
 
-        .light .moving .codeflask__textarea {
+        .light.moving .codeflask__textarea {
           color: black !important;
         }
 
-        .dark .moving .codeflask__textarea {
+        .dark.moving .codeflask__textarea {
           color: white !important;
         }
 
         .moving .codeflask__pre {
-          display: none !important;
+          opacity: 0 !important;
         }
       `]}render(){return j`
       <style></style>
