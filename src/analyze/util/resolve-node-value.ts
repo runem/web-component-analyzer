@@ -32,7 +32,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 		try {
 			// Try to parse object literal expressions as JSON by converting it to something parsable
 			const regex = /([a-zA-Z1-9]*?):/gm;
-			const json = node.getText().replace(regex, m => `"${m[0]}":`);
+			const json = node.getText().replace(regex, (fullGroup, groupMatch) => `"${groupMatch}":`);
 			return JSON.parse(json);
 		} catch {
 			// If something crashes it probably means that the object is more complex.
