@@ -220,7 +220,9 @@ function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemb
 	return {
 		...b,
 		attrName: a.attrName || b.attrName,
-		type: mergeTypes(a.type, b.type, checker)
+		type: mergeTypes(a.type, b.type, checker),
+		default: a.default || b.default,
+		jsDoc: a.jsDoc || b.jsDoc
 	};
 }
 
