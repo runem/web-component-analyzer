@@ -21,6 +21,7 @@ export interface ComponentMemberProperty extends ComponentMemberSetterBase {
 	kind: "property";
 	propName: string;
 	attrName?: string;
+	reflect?: boolean;
 }
 
 export interface ComponentMemberAttribute extends ComponentMemberSetterBase {
