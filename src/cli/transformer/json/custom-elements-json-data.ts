@@ -13,6 +13,7 @@ export interface HtmlDataMember {
 	description?: string;
 	values?: HtmlDataValue[];
 	valueSet?: string;
+	default?: object | string | number | boolean | null;
 
 	// Suggested fields:
 	jsDoc?: string;
