@@ -17,6 +17,7 @@ export interface HtmlDataMember {
 	// Suggested fields:
 	jsDoc?: string;
 	type?: any;
+	attribute?: string;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {}
