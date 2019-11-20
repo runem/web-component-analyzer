@@ -86,7 +86,8 @@ function componentCssPropToHtmlCssProp(prop: ComponentCSSProperty, checker: Type
 	return {
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc)
+		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc),
+		type: prop.type
 	};
 }
 

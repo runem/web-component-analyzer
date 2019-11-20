@@ -3,7 +3,8 @@
  * @fires change - Dispatched when this element changes
  * @slot - Default content placed in the body of this element
  * @slot header - Content placed in the header of this element
- * @cssprop --my-element-color - Controls the color of this element
+ * @cssprop {Color}  --my-element-color - Controls the color of this element
+ * @cssprop {Length}  --my-element-font-size - Controls the font-size in this element
  */
 export class MyCustomElement extends HTMLElement {
 	/**
