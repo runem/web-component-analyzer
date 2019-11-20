@@ -86,7 +86,8 @@ function componentCssPropToHtmlCssProp(prop: ComponentCSSProperty, checker: Type
 	return {
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc)
+		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc),
+		type: prop.type
 	};
 }
 
@@ -139,6 +140,7 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 			return {
 				name: member.propName,
 				default: member.default,
+				attribute: member.attrName,
 				description: getDescriptionFromJsDoc(member.jsDoc),
 				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
 				type: getJsDocTypeFromType(member.type, checker)
