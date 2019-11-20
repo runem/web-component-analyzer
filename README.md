@@ -13,6 +13,8 @@
 
 `web-component-analyzer` is a CLI that makes it possible to easily analyze web components. It analyzes your code and jsdoc in order to extract `properties`, `attributes`, `methods`, `events`, `slots`, `css shadow parts` and `css custom properties`. Works with both javascript and typescript.
 
+Try the online playground [here](https://runem.github.io/web-component-analyzer/)
+
 In addition to [vanilla web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements) this tool supports web components built with the following libraries:
 
 - [lit-element](https://github.com/Polymer/lit-element)
@@ -63,6 +65,8 @@ $ wca analyze my-element.js --outFile custom-elements.json
 wca analyze src --format json --outFile custom-elements.json
 ```
 
+Try the online playground [here](https://runem.github.io/web-component-analyzer?format=json)
+
 This json format is for experimental and demo purposes, and is still being actively discussed. You can expect changes to this format. Please follow and contribute to the discussion at:
 
 - https://github.com/webcomponents/custom-elements-json
@@ -73,6 +77,8 @@ This json format is for experimental and demo purposes, and is still being activ
 ```bash
 wca analyze src --format markdown --outDir readme
 ```
+
+Try the online playground [here](https://runem.github.io/web-component-analyzer?format=markdown)
 
 Web Component Analyzer can output markdown documentation of your web components. This can either be output into a single file using `--outFile` or into multiple files using `--outDir`.
 

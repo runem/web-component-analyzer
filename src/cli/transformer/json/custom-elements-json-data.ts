@@ -19,6 +19,7 @@ export interface HtmlDataMember {
 	type?: any;
 	default?: any;
 	required?: boolean;
+	attribute?: string;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {}
@@ -29,7 +30,10 @@ export interface HtmlDataSlot extends HtmlDataMember {}
 
 export interface HtmlDataEvent extends HtmlDataMember {}
 
-export interface HtmlDataCssProperty extends HtmlDataMember {}
+export interface HtmlDataCssProperty extends HtmlDataMember {
+	// Suggested fields:
+	type?: string;
+}
 
 export interface HtmlDataCssPart extends HtmlDataMember {}
 

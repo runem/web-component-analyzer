@@ -19,7 +19,8 @@ export function parseDeclarationCSSProps(node: Node, context: ParseComponentMemb
 				if (parsed.name != null) {
 					return {
 						name: parsed.name,
-						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined
+						jsDoc: parsed.comment != null ? { comment: parsed.comment } : undefined,
+						type: parsed.type
 					} as ComponentCSSProperty;
 				}
 			},
