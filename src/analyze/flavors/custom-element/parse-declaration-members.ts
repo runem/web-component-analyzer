@@ -59,19 +59,6 @@ export function parseDeclarationMembers(node: Node, context: ParseComponentMembe
 		}
 	}
 
-	// class { 'hello'?: number }
-	else if (ts.isConditionalExpression(node) && (ts.isStringLiteralLike(node.condition) || ts.isIdentifier(node.condition))) {
-		return [
-			{
-				kind: "property",
-				propName: node.condition.text,
-				type: checker.getTypeAtLocation(node),
-				jsDoc: getJsDoc(node, ts),
-				node
-			}
-		];
-	}
-
 	// class { set myProp(value: string) { ... } }
 	else if (ts.isSetAccessor(node) && hasPublicSetter(node, ts)) {
 		const { name, parameters } = node;
