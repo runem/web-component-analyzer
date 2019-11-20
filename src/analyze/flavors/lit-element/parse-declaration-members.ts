@@ -99,6 +99,7 @@ function parsePropertyDecorator(
 				kind: "property",
 				propName,
 				attrName,
+				reflect: litConfig.reflect,
 				type,
 				node,
 				default: def !== undefined ? def : litConfig.default,

@@ -6,6 +6,7 @@ import { FlavorVisitContext } from "../parse-component-flavor";
 export interface LitPropertyConfiguration {
 	type?: SimpleType | string;
 	attribute?: string | boolean;
+	reflect?: boolean;
 	node?: {
 		type?: Node;
 		attribute?: Node;
@@ -84,6 +85,10 @@ export function parseLitPropertyOption(
 	switch (kind) {
 		case "converter": {
 			return { ...config, hasConverter: true };
+		}
+
+		case "reflect": {
+			return { ...config, reflect: true };
 		}
 
 		case "attribute": {
