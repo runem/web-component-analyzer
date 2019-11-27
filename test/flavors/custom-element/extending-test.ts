@@ -28,14 +28,9 @@ declare global {
 		}
 	]);
 
-	const {
-		componentDefinitions: [
-			{
-				declaration: { members }
-			}
-		]
-	} = result;
+	const { members } = result.componentDefinitions[0]?.declaration();
 
+	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
 });
 
@@ -68,14 +63,9 @@ declare global {
 		}
 	]);
 
-	const {
-		componentDefinitions: [
-			{
-				declaration: { members }
-			}
-		]
-	} = result;
+	const { members } = result.componentDefinitions[0]?.declaration();
 
+	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
 });
 
@@ -105,14 +95,9 @@ declare global {
 		}
 	]);
 
-	const {
-		componentDefinitions: [
-			{
-				declaration: { members }
-			}
-		]
-	} = result;
+	const { members } = result.componentDefinitions[0]?.declaration();
 
+	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
 });
 
@@ -137,14 +122,9 @@ declare global {
 		}
 	]);
 
-	const {
-		componentDefinitions: [
-			{
-				declaration: { members }
-			}
-		]
-	} = result;
+	const { members } = result.componentDefinitions[0]?.declaration();
 
+	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
 });
 
@@ -169,13 +149,8 @@ declare global {
 		}
 	]);
 
-	const {
-		componentDefinitions: [
-			{
-				declaration: { members }
-			}
-		]
-	} = result;
+	const { members } = result.componentDefinitions[0]?.declaration();
 
+	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
 });

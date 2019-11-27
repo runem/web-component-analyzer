@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
-import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
 import { debugJsonTransformer } from "../../transformer/debug/debug-json-transformer";
 import { jsonTransformer } from "../../transformer/json/json-transformer";
@@ -83,7 +83,7 @@ Options:
 			// Analyze all globs
 			await analyzeGlobs(inputGlobs, config, {
 				...context,
-				emitAnalyzedFile: (file: SourceFile, result: AnalyzeComponentsResult, { program }): Promise<void> | void => {
+				emitAnalyzedFile: (file: SourceFile, result: AnalyzerResult, { program }): Promise<void> | void => {
 					// Write file to disc for each analyzed file
 					const definition = result.componentDefinitions[0];
 					if (definition == null) return;
@@ -127,7 +127,7 @@ Options:
 		else {
 			await analyzeGlobs(inputGlobs, config, {
 				...context,
-				emitAnalyzedFile: (file: SourceFile, result: AnalyzeComponentsResult, { program }): Promise<void> | void => {
+				emitAnalyzedFile: (file: SourceFile, result: AnalyzerResult, { program }): Promise<void> | void => {
 					// Only emit the result if there is in fact components in the file.
 					if (result.componentDefinitions.length > 0 || result.globalEvents.length > 0) {
 						const transformed = this.transformResults(result, program, config);
@@ -154,7 +154,7 @@ Options:
 	 * @param program
 	 * @param config
 	 */
-	private transformResults(results: AnalyzeComponentsResult[] | AnalyzeComponentsResult, program: Program, config: WcaCliConfig): string {
+	private transformResults(results: AnalyzerResult[] | AnalyzerResult, program: Program, config: WcaCliConfig): string {
 		results = Array.isArray(results) ? results : [results];
 
 		// Default format is "md"

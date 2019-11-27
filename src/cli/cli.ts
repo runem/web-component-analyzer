@@ -1,7 +1,6 @@
 import { VERSION } from "../analyze/constants";
 import { AnalyzeCliCommand } from "./cli-command/analyze/analyze-cli-command";
 import { CliCommand, CommandError } from "./cli-command/cli-command";
-import { DiagnoseCliCommand } from "./cli-command/diagnose/diagnose-cli-command";
 import { parseCliArguments } from "./parse-cli-arguments";
 import { WcaCliConfig } from "./wca-cli-arguments";
 
@@ -10,7 +9,7 @@ import { WcaCliConfig } from "./wca-cli-arguments";
  */
 export async function cli() {
 	// Available commands
-	const commands: CliCommand[] = [new AnalyzeCliCommand(), new DiagnoseCliCommand()];
+	const commands: CliCommand[] = [new AnalyzeCliCommand()];
 
 	// Parse arguments
 	const args = parseCliArguments(process.argv.slice(2));

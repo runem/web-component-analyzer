@@ -1,5 +1,5 @@
 import { Program } from "typescript";
-import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
+import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
 import { flatten } from "../../util";
 import { WcaCliConfig } from "../../wca-cli-arguments";
 
@@ -9,7 +9,7 @@ import { WcaCliConfig } from "../../wca-cli-arguments";
  * @param program
  * @param config
  */
-export function debugJsonTransformer(results: AnalyzeComponentsResult[], program: Program, config: WcaCliConfig): string {
+export function debugJsonTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
 	const definitions = flatten(results.map(res => res.componentDefinitions));
 	return JSON.stringify(stripTypescriptValues(definitions), null, 2);
 }

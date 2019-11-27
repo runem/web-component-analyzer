@@ -36,6 +36,7 @@ export class MyElement extends LitElement {
 			/**
 			 * This is a comment
 			 * @type {red|green}
+			 * @private
 			 */
 			myProp1: {
 				type: Object

@@ -1,10 +1,11 @@
 import test from "ava";
-import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
+import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeComponentsInCode } from "../../helpers/analyze-text";
-import { getComponentProp } from "../../helpers/util";
+import { assertHasMembers } from "../../helpers/util";
 
 test("Property assignments in the constructor are picked up", t => {
-	const { result, checker } = analyzeComponentsInCode(`
+	const { result, checker } = analyzeComponentsInCode(
+		`
 		class MyElement extends HTMLElement {
 			constructor () {
 				super();
@@ -22,42 +23,99 @@ test("Property assignments in the constructor are picked up", t => {
 				
 				this.location = { x: 0, y: 0 };
 				
-				this.#formatter = null;
+				this._formatter = null;
 				this._timeout = setTimeout(console.log, 1000);
 			}
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `);
+	 `,
+		"js"
+	);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
-	const titleProp = getComponentProp(members, "title");
-	t.truthy(titleProp);
-	t.is(titleProp!.jsDoc!.comment, "This is a property");
-	t.is(titleProp!.attrName, undefined);
-	t.is(titleProp!.default, "My title");
-	t.truthy(isAssignableToSimpleTypeKind(titleProp!.type, SimpleTypeKind.STRING, checker));
-
-	const darkModeProp = getComponentProp(members, "darkMode");
-	t.truthy(darkModeProp);
-	t.is(darkModeProp!.jsDoc!.comment, "This property also has an attribute");
-	t.is(darkModeProp!.attrName, "darkMode");
-	t.is(darkModeProp!.default, false);
-	t.truthy(isAssignableToSimpleTypeKind(darkModeProp!.type, SimpleTypeKind.BOOLEAN, checker));
-
-	const locationProp = getComponentProp(members, "location");
-	t.truthy(isAssignableToSimpleTypeKind(locationProp!.type, SimpleTypeKind.ANY, checker));
-	t.deepEqual(locationProp!.default, { x: 0, y: 0 });
-
-	t.is(getComponentProp(members, "#formatter"), undefined);
-	t.is(getComponentProp(members, "_timeout"), undefined);
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "title",
+				attrName: undefined,
+				jsDoc: {
+					description: "This is a property"
+				},
+				default: "My title",
+				type: () => ({ kind: SimpleTypeKind.STRING }),
+				visibility: undefined,
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			},
+			{
+				kind: "property",
+				propName: "darkMode",
+				attrName: "darkMode",
+				jsDoc: {
+					description: "This property also has an attribute"
+				},
+				default: false,
+				type: () => ({ kind: SimpleTypeKind.BOOLEAN }),
+				visibility: undefined,
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			},
+			{
+				kind: "property",
+				propName: "location",
+				attrName: undefined,
+				jsDoc: undefined,
+				default: { x: 0, y: 0 },
+				type: () => ({ kind: SimpleTypeKind.OBJECT }),
+				visibility: undefined,
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			},
+			{
+				kind: "property",
+				propName: "_formatter",
+				attrName: undefined,
+				jsDoc: undefined,
+				default: null,
+				type: () => ({ kind: SimpleTypeKind.ANY }),
+				visibility: "private",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			},
+			{
+				kind: "property",
+				propName: "_timeout",
+				attrName: undefined,
+				jsDoc: undefined,
+				default: undefined,
+				type: () => ({ kind: SimpleTypeKind.OBJECT }),
+				visibility: "private",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			}
+		],
+		t,
+		checker
+	);
 });
 
 test("Property assignments in the constructor are correctly merged", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result, checker } = analyzeComponentsInCode(
+		`
 	    /**
 	     * @attribute my-attr
 	     */
@@ -76,22 +134,39 @@ test("Property assignments in the constructor are correctly merged", t => {
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `);
+	 `,
+		"js"
+	);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
-	t.is(members.length, 1);
-
-	const fooProp = getComponentProp(members, "foo");
-	t.truthy(fooProp);
-	t.is(fooProp!.attrName, "my-attr");
-	t.is(fooProp!.default, "Bar");
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "foo",
+				attrName: "my-attr",
+				jsDoc: {
+					description: "This is a property"
+				},
+				default: "Bar",
+				type: () => ({ kind: SimpleTypeKind.STRING }),
+				visibility: undefined,
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			}
+		],
+		t,
+		checker
+	);
 });
 
 test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result, checker } = analyzeComponentsInCode(
+		`
 		class MyElement extends HTMLElement {
 			private foo;
 			
@@ -102,11 +177,30 @@ test("Property assignments in the constructor don't overwrite Typescript modifie
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `);
+	 `,
+		"js"
+	);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
-	t.is(members.length, 0);
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "foo",
+				attrName: undefined,
+				jsDoc: undefined,
+				default: "Bar",
+				type: () => ({ kind: SimpleTypeKind.STRING }),
+				visibility: "private",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined,
+				typeHint: undefined
+			}
+		],
+		t,
+		checker
+	);
 });

@@ -1,10 +1,10 @@
 import * as tsModule from "typescript";
-import { Program, Node } from "typescript";
+import { Node, Program } from "typescript";
+import { AnalyzerVisitContext } from "./analyzer-visit-context";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
-import { FlavorVisitContext } from "./flavors/parse-component-flavor";
-import { parseComponentDeclaration } from "./parse/parse-declaration";
-import { ComponentDeclaration } from "./types/component-declaration";
-import { ComponentDiagnostic } from "./types/component-diagnostic";
+import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
+import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
+import { ComponentDeclaration } from "./types/features/component-declaration";
 
 /**
  * This function analyzes only the HTMLElement declaration found in "lib.dom.d.ts" source file provided by Typescript.
@@ -25,16 +25,19 @@ export function analyzeLibDomHtmlElement(program: Program, ts: typeof tsModule =
 	return visit(domLibSourceFile, {
 		checker,
 		ts,
+		flavors: [new CustomElementFlavor()],
 		config: {
 			analyzeLibDom: true
 		},
-		emitDiagnostics(diagnostic: ComponentDiagnostic): void {}
+		cache: {
+			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE
+		}
 	});
 }
 
-function visit(node: Node, context: FlavorVisitContext): ComponentDeclaration | undefined {
+function visit(node: Node, context: AnalyzerVisitContext): ComponentDeclaration | undefined {
 	if (context.ts.isInterfaceDeclaration(node) && node.name.text === "HTMLElement") {
-		return parseComponentDeclaration(node, [new CustomElementFlavor()], context);
+		return analyzeComponentDeclaration(node, context);
 	}
 
 	return node.forEachChild(child => {

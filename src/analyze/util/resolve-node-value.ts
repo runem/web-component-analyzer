@@ -14,7 +14,10 @@ export interface Context {
  * @param node
  * @param context
  */
-export function resolveNodeValue(node: Node | undefined, context: Context): string | number | boolean | undefined | null {
+export function resolveNodeValue(
+	node: Node | undefined,
+	context: Context
+): { value: string | number | boolean | undefined | null; node: Node } | undefined {
 	if (node == null) return undefined;
 
 	const { ts, checker } = context;
@@ -25,27 +28,27 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 	if (depth > 10) return undefined;
 
 	if (ts.isStringLiteralLike(node)) {
-		return node.text;
+		return { value: node.text, node };
 	} else if (ts.isNumericLiteral(node)) {
-		return Number(node.text);
+		return { value: Number(node.text), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
 		try {
 			// Try to parse object literal expressions as JSON by converting it to something parsable
 			const regex = /([a-zA-Z1-9]*?):/gm;
-			const json = node.getText().replace(regex, (fullGroup, groupMatch) => `"${groupMatch}":`);
-			return JSON.parse(json);
+			const json = node.getText().replace(regex, m => `"${m[0]}":`);
+			return { value: JSON.parse(json), node };
 		} catch {
 			// If something crashes it probably means that the object is more complex.
 			// Therefore do nothing
 		}
 	} else if (node.kind === ts.SyntaxKind.TrueKeyword) {
-		return true;
+		return { value: true, node };
 	} else if (node.kind === ts.SyntaxKind.FalseKeyword) {
-		return false;
+		return { value: false, node };
 	} else if (node.kind === ts.SyntaxKind.NullKeyword) {
-		return null;
+		return { value: null, node };
 	} else if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
-		return undefined;
+		return { value: undefined, node };
 	}
 
 	// Resolve initializers for variable declarations
@@ -63,7 +66,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 		if (node.initializer != null) {
 			return resolveNodeValue(node.initializer, { ...context, depth });
 		} else {
-			return `${node.parent.name.text}.${node.name.getText()}`;
+			return { value: `${node.parent.name.text}.${node.name.getText()}`, node };
 		}
 	}
 

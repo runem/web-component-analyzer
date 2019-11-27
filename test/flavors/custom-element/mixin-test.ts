@@ -21,12 +21,11 @@ test("Handles simple mixin", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
+
 	const attributeNames = getAttributeNames(members);
 
-	t.deepEqual(attributeNames, ["c", "d", "a", "b"]);
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
 test("Handles 2 levels of mixins", t => {
@@ -56,12 +55,11 @@ test("Handles 2 levels of mixins", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
+
 	const attributeNames = getAttributeNames(members);
 
-	t.deepEqual(attributeNames, ["d", "c", "a"]);
+	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
 test("Handles mixins with properties", t => {
@@ -80,9 +78,7 @@ test("Handles mixins with properties", t => {
 		}
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
 	t.is(members.length, 2);
 	t.truthy(getComponentProp(members, "elementProperty"));
@@ -109,11 +105,9 @@ test("Handles mixins generated with factory functions", t => {
 		customElements.define("my-element", SomeElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
-	t.deepEqual(attributeNames, ["c", "d", "a", "b"]);
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
 test("Handles nested mixin extends", t => {
@@ -143,11 +137,9 @@ test("Handles nested mixin extends", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
-	t.deepEqual(attributeNames, ["d", "c", "a"]);
+	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
 test("Handles nested mixin wrapper functions", t => {
@@ -218,10 +210,8 @@ test("Handles nested mixin wrapper functions", t => {
 	customElements.define("at-text-field", AtTextField);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
 	const propertyNames = getPropertyNames(members);
-	t.deepEqual(propertyNames, ["f", "a", "b", "c", "d", "e", "g"]);
+	t.deepEqual(propertyNames, ["g", "f", "e", "d", "c", "b", "a"]);
 });

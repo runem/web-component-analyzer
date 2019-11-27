@@ -1,5 +1,5 @@
 import { Program } from "typescript";
-import { AnalyzeComponentsResult } from "../../analyze/analyze-components";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { WcaCliConfig } from "../wca-cli-arguments";
 
-export type AnalyzeTransformer = (results: AnalyzeComponentsResult[], program: Program, config: WcaCliConfig) => string;
+export type AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: WcaCliConfig) => string;

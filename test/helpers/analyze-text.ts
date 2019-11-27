@@ -11,7 +11,8 @@ import {
 	sys,
 	TypeChecker
 } from "typescript";
-import { analyzeComponents, AnalyzeComponentsResult } from "../../src/analyze/analyze-components";
+import { analyzeComponents } from "../../src/analyze/analyze-components";
+import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
 
 // tslint:disable:no-any
 
@@ -26,9 +27,12 @@ export type TestFile = ITestFile | string;
 /**
  * Analyzes components in code
  * @param {ITestFile[]|TestFile} inputFiles
- * @returns {Promise<{fileName: string, result: AnalyzeComponentsResult}[]>}
+ * @param defaultExtension
  */
-export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { result: AnalyzeComponentsResult; checker: TypeChecker } {
+export function analyzeComponentsInCode(
+	inputFiles: TestFile[] | TestFile,
+	defaultExtension: "ts" | "js" = "ts"
+): { result: AnalyzerResult; checker: TypeChecker } {
 	const cwd = process.cwd();
 
 	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
@@ -36,7 +40,7 @@ export function analyzeComponentsInCode(inputFiles: TestFile[] | TestFile): { re
 			typeof file === "string"
 				? {
 						text: file,
-						fileName: `auto-generated-${Math.floor(Math.random() * 100000)}.ts`,
+						fileName: `auto-generated-${Math.floor(Math.random() * 100000)}.${defaultExtension}`,
 						entry: true
 				  }
 				: file

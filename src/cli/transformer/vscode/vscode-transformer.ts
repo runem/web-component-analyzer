@@ -1,9 +1,9 @@
 import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
-import { AnalyzeComponentsResult } from "../../../analyze/analyze-components";
-import { ComponentDefinition } from "../../../analyze/types/component-definition";
-import { ComponentMember } from "../../../analyze/types/component-member";
-import { EventDeclaration } from "../../../analyze/types/event-types";
+import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
+import { ComponentDefinition } from "../../../analyze/types/features/component-definition";
+import { ComponentEvent } from "../../../analyze/types/features/component-event";
+import { ComponentMember } from "../../../analyze/types/features/component-member";
 import { JsDoc } from "../../../analyze/types/js-doc";
 import { WcaCliConfig } from "../../wca-cli-arguments";
 import { markdownHighlight } from "../util/markdown-util";
@@ -15,7 +15,7 @@ import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./
  * @param program
  * @param config
  */
-export function vscodeTransformer(results: AnalyzeComponentsResult[], program: Program, config: WcaCliConfig): string {
+export function vscodeTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
 	const checker = program.getTypeChecker();
 
 	// Grab all definitions
@@ -35,11 +35,13 @@ export function vscodeTransformer(results: AnalyzeComponentsResult[], program: P
 }
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker): HtmlDataTag {
+	const declaration = definition.declaration();
+
 	// Transform all members into "attributes"
-	const customElementAttributes = definition.declaration.members
+	const customElementAttributes = declaration.members
 		.map(d => componentMemberToVscodeAttr(d, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
-	const eventAttributes = definition.declaration.events
+	const eventAttributes = declaration.events
 		.map(e => componentEventToVscodeAttr(e, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
@@ -47,48 +49,42 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 
 	return {
 		name: definition.tagName,
-		description: formatMetadata(definition.declaration.jsDoc, {
-			Events: definition.declaration.events.map(e => formatEntryRow(e.name, e.jsDoc, e.type, checker)),
-			Slots: definition.declaration.slots.map(s =>
+		description: formatMetadata(declaration.jsDoc, {
+			Events: declaration.events.map(e => formatEntryRow(e.name, e.jsDoc, e.type?.(), checker)),
+			Slots: declaration.slots.map(s =>
 				formatEntryRow(s.name || " ", s.jsDoc, s.permittedTagNames && s.permittedTagNames.map(n => `"${markdownHighlight(n)}"`).join(" | "), checker)
 			),
-			Attributes: definition.declaration.members
-				.map(m => ("attrName" in m && m.attrName != null ? formatEntryRow(m.attrName, m.jsDoc, m.type, checker) : undefined))
+			Attributes: declaration.members
+				.map(m => ("attrName" in m && m.attrName != null ? formatEntryRow(m.attrName, m.jsDoc, m.typeHint || m.type?.(), checker) : undefined))
 				.filter(m => m != null),
-			Properties: definition.declaration.members
-				.map(m => ("propName" in m && m.propName != null ? formatEntryRow(m.propName, m.jsDoc, m.type, checker) : undefined))
+			Properties: declaration.members
+				.map(m => ("propName" in m && m.propName != null ? formatEntryRow(m.propName, m.jsDoc, m.typeHint || m.type?.(), checker) : undefined))
 				.filter(m => m != null)
 		}),
 		attributes
 	};
 }
 
-function componentEventToVscodeAttr(event: EventDeclaration, checker: TypeChecker): HtmlDataAttr | undefined {
+function componentEventToVscodeAttr(event: ComponentEvent, checker: TypeChecker): HtmlDataAttr | undefined {
 	return {
 		name: `on${event.name}`,
-		description: formatEntryRow(event.name, event.jsDoc, event.type, checker)
+		description: formatEntryRow(event.name, event.jsDoc, event.type?.(), checker)
 	};
 }
 
 function componentMemberToVscodeAttr(member: ComponentMember, checker: TypeChecker): HtmlDataAttr | undefined {
-	switch (member.kind) {
-		case "attribute":
-		case "property":
-			if (member.attrName == null) {
-				return undefined;
-			}
-
-			return {
-				name: member.attrName,
-				description: formatMetadata(formatEntryRow(member.attrName, member.jsDoc, member.type, checker), {
-					Property: "propName" in member ? member.propName : undefined,
-					Default: member.default === undefined ? undefined : String(member.default)
-				}),
-				...(typeToVscodeValuePart(member.type, checker) || {})
-			};
-		case "method":
-			return undefined;
+	if (member.attrName == null) {
+		return undefined;
 	}
+
+	return {
+		name: member.attrName,
+		description: formatMetadata(formatEntryRow(member.attrName, member.jsDoc, member.typeHint || member.type?.(), checker), {
+			Property: "propName" in member ? member.propName : undefined,
+			Default: member.default === undefined ? undefined : String(member.default)
+		}),
+		...((member.type && typeToVscodeValuePart(member.type?.(), checker)) || {})
+	};
 }
 
 /**
@@ -150,14 +146,14 @@ function formatMetadata(
 				if (filtered.length === 0) return undefined;
 
 				return `${key}:\n\n${filtered.map(v => `  * ${v}`).join(`\n\n`)}`;
-			} else if (typeof value === "string") {
+			} else {
 				return `${key}: ${value}`;
 			}
 		})
 		.filter((value): value is NonNullable<typeof value> => value != null)
 		.join(`\n\n`);
 
-	const comment = doc == null ? undefined : typeof doc === "string" ? doc : doc.comment && doc.comment;
+	const comment = typeof doc === "string" ? doc : doc?.description || "";
 
 	return `${comment || ""}${metadata ? `${comment ? `\n\n` : ""}${metaText}` : ""}` || undefined;
 }
@@ -170,8 +166,8 @@ function formatMetadata(
  * @param checker
  */
 function formatEntryRow(name: string, doc: JsDoc | string | undefined, type: Type | SimpleType | string | undefined, checker: TypeChecker): string {
-	const comment = doc == null ? undefined : typeof doc === "string" ? doc : doc.comment && doc.comment;
-	const typeText = type == null ? undefined : typeof type === "string" ? type : formatType(type, checker);
+	const comment = typeof doc === "string" ? doc : doc?.description || "";
+	const typeText = typeof type === "string" ? type : type == null ? "" : formatType(type, checker);
 
 	return `${markdownHighlight(name)}${typeText == null ? "" : ` \{${typeText}\}`}${comment == null ? "" : " - "}${comment || ""}`;
 }

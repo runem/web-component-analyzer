@@ -74,7 +74,8 @@ export function markdownEscapeTableCell(text: string): string {
  * Highlights some text
  * @param text
  */
-export function markdownHighlight(text: string): string {
+export function markdownHighlight(text: string | undefined): string {
+	if (text == null || text.length === 0) return "";
 	return `\`${text}\``;
 }
 

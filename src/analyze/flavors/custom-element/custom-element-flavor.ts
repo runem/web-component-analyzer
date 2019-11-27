@@ -1,35 +1,18 @@
-import { Node } from "typescript";
-import { ComponentMember } from "../../types/component-member";
-import { EventDeclaration } from "../../types/event-types";
-import {
-	ParseComponentFlavor,
-	ParseComponentMembersContext,
-	ParseVisitContextGlobalEvents,
-	VisitComponentDefinitionContext
-} from "../parse-component-flavor";
-import { parseDeclarationEvents } from "./parse-declaration-events";
-import { parseDeclarationMembers } from "./parse-declaration-members";
-import { visitComponentDefinitions } from "./visit-component-definitions";
-import { visitGlobalEvents } from "./visit-global-events";
+import { AnalyzerFlavor } from "../analyzer-flavor";
+import { discoverDefinitions } from "./discover-definitions";
+import { discoverEvents } from "./discover-events";
+import { discoverInheritance } from "./discover-inheritance";
+import { discoverMembers } from "./discover-members";
+import { discoverMethods } from "./discover-methods";
 
-/**
- * Custom element flavor.
- * This is the base flavor and affects many other flavors because it finds properties and definitions.
- */
-export class CustomElementFlavor implements ParseComponentFlavor {
-	visitComponentDefinitions(node: Node, context: VisitComponentDefinitionContext): void {
-		visitComponentDefinitions(node, context);
-	}
+export class CustomElementFlavor implements AnalyzerFlavor {
+	discoverDefinitions = discoverDefinitions;
 
-	parseDeclarationMembers(node: Node, context: ParseComponentMembersContext): ComponentMember[] | undefined {
-		return parseDeclarationMembers(node, context);
-	}
+	discoverFeatures = {
+		member: discoverMembers,
+		event: discoverEvents,
+		method: discoverMethods
+	};
 
-	parseDeclarationEvents(node: Node, context: ParseComponentMembersContext): EventDeclaration[] | undefined {
-		return parseDeclarationEvents(node, context);
-	}
-
-	visitGlobalEvents(node: Node, context: ParseVisitContextGlobalEvents): void {
-		visitGlobalEvents(node, context);
-	}
+	discoverInheritance = discoverInheritance;
 }

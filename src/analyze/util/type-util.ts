@@ -66,6 +66,10 @@ export function relaxType(type: SimpleType): SimpleType {
 				target: relaxType(type.target)
 			};
 
+		case SimpleTypeKind.NULL:
+		case SimpleTypeKind.UNDEFINED:
+			return { kind: SimpleTypeKind.ANY };
+
 		default:
 			return type;
 	}

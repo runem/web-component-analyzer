@@ -2,7 +2,8 @@ import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
 import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
-import { analyzeComponents, AnalyzeComponentsResult } from "../analyze/analyze-components";
+import { analyzeComponents } from "../analyze/analyze-components";
+import { AnalyzerResult } from "../analyze/types/analyzer-result";
 import { CompileResult, compileTypescript } from "./compile";
 import { flatten, prepareResultForPrettyPrint } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
@@ -18,7 +19,7 @@ export interface AnalyzeGlobsContext {
 	didExpandGlobs?(filePaths: string[]): void;
 	willAnalyzeFiles?(filePaths: string[]): void;
 	didFindTypescriptDiagnostics?(diagnostics: ReadonlyArray<Diagnostic>, options: { program: Program }): void;
-	emitAnalyzedFile?(file: SourceFile, result: AnalyzeComponentsResult, options: { program: Program }): Promise<void> | void;
+	emitAnalyzedFile?(file: SourceFile, result: AnalyzerResult, options: { program: Program }): Promise<void> | void;
 }
 
 /**
@@ -31,7 +32,7 @@ export async function analyzeGlobs(
 	globs: string[],
 	config: WcaCliConfig,
 	context: AnalyzeGlobsContext = {}
-): Promise<CompileResult & { results: AnalyzeComponentsResult[] }> {
+): Promise<CompileResult & { results: AnalyzerResult[] }> {
 	// Set default glob
 	if (globs.length === 0) {
 		globs = DEFAULT_GLOBS;
@@ -60,7 +61,7 @@ export async function analyzeGlobs(
 	}
 
 	// Analyze each file with web component analyzer
-	const results: AnalyzeComponentsResult[] = [];
+	const results: AnalyzerResult[] = [];
 	for (const file of files) {
 		// Analyze
 		const result = analyzeComponentsInFile(file, program, config);
@@ -84,7 +85,7 @@ export async function analyzeGlobs(
  * @param program
  * @param config
  */
-function analyzeComponentsInFile(file: SourceFile, program: Program, config: WcaCliConfig): AnalyzeComponentsResult {
+function analyzeComponentsInFile(file: SourceFile, program: Program, config: WcaCliConfig): AnalyzerResult {
 	const options = {
 		checker: program.getTypeChecker(),
 		config: config.analyze

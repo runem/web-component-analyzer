@@ -1,80 +1,52 @@
 import * as tsModule from "typescript";
-import { SourceFile, TypeChecker } from "typescript";
-import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
-import { JsDocFlavor } from "./flavors/js-doc/js-doc-flavor";
-import { LitElementFlavor } from "./flavors/lit-element/lit-element-flavor";
-import { FlavorVisitContext, ParseComponentFlavor } from "./flavors/parse-component-flavor";
-import { StencilFlavor } from "./flavors/stencil/stencil-flavor";
-import { parseComponentDefinitions } from "./parse/parse-definitions";
-import { parseGlobalEvents } from "./parse/parse-global-events";
-import { ComponentDefinition } from "./types/component-definition";
-import { ComponentDiagnostic } from "./types/component-diagnostic";
-import { EventDeclaration } from "./types/event-types";
-
-const DEFAULT_FLAVORS = [new LitElementFlavor(), new CustomElementFlavor(), new JsDocFlavor(), new StencilFlavor()];
-
-/**
- * Options to give when analyzing components
- */
-export interface AnalyzeComponentsOptions {
-	checker: TypeChecker;
-	ts?: typeof tsModule;
-	flavors?: ParseComponentFlavor[];
-	config?: AnalyzeComponentsConfig;
-}
-
-/**
- * Configuration to give when analyzing components.
- */
-export interface AnalyzeComponentsConfig {
-	diagnostics?: boolean;
-	analyzeLibDom?: boolean;
-	excludedDeclarationNames?: string[];
-}
-
-/**
- * The result returned after components have been analyzed.
- */
-export interface AnalyzeComponentsResult {
-	sourceFile: SourceFile;
-	componentDefinitions: ComponentDefinition[];
-	globalEvents: EventDeclaration[];
-	diagnostics: ComponentDiagnostic[];
-}
+import { SourceFile } from "typescript";
+import { AnalyzerVisitContext } from "./analyzer-visit-context";
+import { DEFAULT_FEATURE_COLLECTION_CACHE, DEFAULT_FLAVORS } from "./constants";
+import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
+import { discoverDefinitions } from "./stages/discover-definitions";
+import { AnalyzerOptions } from "./types/analyzer-options";
+import { AnalyzerResult } from "./types/analyzer-result";
+import { ALL_COMPONENT_FEATURES } from "./types/features/component-feature";
 
 /**
  * Analyzes all components in a source file.
  * @param sourceFile
  * @param options
  */
-export function analyzeComponents(sourceFile: SourceFile, options: AnalyzeComponentsOptions): AnalyzeComponentsResult {
-	const diagnostics: ComponentDiagnostic[] = [];
-
+export function analyzeComponents(sourceFile: SourceFile, options: AnalyzerOptions): AnalyzerResult {
 	// Assign defaults
 	const flavors = options.flavors || DEFAULT_FLAVORS;
 	const ts = options.ts || tsModule;
 	const checker = options.checker;
 
 	// Create context
-	const context: FlavorVisitContext = {
+	const context: AnalyzerVisitContext = {
 		checker,
 		ts,
-		config: options.config || {},
-		emitDiagnostics(diagnostic: ComponentDiagnostic): void {
-			diagnostics.push(diagnostic);
+		flavors,
+		cache: {
+			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE
+		},
+		config: {
+			analyzeLibDom: false,
+			excludedDeclarationNames: [],
+			features: ALL_COMPONENT_FEATURES,
+			...(options.config || {})
 		}
 	};
 
 	// Parse all components
-	const componentDefinitions = parseComponentDefinitions(sourceFile, flavors, context);
+	const componentDefinitions = discoverDefinitions(sourceFile, context, declarationNodes =>
+		analyzeComponentDeclaration(Array.from(declarationNodes)[0], context)
+	);
 
 	// Parse all global events
-	const globalEvents = parseGlobalEvents(sourceFile, flavors, context);
+	//const globalEvents = parseGlobalEvents(sourceFile, flavors, context);
 
 	return {
 		sourceFile,
-		globalEvents,
 		componentDefinitions,
-		diagnostics
+		globalEvents: [],
+		globalMembers: []
 	};
 }
