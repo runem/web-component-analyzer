@@ -1,11 +1,12 @@
 import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("Property assignments in the constructor are picked up", t => {
-	const { result, checker } = analyzeComponentsInCode(
-		`
+	const { result, checker } = analyzeText({
+		fileName: "test.js",
+		text: `
 		class MyElement extends HTMLElement {
 			constructor () {
 				super();
@@ -29,9 +30,8 @@ test("Property assignments in the constructor are picked up", t => {
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `,
-		"js"
-	);
+	 `
+	});
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 
@@ -114,8 +114,9 @@ test("Property assignments in the constructor are picked up", t => {
 });
 
 test("Property assignments in the constructor are correctly merged", t => {
-	const { result, checker } = analyzeComponentsInCode(
-		`
+	const { result, checker } = analyzeText({
+		fileName: "test.js",
+		text: `
 	    /**
 	     * @attribute my-attr
 	     */
@@ -134,9 +135,8 @@ test("Property assignments in the constructor are correctly merged", t => {
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `,
-		"js"
-	);
+	 `
+	});
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 
@@ -165,8 +165,9 @@ test("Property assignments in the constructor are correctly merged", t => {
 });
 
 test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
-	const { result, checker } = analyzeComponentsInCode(
-		`
+	const { result, checker } = analyzeText({
+		fileName: "test.js",
+		text: `
 		class MyElement extends HTMLElement {
 			private foo;
 			
@@ -177,9 +178,8 @@ test("Property assignments in the constructor don't overwrite Typescript modifie
 		}
 		
 		customElements.define("my-element", MyElement);
-	 `,
-		"js"
-	);
+	 `
+	});
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 

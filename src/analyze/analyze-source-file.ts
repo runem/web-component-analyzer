@@ -13,7 +13,7 @@ import { ALL_COMPONENT_FEATURES } from "./types/features/component-feature";
  * @param sourceFile
  * @param options
  */
-export function analyzeComponents(sourceFile: SourceFile, options: AnalyzerOptions): AnalyzerResult {
+export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptions): AnalyzerResult {
 	// Assign defaults
 	const flavors = options.flavors || DEFAULT_FLAVORS;
 	const ts = options.ts || tsModule;

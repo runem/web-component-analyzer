@@ -2,7 +2,7 @@ import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
 import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
-import { analyzeComponents } from "../analyze/analyze-components";
+import { analyzeSourceFile } from "../analyze/analyze-source-file";
 import { AnalyzerResult } from "../analyze/types/analyzer-result";
 import { arrayFlat } from "../util/array-util";
 import { CompileResult, compileTypescript } from "./compile";
@@ -92,7 +92,7 @@ function analyzeComponentsInFile(file: SourceFile, program: Program, config: Ana
 		config: config.analyze
 	};
 
-	return analyzeComponents(file, options);
+	return analyzeSourceFile(file, options);
 }
 
 /**

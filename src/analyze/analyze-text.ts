@@ -1,4 +1,3 @@
-import { join } from "path";
 import {
 	CompilerOptions,
 	createProgram,
@@ -11,41 +10,33 @@ import {
 	sys,
 	TypeChecker
 } from "typescript";
-import { analyzeComponents } from "../../src/analyze/analyze-components";
-import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
+import { analyzeSourceFile } from "./analyze-source-file";
+import { AnalyzerResult } from "./types/analyzer-result";
 
-// tslint:disable:no-any
-
-export interface ITestFile {
+export interface IVirtualSourceFile {
 	fileName: string;
 	text?: string;
 	entry?: boolean;
 }
 
-export type TestFile = ITestFile | string;
+export type VirtualSourceFile = IVirtualSourceFile | string;
 
 /**
  * Analyzes components in code
- * @param {ITestFile[]|TestFile} inputFiles
- * @param defaultExtension
+ * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
  */
-export function analyzeComponentsInCode(
-	inputFiles: TestFile[] | TestFile,
-	defaultExtension: "ts" | "js" = "ts"
-): { result: AnalyzerResult; checker: TypeChecker } {
-	const cwd = process.cwd();
-
-	const files: ITestFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
+export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile): { result: AnalyzerResult; checker: TypeChecker } {
+	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
 			typeof file === "string"
 				? {
 						text: file,
-						fileName: `auto-generated-${Math.floor(Math.random() * 100000)}.${defaultExtension}`,
+						fileName: `auto-generated-${Math.floor(Math.random() * 100000)}.ts`,
 						entry: true
 				  }
 				: file
 		)
-		.map(file => ({ ...file, fileName: join(cwd, file.fileName) }));
+		.map(file => ({ ...file, fileName: file.fileName }));
 
 	const entryFile = files.find(file => file.entry === true) || files[0];
 	if (entryFile == null) {
@@ -78,7 +69,7 @@ export function analyzeComponentsInCode(
 				const sourceText = this.readFile(fileName);
 				if (sourceText == null) return undefined;
 
-				return createSourceFile(fileName, sourceText, languageVersion, true, ScriptKind.TS);
+				return createSourceFile(fileName, sourceText, languageVersion, true, fileName.endsWith(".js") ? ScriptKind.JS : ScriptKind.TS);
 			},
 
 			getCurrentDirectory() {
@@ -114,6 +105,6 @@ export function analyzeComponentsInCode(
 
 	return {
 		checker,
-		result: analyzeComponents(entrySourceFile, { checker })
+		result: analyzeSourceFile(entrySourceFile, { checker })
 	};
 }

@@ -1,9 +1,9 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("Correctly extends interface with interface from different file", t => {
-	const { result } = analyzeComponentsInCode([
+	const { result } = analyzeText([
 		{
 			fileName: "base.ts",
 			text: `
@@ -35,7 +35,7 @@ declare global {
 });
 
 test("Correctly extends interface with interface+value from different file", t => {
-	const { result } = analyzeComponentsInCode([
+	const { result } = analyzeText([
 		{
 			fileName: "base.ts",
 			text: `
@@ -70,7 +70,7 @@ declare global {
 });
 
 test("Correctly extends class with class from different file", t => {
-	const { result } = analyzeComponentsInCode([
+	const { result } = analyzeText([
 		{
 			fileName: "base.ts",
 			text: `
@@ -102,7 +102,7 @@ declare global {
 });
 
 test("Correctly extends interface with interface from same file", t => {
-	const { result } = analyzeComponentsInCode([
+	const { result } = analyzeText([
 		{
 			fileName: "main.ts",
 			entry: true,
@@ -129,7 +129,7 @@ declare global {
 });
 
 test("Correctly extends class with class from same file", t => {
-	const { result } = analyzeComponentsInCode([
+	const { result } = analyzeText([
 		{
 			fileName: "main.ts",
 			entry: true,

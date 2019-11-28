@@ -1,5 +1,6 @@
-export * from "./analyze-components";
-export * from "./analyze-lib-dom";
+export * from "./analyze-source-file";
+export * from "./analyze-text";
+export * from "./analyze-html-element";
 export * from "./analyzer-visit-context";
 
 export { VERSION } from "./constants";

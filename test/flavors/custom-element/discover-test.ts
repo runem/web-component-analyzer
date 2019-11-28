@@ -1,8 +1,8 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("Discovers elements defined using customElements.define", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -16,7 +16,7 @@ test("Discovers elements defined using customElements.define", t => {
 });
 
 test("Discovers elements defined using window.customElements.define", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -30,7 +30,7 @@ test("Discovers elements defined using window.customElements.define", t => {
 });
 
 test("Discovers only one element defined using multiple customElements.define", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -53,7 +53,7 @@ test("Discovers only one element defined using multiple customElements.define", 
 });
 
 test("Does not discover elements defined using custom define function", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 		function define (tagName: string, elem: any) {}
 		
 		class MyElement extends HTMLElement {

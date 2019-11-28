@@ -1,10 +1,10 @@
 import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("litElement: Discovers properties from 'static get properties'", t => {
-	const { result, checker } = analyzeComponentsInCode(`
+	const { result, checker } = analyzeText(`
 	/**
 	 * @element
 	 */

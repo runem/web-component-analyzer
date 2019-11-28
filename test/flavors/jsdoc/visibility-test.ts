@@ -1,9 +1,9 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("jsDoc: Handles visibility modifier on internal event", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 		/**
 		 * @element
 	     */
@@ -26,8 +26,9 @@ test("jsDoc: Handles visibility modifier on internal event", t => {
 });
 
 test("jsDoc: Handles visibility modifier on constructor assignment", t => {
-	const { result } = analyzeComponentsInCode(
-		`
+	const { result } = analyzeText({
+		fileName: "test.js",
+		text: `
 		/**
 		 * @element
 	     */
@@ -40,9 +41,8 @@ test("jsDoc: Handles visibility modifier on constructor assignment", t => {
 				this.foo = "bar";
 			}	
 		}
-	 `,
-		"js"
-	);
+	 `
+	});
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 

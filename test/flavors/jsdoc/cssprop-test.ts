@@ -1,8 +1,8 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers css properties with @cssprop", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 	/**
 	 * @element
 	 * @cssprop --this-is-a-css-prop  - This is a comment
@@ -19,7 +19,7 @@ test("jsdoc: Discovers css properties with @cssprop", t => {
 });
 
 test("jsdoc: Discovers css properties with @cssproperty", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 	/**
 	 * @element
 	 * @cssproperty --this-is-a-css-prop  - This is a comment

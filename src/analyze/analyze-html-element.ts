@@ -1,9 +1,9 @@
 import * as tsModule from "typescript";
 import { Node, Program } from "typescript";
 import { AnalyzerVisitContext } from "./analyzer-visit-context";
+import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
-import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
 import { ComponentDeclaration } from "./types/component-declaration";
 
 /**
@@ -11,7 +11,7 @@ import { ComponentDeclaration } from "./types/component-declaration";
  * @param program
  * @param ts
  */
-export function analyzeLibDomHtmlElement(program: Program, ts: typeof tsModule = tsModule): ComponentDeclaration | undefined {
+export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsModule): ComponentDeclaration | undefined {
 	const checker = program.getTypeChecker();
 
 	const endsWithLibDom = "lib.dom.d.ts";

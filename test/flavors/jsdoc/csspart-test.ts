@@ -1,8 +1,8 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers css parts with @csspart", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 	/**
 	 * @element
 	 * @csspart thumb - This is a comment

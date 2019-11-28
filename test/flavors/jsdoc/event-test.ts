@@ -1,9 +1,9 @@
 import test from "ava";
 import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind } from "ts-simple-type";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
+import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers custom events with @fires", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 	/**
 	 * @element
 	 * @fires my-event - This is a comment
@@ -21,7 +21,7 @@ test("jsdoc: Discovers custom events with @fires", t => {
 });
 
 test("jsdoc: Discovers the detail type of custom events with @fires", t => {
-	const { result } = analyzeComponentsInCode(`
+	const { result } = analyzeText(`
 	/**
 	 * @element
 	 * @fires {string} my-event
