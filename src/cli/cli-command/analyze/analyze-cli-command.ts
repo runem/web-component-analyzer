@@ -2,11 +2,8 @@ import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
-import { debugJsonTransformer } from "../../../transformers/debug/debug-json-transformer";
-import { jsonTransformer } from "../../../transformers/json/json-transformer";
-import { markdownTransformer } from "../../../transformers/markdown/markdown-transformer";
+import { transformAnalyzerResult } from "../../../transformers/transform-analyzer-result";
 import { TransformerConfig } from "../../../transformers/transformer-config";
-import { vscodeTransformer } from "../../../transformers/vscode/vscode-transformer";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
 import { AnalyzerCliConfig } from "../../analyzer-cli-config";
 import { CliCommand, CommandError } from "../cli-command";
@@ -158,32 +155,23 @@ Options:
 	private transformResults(results: AnalyzerResult[] | AnalyzerResult, program: Program, config: AnalyzerCliConfig): string {
 		results = Array.isArray(results) ? results : [results];
 
-		// Default format is "md"
-		const format = config.format || "md";
+		// Default format is "markdown"
+		const format = config.format || "markdown";
 
 		const transformerConfig: TransformerConfig = {
 			visibility: config.visibility || "public",
 			markdown: config.markdown
 		};
 
-		switch (format) {
-			case "md":
-			case "markdown":
-				return markdownTransformer(results, program, transformerConfig);
-			case "vscode":
-				return vscodeTransformer(results, program, transformerConfig);
-			case "debug":
-				return debugJsonTransformer(results, program, transformerConfig);
-			case "json":
-				console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-				console.log(`  WARNING: This json format is for experimental and demo purposes. You can expect changes to this format.`);
-				console.log(`  Please follow and contribute to the discussion at:`);
-				console.log(`  - https://github.com/webcomponents/custom-elements-json`);
-				console.log(`  - https://github.com/w3c/webcomponents/issues/776`);
-				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n`);
-				return jsonTransformer(results, program, transformerConfig);
-			default:
-				throw new CommandError(`Invalid output format '${config.format}'`);
+		if (format === "json") {
+			console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+			console.log(`  WARNING: This json format is for experimental and demo purposes. You can expect changes to this format.`);
+			console.log(`  Please follow and contribute to the discussion at:`);
+			console.log(`  - https://github.com/webcomponents/custom-elements-json`);
+			console.log(`  - https://github.com/w3c/webcomponents/issues/776`);
+			console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n`);
 		}
+
+		return transformAnalyzerResult(format, results, program, transformerConfig);
 	}
 }

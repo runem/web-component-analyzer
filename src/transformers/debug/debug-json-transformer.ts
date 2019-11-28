@@ -1,7 +1,7 @@
 import { Program } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { arrayFlat } from "../../util/array-util";
-import { AnalyzeTransformer } from "../transformer";
+import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
 
 /**
@@ -10,7 +10,7 @@ import { TransformerConfig } from "../transformer-config";
  * @param program
  * @param config
  */
-export const debugJsonTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+export const debugJsonTransformer: TransformerFunction = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 	return JSON.stringify(stripTypescriptValues(definitions), null, 2);
 };

@@ -6,7 +6,7 @@ import { ComponentEvent } from "../../analyze/types/features/component-event";
 import { ComponentMember } from "../../analyze/types/features/component-member";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { markdownHighlight } from "../markdown/markdown-util";
-import { AnalyzeTransformer } from "../transformer";
+import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
 import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./vscode-html-data";
 
@@ -16,7 +16,7 @@ import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./
  * @param program
  * @param config
  */
-export const vscodeTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+export const vscodeTransformer: TransformerFunction = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	const checker = program.getTypeChecker();
 
 	// Grab all definitions

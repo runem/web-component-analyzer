@@ -10,7 +10,7 @@ import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { arrayFlat } from "../../util/array-util";
 import { filterVisibility } from "../../util/model-util";
-import { AnalyzeTransformer } from "../transformer";
+import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
 import { markdownHeader, markdownHighlight, markdownTable } from "./markdown-util";
 
@@ -20,7 +20,7 @@ import { markdownHeader, markdownHighlight, markdownTable } from "./markdown-uti
  * @param program
  * @param config
  */
-export const markdownTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+export const markdownTransformer: TransformerFunction = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	// Grab all definitions
 	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 

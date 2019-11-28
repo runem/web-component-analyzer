@@ -10,7 +10,7 @@ import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { arrayFlat } from "../../util/array-util";
 import { filterVisibility } from "../../util/model-util";
-import { AnalyzeTransformer } from "../transformer";
+import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
 import {
 	HtmlData,
@@ -29,7 +29,7 @@ import {
  * @param program
  * @param config
  */
-export const jsonTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+export const jsonTransformer: TransformerFunction = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	const checker = program.getTypeChecker();
 
 	// Get all definitions
