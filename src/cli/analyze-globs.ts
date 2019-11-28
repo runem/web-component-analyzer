@@ -4,8 +4,9 @@ import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
 import { analyzeComponents } from "../analyze/analyze-components";
 import { AnalyzerResult } from "../analyze/types/analyzer-result";
+import { arrayFlat } from "../util/array-util";
 import { CompileResult, compileTypescript } from "./compile";
-import { flatten, prepareResultForPrettyPrint } from "./util";
+import { prepareResultForPrettyPrint } from "./util";
 import { WcaCliConfig } from "./wca-cli-arguments";
 
 const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
@@ -102,7 +103,7 @@ function analyzeComponentsInFile(file: SourceFile, program: Program, config: Wca
 async function expandGlobs(globs: string | string[], config: WcaCliConfig): Promise<string[]> {
 	globs = Array.isArray(globs) ? globs : [globs];
 
-	return flatten(
+	return arrayFlat(
 		await Promise.all(
 			globs.map(g => {
 				try {

@@ -1,15 +1,17 @@
 import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
-import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
-import { ComponentCssPart } from "../../../analyze/types/features/component-css-part";
-import { ComponentCssProperty } from "../../../analyze/types/features/component-css-property";
-import { ComponentEvent } from "../../../analyze/types/features/component-event";
-import { ComponentMemberAttribute, ComponentMemberProperty } from "../../../analyze/types/features/component-member";
-import { ComponentMethod } from "../../../analyze/types/features/component-method";
-import { ComponentSlot } from "../../../analyze/types/features/component-slot";
-import { filterVisibility, flatten } from "../../util";
-import { WcaCliConfig } from "../../wca-cli-arguments";
-import { markdownHeader, markdownHighlight, markdownTable } from "../util/markdown-util";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
+import { ComponentCssPart } from "../../analyze/types/features/component-css-part";
+import { ComponentCssProperty } from "../../analyze/types/features/component-css-property";
+import { ComponentEvent } from "../../analyze/types/features/component-event";
+import { ComponentMemberAttribute, ComponentMemberProperty } from "../../analyze/types/features/component-member";
+import { ComponentMethod } from "../../analyze/types/features/component-method";
+import { ComponentSlot } from "../../analyze/types/features/component-slot";
+import { arrayFlat } from "../../util/array-util";
+import { filterVisibility } from "../../util/model-util";
+import { AnalyzeTransformer } from "../transformer";
+import { TransformerConfig } from "../transformer-config";
+import { markdownHeader, markdownHighlight, markdownTable } from "./markdown-util";
 
 /**
  * Transforms the component results to markdown
@@ -17,9 +19,9 @@ import { markdownHeader, markdownHighlight, markdownTable } from "../util/markdo
  * @param program
  * @param config
  */
-export function markdownTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
+export const markdownTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	// Grab all definitions
-	const definitions = flatten(results.map(res => res.componentDefinitions));
+	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 
 	// Transform all definitions to markdown
 	const markdownSegments = definitions.map(definition => {
@@ -30,19 +32,18 @@ export function markdownTransformer(results: AnalyzerResult[], program: Program,
 
 		// Add component jsdoc comment to the output
 		if (declaration.jsDoc?.description != null) segmentText += `\n\n${declaration.jsDoc?.description}\n`;
-		console.log(config);
 
 		// Grab all items from the component and add them as tables to the output.
 		const properties = filterVisibility(
-			config.visibility || "public",
+			config.visibility,
 			declaration.members.filter((m): m is ComponentMemberProperty => m.kind === "property").sort((a, b) => (a.propName < b.propName ? -1 : 1))
 		);
 		const attributes = filterVisibility(
-			config.visibility || "public",
+			config.visibility,
 			declaration.members.filter((m): m is ComponentMemberAttribute => m.kind === "attribute").sort((a, b) => (a.attrName < b.attrName ? -1 : 1))
 		);
 		const methods = filterVisibility(
-			config.visibility || "public",
+			config.visibility,
 			declaration.methods.sort((a, b) => (a.name < b.name ? -1 : 1))
 		);
 		const slots = declaration.slots.sort((a, b) => (a.name == null ? -1 : b.name == null ? 1 : a.name < b.name ? -1 : 1));
@@ -82,14 +83,14 @@ export function markdownTransformer(results: AnalyzerResult[], program: Program,
 	});
 
 	return markdownSegments.join("\n\n");
-}
+};
 
 /**
  * Returns a markdown table with css props
  * @param cssProperty
  * @param config
  */
-function cssPropSection(cssProperty: ComponentCssProperty[], config: WcaCliConfig): string {
+function cssPropSection(cssProperty: ComponentCssProperty[], config: TransformerConfig): string {
 	const rows: string[][] = [["Property", "Description"]];
 	rows.push(...cssProperty.map(prop => [(prop.name && markdownHighlight(prop.name)) || "", prop.jsDoc?.description || ""]));
 	return markdownHeader("CSS Custom Properties", 2, config) + "\n" + markdownTable(rows);
@@ -100,7 +101,7 @@ function cssPropSection(cssProperty: ComponentCssProperty[], config: WcaCliConfi
  * @param cssPart
  * @param config
  */
-function cssPartSection(cssPart: ComponentCssPart[], config: WcaCliConfig): string {
+function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig): string {
 	const rows: string[][] = [["Part", "Description"]];
 	rows.push(...cssPart.map(part => [(part.name && markdownHighlight(part.name)) || "", part.jsDoc?.description || ""]));
 	return markdownHeader("CSS Shadow Parts", 2, config) + "\n" + markdownTable(rows);
@@ -112,7 +113,7 @@ function cssPartSection(cssPart: ComponentCssPart[], config: WcaCliConfig): stri
  * @param checker
  * @param config
  */
-function methodSection(methods: ComponentMethod[], checker: TypeChecker, config: WcaCliConfig): string {
+function methodSection(methods: ComponentMethod[], checker: TypeChecker, config: TransformerConfig): string {
 	const rows: string[][] = [["Method", "Description"]];
 	rows.push(...methods.map(method => [(method.name && markdownHighlight(method.name)) || "", method.jsDoc?.description || ""]));
 	return markdownHeader("Methods", 2, config) + "\n" + markdownTable(rows);
@@ -124,7 +125,7 @@ function methodSection(methods: ComponentMethod[], checker: TypeChecker, config:
  * @param config
  * @param checker
  */
-function eventSection(events: ComponentEvent[], checker: TypeChecker, config: WcaCliConfig): string {
+function eventSection(events: ComponentEvent[], checker: TypeChecker, config: TransformerConfig): string {
 	const rows: string[][] = [["Event", "Detail", "Description"]];
 	rows.push(
 		...events.map(event => [
@@ -141,7 +142,7 @@ function eventSection(events: ComponentEvent[], checker: TypeChecker, config: Wc
  * @param slots
  * @param config
  */
-function slotSection(slots: ComponentSlot[], config: WcaCliConfig): string {
+function slotSection(slots: ComponentSlot[], config: TransformerConfig): string {
 	const rows: string[][] = [["Name", "Permitted Tag Names", "Description"]];
 	rows.push(
 		...slots.map(slot => [
@@ -159,7 +160,7 @@ function slotSection(slots: ComponentSlot[], config: WcaCliConfig): string {
  * @param checker
  * @param config
  */
-function memberAttributeSection(members: ComponentMemberAttribute[], checker: TypeChecker, config: WcaCliConfig): string {
+function memberAttributeSection(members: ComponentMemberAttribute[], checker: TypeChecker, config: TransformerConfig): string {
 	const rows: string[][] = [["Attribute", "Type", "Default", "Description"]];
 
 	// Add members as rows one by one
@@ -181,7 +182,7 @@ function memberAttributeSection(members: ComponentMemberAttribute[], checker: Ty
  * @param checker
  * @param config
  */
-function memberPropertySection(members: ComponentMemberProperty[], checker: TypeChecker, config: WcaCliConfig): string {
+function memberPropertySection(members: ComponentMemberProperty[], checker: TypeChecker, config: TransformerConfig): string {
 	const rows: string[][] = [["Property", "Attribute", "Type", "Default", "Description"]];
 
 	// Add properties as rows one by one

@@ -2,11 +2,12 @@ import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
 import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
+import { debugJsonTransformer } from "../../../transformers/debug/debug-json-transformer";
+import { jsonTransformer } from "../../../transformers/json/json-transformer";
+import { markdownTransformer } from "../../../transformers/markdown/markdown-transformer";
+import { TransformerConfig } from "../../../transformers/transformer-config";
+import { vscodeTransformer } from "../../../transformers/vscode/vscode-transformer";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
-import { debugJsonTransformer } from "../../transformer/debug/debug-json-transformer";
-import { jsonTransformer } from "../../transformer/json/json-transformer";
-import { markdownTransformer } from "../../transformer/markdown/markdown-transformer";
-import { vscodeTransformer } from "../../transformer/vscode/vscode-transformer";
 import { WcaCliConfig } from "../../wca-cli-arguments";
 import { CliCommand, CommandError } from "../cli-command";
 
@@ -160,14 +161,19 @@ Options:
 		// Default format is "md"
 		const format = config.format || "md";
 
+		const transformerConfig: TransformerConfig = {
+			visibility: config.visibility || "public",
+			markdown: config.markdown
+		};
+
 		switch (format) {
 			case "md":
 			case "markdown":
-				return markdownTransformer(results, program, config);
+				return markdownTransformer(results, program, transformerConfig);
 			case "vscode":
-				return vscodeTransformer(results, program, config);
+				return vscodeTransformer(results, program, transformerConfig);
 			case "debug":
-				return debugJsonTransformer(results, program, config);
+				return debugJsonTransformer(results, program, transformerConfig);
 			case "json":
 				console.log(`\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
 				console.log(`  WARNING: This json format is for experimental and demo purposes. You can expect changes to this format.`);
@@ -175,7 +181,7 @@ Options:
 				console.log(`  - https://github.com/webcomponents/custom-elements-json`);
 				console.log(`  - https://github.com/w3c/webcomponents/issues/776`);
 				console.log(`!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n`);
-				return jsonTransformer(results, program, config);
+				return jsonTransformer(results, program, transformerConfig);
 			default:
 				throw new CommandError(`Invalid output format '${config.format}'`);
 		}

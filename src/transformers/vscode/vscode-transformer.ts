@@ -1,12 +1,13 @@
 import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
-import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
-import { ComponentDefinition } from "../../../analyze/types/features/component-definition";
-import { ComponentEvent } from "../../../analyze/types/features/component-event";
-import { ComponentMember } from "../../../analyze/types/features/component-member";
-import { JsDoc } from "../../../analyze/types/js-doc";
-import { WcaCliConfig } from "../../wca-cli-arguments";
-import { markdownHighlight } from "../util/markdown-util";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
+import { ComponentDefinition } from "../../analyze/types/component-definition";
+import { ComponentEvent } from "../../analyze/types/features/component-event";
+import { ComponentMember } from "../../analyze/types/features/component-member";
+import { JsDoc } from "../../analyze/types/js-doc";
+import { markdownHighlight } from "../markdown/markdown-util";
+import { AnalyzeTransformer } from "../transformer";
+import { TransformerConfig } from "../transformer-config";
 import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./vscode-html-data";
 
 /**
@@ -15,7 +16,7 @@ import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./
  * @param program
  * @param config
  */
-export function vscodeTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
+export const vscodeTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	const checker = program.getTypeChecker();
 
 	// Grab all definitions
@@ -32,7 +33,7 @@ export function vscodeTransformer(results: AnalyzerResult[], program: Program, c
 	};
 
 	return JSON.stringify(vscodeJson, null, 2);
-}
+};
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker): HtmlDataTag {
 	const declaration = definition.declaration();

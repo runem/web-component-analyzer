@@ -1,4 +1,4 @@
-import { WcaCliConfig } from "../../wca-cli-arguments";
+import { TransformerConfig } from "../transformer-config";
 
 /**
  * Returns a markdown header with a specific level taking global start title level into account.
@@ -6,8 +6,8 @@ import { WcaCliConfig } from "../../wca-cli-arguments";
  * @param level
  * @param config
  */
-export function markdownHeader(title: string, level: number, config: WcaCliConfig): string {
-	level = level - 1 + ((config.markdown && config.markdown.titleLevel) || 1);
+export function markdownHeader(title: string, level: number, config: TransformerConfig): string {
+	level = level - 1 + (config.markdown?.titleLevel || 1);
 	return `${"#".repeat(level)} ${title}`;
 }
 

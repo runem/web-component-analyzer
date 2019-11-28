@@ -1,5 +1,5 @@
 import { Node } from "typescript";
-import { ComponentDeclaration } from "../types/features/component-declaration";
+import { ComponentDeclaration } from "../types/component-declaration";
 import { isNodeInLibDom } from "../util/ast-util";
 import { getUniqueResolvedNodeForInheritanceTree } from "../util/inheritance-tree-util";
 import { getJsDoc } from "../util/js-doc-util";

@@ -4,7 +4,7 @@ import { AnalyzerVisitContext } from "./analyzer-visit-context";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
 import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
-import { ComponentDeclaration } from "./types/features/component-declaration";
+import { ComponentDeclaration } from "./types/component-declaration";
 
 /**
  * This function analyzes only the HTMLElement declaration found in "lib.dom.d.ts" source file provided by Typescript.

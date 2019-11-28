@@ -1,5 +1,5 @@
 import { Node } from "typescript";
-import { arrayFlat } from "./array-util";
+import { arrayFlat } from "../../util/array-util";
 import { InheritanceTreeClause, InheritanceTreeNode } from "../types/inheritance-tree";
 
 interface Position {

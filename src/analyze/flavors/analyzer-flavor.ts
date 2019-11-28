@@ -1,7 +1,7 @@
 import { Node } from "typescript";
 import { ComponentCssPart } from "../types/features/component-css-part";
 import { ComponentCssProperty } from "../types/features/component-css-property";
-import { ComponentDeclaration } from "../types/features/component-declaration";
+import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentEvent } from "../types/features/component-event";
 import { ComponentMember } from "../types/features/component-member";
 import { ComponentMethod } from "../types/features/component-method";

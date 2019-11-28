@@ -1,4 +1,4 @@
-import { ComponentDeclaration } from "../../types/features/component-declaration";
+import { ComponentDeclaration } from "../../types/component-declaration";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
 export function refineDeclaration(declaration: ComponentDeclaration, context: AnalyzerVisitContext) {

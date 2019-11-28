@@ -1,6 +1,6 @@
 import { Node, SourceFile } from "typescript";
-import { ComponentDeclaration } from "../types/features/component-declaration";
-import { ComponentDefinition } from "../types/features/component-definition";
+import { ComponentDeclaration } from "../types/component-declaration";
+import { ComponentDefinition } from "../types/component-definition";
 import { lazy } from "../util/lazy";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { visitDefinitions } from "./flavor/visit-definitions";

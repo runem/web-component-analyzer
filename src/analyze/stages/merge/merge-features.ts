@@ -1,4 +1,4 @@
-import { flatten } from "../../../cli/util";
+import { arrayFlat } from "../../../util/array-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentFeatureCollection } from "../../flavors/analyzer-flavor";
 import { mergeCssParts, mergeCssProperties, mergeEvents, mergeMethods, mergeSlots } from "./merge-feature";
@@ -10,12 +10,12 @@ export function mergeFeatures(
 ): ComponentFeatureCollection {
 	if (Array.isArray(collection)) {
 		collection = {
-			cssParts: flatten(collection.map(c => c.cssParts)),
-			cssProperties: flatten(collection.map(c => c.cssProperties)),
-			events: flatten(collection.map(c => c.events)),
-			memberResults: flatten(collection.map(c => c.memberResults)),
-			methods: flatten(collection.map(c => c.methods)),
-			slots: flatten(collection.map(c => c.slots))
+			cssParts: arrayFlat(collection.map(c => c.cssParts)),
+			cssProperties: arrayFlat(collection.map(c => c.cssProperties)),
+			events: arrayFlat(collection.map(c => c.events)),
+			memberResults: arrayFlat(collection.map(c => c.memberResults)),
+			methods: arrayFlat(collection.map(c => c.methods)),
+			slots: arrayFlat(collection.map(c => c.slots))
 		};
 
 		return mergeFeatures(collection, context);

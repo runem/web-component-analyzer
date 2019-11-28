@@ -1,5 +1,5 @@
 #!/usr/bin/env node
 
-require("./lib/index.cjs")
+require("./lib/cjs/cli.js")
 	.cli()
 	.catch(console.log);

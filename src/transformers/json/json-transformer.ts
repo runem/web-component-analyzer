@@ -1,15 +1,17 @@
 import { SimpleType, toTypeString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
-import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
-import { ComponentCssPart } from "../../../analyze/types/features/component-css-part";
-import { ComponentCssProperty } from "../../../analyze/types/features/component-css-property";
-import { ComponentDefinition } from "../../../analyze/types/features/component-definition";
-import { ComponentEvent } from "../../../analyze/types/features/component-event";
-import { ComponentMember } from "../../../analyze/types/features/component-member";
-import { ComponentSlot } from "../../../analyze/types/features/component-slot";
-import { JsDoc } from "../../../analyze/types/js-doc";
-import { filterVisibility, flatten } from "../../util";
-import { WcaCliConfig } from "../../wca-cli-arguments";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
+import { ComponentDefinition } from "../../analyze/types/component-definition";
+import { ComponentCssPart } from "../../analyze/types/features/component-css-part";
+import { ComponentCssProperty } from "../../analyze/types/features/component-css-property";
+import { ComponentEvent } from "../../analyze/types/features/component-event";
+import { ComponentMember } from "../../analyze/types/features/component-member";
+import { ComponentSlot } from "../../analyze/types/features/component-slot";
+import { JsDoc } from "../../analyze/types/js-doc";
+import { arrayFlat } from "../../util/array-util";
+import { filterVisibility } from "../../util/model-util";
+import { AnalyzeTransformer } from "../transformer";
+import { TransformerConfig } from "../transformer-config";
 import {
 	HtmlData,
 	HtmlDataAttribute,
@@ -27,11 +29,11 @@ import {
  * @param program
  * @param config
  */
-export function jsonTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
+export const jsonTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
 	const checker = program.getTypeChecker();
 
 	// Get all definitions
-	const definitions = flatten(results.map(res => res.componentDefinitions));
+	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 
 	// Transform all definitions into "tags"
 	const tags = definitions.map(d => definitionToHtmlDataTag(d, checker, config));
@@ -42,20 +44,20 @@ export function jsonTransformer(results: AnalyzerResult[], program: Program, con
 	};
 
 	return JSON.stringify(htmlData, null, 2);
-}
+};
 
-function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker, config: WcaCliConfig): HtmlDataTag {
+function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker, config: TransformerConfig): HtmlDataTag {
 	const declaration = definition.declaration();
 
-	const attributes = filterVisibility(config.visibility || "public", declaration.members)
+	const attributes = filterVisibility(config.visibility, declaration.members)
 		.map(d => componentMemberToHtmlDataAttribute(d, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
-	const properties = filterVisibility(config.visibility || "public", declaration.members)
+	const properties = filterVisibility(config.visibility, declaration.members)
 		.map(d => componentMemberToHtmlDataProperty(d, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
-	const events = filterVisibility(config.visibility || "public", declaration.events)
+	const events = filterVisibility(config.visibility, declaration.events)
 		.map(e => componentEventToHtmlDataEvent(e, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 

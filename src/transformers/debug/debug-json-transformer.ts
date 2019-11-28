@@ -1,7 +1,8 @@
 import { Program } from "typescript";
-import { AnalyzerResult } from "../../../analyze/types/analyzer-result";
-import { flatten } from "../../util";
-import { WcaCliConfig } from "../../wca-cli-arguments";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
+import { arrayFlat } from "../../util/array-util";
+import { AnalyzeTransformer } from "../transformer";
+import { TransformerConfig } from "../transformer-config";
 
 /**
  * Transforms results to json.
@@ -9,10 +10,10 @@ import { WcaCliConfig } from "../../wca-cli-arguments";
  * @param program
  * @param config
  */
-export function debugJsonTransformer(results: AnalyzerResult[], program: Program, config: WcaCliConfig): string {
-	const definitions = flatten(results.map(res => res.componentDefinitions));
+export const debugJsonTransformer: AnalyzeTransformer = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 	return JSON.stringify(stripTypescriptValues(definitions), null, 2);
-}
+};
 
 function isTypescriptNode(value: any): boolean {
 	return value instanceof Object && "kind" in value && "flags" in value;
