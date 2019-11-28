@@ -5,7 +5,6 @@ export function excludeNode(node: Node, context: AnalyzerVisitContext): boolean 
 	if (context.config.analyzeLib) {
 		return undefined;
 	}
-	console.log(`source file`, node.getSourceFile().fileName);
 
 	const fileName = node.getSourceFile().fileName;
 	return fileName.includes("lit-element.d.ts") || fileName.endsWith("updating-element.d.ts");

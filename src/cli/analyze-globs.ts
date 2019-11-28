@@ -7,7 +7,7 @@ import { AnalyzerResult } from "../analyze/types/analyzer-result";
 import { arrayFlat } from "../util/array-util";
 import { CompileResult, compileTypescript } from "./compile";
 import { prepareResultForPrettyPrint } from "./util";
-import { WcaCliConfig } from "./wca-cli-arguments";
+import { AnalyzerCliConfig } from "./analyzer-cli-config";
 
 const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
 //const DEFAULT_DIR_GLOB = "{,!(node_modules|web_modules)/}**/*.{js,jsx,ts,tsx}";
@@ -31,7 +31,7 @@ export interface AnalyzeGlobsContext {
  */
 export async function analyzeGlobs(
 	globs: string[],
-	config: WcaCliConfig,
+	config: AnalyzerCliConfig,
 	context: AnalyzeGlobsContext = {}
 ): Promise<CompileResult & { results: AnalyzerResult[] }> {
 	// Set default glob
@@ -86,7 +86,7 @@ export async function analyzeGlobs(
  * @param program
  * @param config
  */
-function analyzeComponentsInFile(file: SourceFile, program: Program, config: WcaCliConfig): AnalyzerResult {
+function analyzeComponentsInFile(file: SourceFile, program: Program, config: AnalyzerCliConfig): AnalyzerResult {
 	const options = {
 		checker: program.getTypeChecker(),
 		config: config.analyze
@@ -100,7 +100,7 @@ function analyzeComponentsInFile(file: SourceFile, program: Program, config: Wca
  * @param globs
  * @param config
  */
-async function expandGlobs(globs: string | string[], config: WcaCliConfig): Promise<string[]> {
+async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig): Promise<string[]> {
 	globs = Array.isArray(globs) ? globs : [globs];
 
 	return arrayFlat(

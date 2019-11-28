@@ -8,7 +8,7 @@ import { markdownTransformer } from "../../../transformers/markdown/markdown-tra
 import { TransformerConfig } from "../../../transformers/transformer-config";
 import { vscodeTransformer } from "../../../transformers/vscode/vscode-transformer";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../../analyze-globs";
-import { WcaCliConfig } from "../../wca-cli-arguments";
+import { AnalyzerCliConfig } from "../../analyzer-cli-config";
 import { CliCommand, CommandError } from "../cli-command";
 
 /**
@@ -46,7 +46,7 @@ Options:
 	 * @param config
 	 * @param inputGlobs
 	 */
-	async run(config: WcaCliConfig, ...inputGlobs: string[]): Promise<void> {
+	async run(config: AnalyzerCliConfig, ...inputGlobs: string[]): Promise<void> {
 		const context: AnalyzeGlobsContext = {
 			didExpandGlobs(filePaths: string[]): void {
 				if (filePaths.length === 0) {
@@ -144,7 +144,7 @@ Options:
 	 * @param inputGlobs
 	 * @param config
 	 */
-	async analyze(inputGlobs: string | string[], config: WcaCliConfig): Promise<string> {
+	async analyze(inputGlobs: string | string[], config: AnalyzerCliConfig): Promise<string> {
 		const { results, program } = await analyzeGlobs(Array.isArray(inputGlobs) ? inputGlobs : [inputGlobs], config);
 		return this.transformResults(results, program, config);
 	}
@@ -155,7 +155,7 @@ Options:
 	 * @param program
 	 * @param config
 	 */
-	private transformResults(results: AnalyzerResult[] | AnalyzerResult, program: Program, config: WcaCliConfig): string {
+	private transformResults(results: AnalyzerResult[] | AnalyzerResult, program: Program, config: AnalyzerCliConfig): string {
 		results = Array.isArray(results) ? results : [results];
 
 		// Default format is "md"

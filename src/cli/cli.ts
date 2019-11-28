@@ -2,7 +2,7 @@ import { VERSION } from "../analyze/constants";
 import { AnalyzeCliCommand } from "./cli-command/analyze/analyze-cli-command";
 import { CliCommand, CommandError } from "./cli-command/cli-command";
 import { parseCliArguments } from "./parse-cli-arguments";
-import { WcaCliConfig } from "./wca-cli-arguments";
+import { AnalyzerCliConfig } from "./analyzer-cli-config";
 
 /**
  * The main function of the cli.
@@ -46,7 +46,7 @@ export async function cli() {
 	else {
 		try {
 			// Run the command
-			const exitCode = await command.run(args as WcaCliConfig, ...args._.slice(1));
+			const exitCode = await command.run(args as AnalyzerCliConfig, ...args._.slice(1));
 			process.exit(exitCode || 0);
 		} catch (error) {
 			if (error instanceof CommandError) {
