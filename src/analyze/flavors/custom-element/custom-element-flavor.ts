@@ -4,8 +4,11 @@ import { discoverEvents } from "./discover-events";
 import { discoverInheritance } from "./discover-inheritance";
 import { discoverMembers } from "./discover-members";
 import { discoverMethods } from "./discover-methods";
+import { excludeNode } from "./exclude-node";
 
 export class CustomElementFlavor implements AnalyzerFlavor {
+	excludeNode = excludeNode;
+
 	discoverDefinitions = discoverDefinitions;
 
 	discoverFeatures = {

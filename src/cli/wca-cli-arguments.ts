@@ -6,7 +6,7 @@ export interface WcaCliConfig {
 	outFile?: string;
 	outDir?: string;
 	format?: "json" | "md" | "markdown" | "vscode" | "debug";
-	analyzeLibraries?: boolean;
+	discoverLibraryFiles?: boolean;
 	visibility?: VisibilityKind;
 	markdown?: {
 		titleLevel?: number;

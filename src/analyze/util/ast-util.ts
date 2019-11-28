@@ -8,7 +8,6 @@ import {
 	PropertyDeclaration,
 	PropertySignature,
 	SetAccessorDeclaration,
-	SourceFile,
 	StringLiteral,
 	Symbol,
 	SyntaxKind,
@@ -54,14 +53,6 @@ export function resolveDeclarations(node: Node, context: { checker: TypeChecker;
 
 export function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
 	return (symbol.flags & ts.SymbolFlags.Alias) !== 0;
-}
-
-/**
- * Returns if a name is public (doesn't start with "_");
- * @param name
- */
-export function isPropNamePublic(name: string): boolean {
-	return !name.startsWith("_") && !name.startsWith("#");
 }
 
 /**
@@ -184,10 +175,6 @@ export function getInterfaceKeys(
 	}
 
 	return extensions;
-}
-
-export function isNodeInLibDom(node: Node | SourceFile): boolean {
-	return ("fileName" in node ? node.fileName : node.getSourceFile().fileName).endsWith("lib.dom.d.ts");
 }
 
 export function isPropertyRequired(property: PropertySignature | PropertyDeclaration, checker: TypeChecker): boolean {

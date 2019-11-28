@@ -1,6 +1,10 @@
-import { SourceFile } from "typescript";
+import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
-export function isLibSourceFile(sourceFile: SourceFile, context: AnalyzerVisitContext): boolean | undefined {
-	return sourceFile.fileName.endsWith("lib.dom.d.ts");
+export function excludeNode(node: Node, context: AnalyzerVisitContext): boolean | undefined {
+	if (context.config.analyzeLibDom) {
+		return undefined;
+	}
+
+	return node.getSourceFile().fileName.endsWith("lib.dom.d.ts");
 }

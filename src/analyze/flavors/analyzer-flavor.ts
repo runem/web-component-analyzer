@@ -1,14 +1,14 @@
 import { Node } from "typescript";
+import { AnalyzerVisitContext } from "../analyzer-visit-context";
+import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentCssPart } from "../types/features/component-css-part";
 import { ComponentCssProperty } from "../types/features/component-css-property";
-import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentEvent } from "../types/features/component-event";
+import { ComponentFeature } from "../types/features/component-feature";
 import { ComponentMember } from "../types/features/component-member";
 import { ComponentMethod } from "../types/features/component-method";
 import { ComponentSlot } from "../types/features/component-slot";
 import { InheritanceTreeClause } from "../types/inheritance-tree";
-import { AnalyzerVisitContext } from "../analyzer-visit-context";
-import { ComponentFeature } from "../types/features/component-feature";
 
 export type PriorityKind = "low" | "medium" | "high";
 
@@ -55,6 +55,7 @@ export type FeatureRefineVisitMap = {
 };
 
 export interface AnalyzerFlavor {
+	excludeNode?(node: Node, context: AnalyzerVisitContext): boolean | undefined;
 	discoverDefinitions?(node: Node, context: AnalyzerVisitContext): DefinitionNodeResult[] | undefined;
 	discoverInheritance?(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined;
 	discoverFeatures?: Partial<FeatureAnalyzeVisitMap>;

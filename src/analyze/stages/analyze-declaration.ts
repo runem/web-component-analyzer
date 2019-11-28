@@ -1,12 +1,12 @@
 import { Node } from "typescript";
-import { ComponentDeclaration } from "../types/component-declaration";
-import { isNodeInLibDom } from "../util/ast-util";
-import { getUniqueResolvedNodeForInheritanceTree } from "../util/inheritance-tree-util";
-import { getJsDoc } from "../util/js-doc-util";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentFeatureCollection } from "../flavors/analyzer-flavor";
+import { ComponentDeclaration } from "../types/component-declaration";
+import { getUniqueResolvedNodeForInheritanceTree } from "../util/inheritance-tree-util";
+import { getJsDoc } from "../util/js-doc-util";
 import { discoverFeatures } from "./discover-features";
 import { discoverInheritance } from "./discover-inheritance";
+import { excludeNode } from "./flavor/exclude-node";
 import { refineDeclaration } from "./flavor/refine-declaration";
 import { mergeFeatures } from "./merge/merge-features";
 
@@ -23,7 +23,7 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 	const featureCollections: ComponentFeatureCollection[] = [];
 
 	for (const node of declarationNodes) {
-		if (!context.config.analyzeLibDom && isNodeInLibDom(node)) {
+		if (shouldExcludeNode(node, context)) {
 			continue;
 		}
 
@@ -50,4 +50,28 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 		},
 		context
 	);
+}
+
+function shouldExcludeNode(node: Node, context: AnalyzerVisitContext): boolean {
+	if (!context.config.analyzeLibDom && excludeNode(node.getSourceFile(), context)) {
+		return true;
+	}
+
+	const name = getDeclarationName(node, context);
+
+	if (name != null && context.config.excludedDeclarationNames?.includes(name)) {
+		return true;
+	}
+
+	return false;
+}
+
+function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
+	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
+		return node.name?.text;
+	} else if (context.ts.isVariableDeclaration(node)) {
+		return node.name?.getText();
+	}
+
+	return undefined;
 }

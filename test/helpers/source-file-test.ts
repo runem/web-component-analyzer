@@ -7,7 +7,7 @@ export function testResult(testName: string, globs: string[], callback: (result:
 	// Skip all snapshot tests (temporary)
 	test.skip(testName, async t => {
 		const { results } = await analyzeGlobs(globs, {
-			analyzeLibraries: true
+			discoverLibraryFiles: true
 		});
 
 		const nonEmptyResults = results.filter(result => result.componentDefinitions.length > 0);
