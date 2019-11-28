@@ -1,7 +1,7 @@
 import { TypeChecker } from "typescript";
-import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMemberResult, PriorityKind } from "../../flavors/analyzer-flavor";
+import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
 import { mergeJsDocIntoJsDoc } from "./merge-util";
 
 const priorityValueMap: Record<PriorityKind, number> = {
@@ -94,9 +94,16 @@ function findMemberToMerge(similar: ComponentMember, mergeMap: MergeMap): Compon
 	}
 
 	if (attrName != null) {
-		const mergeable = mergeMap.attrs.get(attrName) || mergeMap.props.get(attrName)!;
-		if (mergeable != null) {
-			return mergeable;
+		const mergeableAttr = mergeMap.attrs.get(attrName);
+		if (mergeableAttr != null) {
+			return mergeableAttr;
+		}
+
+		// Try to find a prop with the attr name.
+		// Don't return the prop if it already has an attribute that is not equals to the attr name
+		const mergeableProp = mergeMap.props.get(attrName);
+		if (mergeableProp != null && mergeableProp.attrName == null) {
+			return mergeableProp;
 		}
 
 		for (const mergedAttr of mergeMap.props.values()) {

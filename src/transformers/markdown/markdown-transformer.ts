@@ -7,6 +7,7 @@ import { ComponentEvent } from "../../analyze/types/features/component-event";
 import { ComponentMemberAttribute, ComponentMemberProperty } from "../../analyze/types/features/component-member";
 import { ComponentMethod } from "../../analyze/types/features/component-method";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
+import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { arrayFlat } from "../../util/array-util";
 import { filterVisibility } from "../../util/model-util";
 import { AnalyzeTransformer } from "../transformer";
@@ -107,6 +108,10 @@ function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig):
 	return markdownHeader("CSS Shadow Parts", 2, config) + "\n" + markdownTable(rows);
 }
 
+function shouldShowVisibility<T extends { visibility?: VisibilityKind }>(items: T[], config: TransformerConfig): boolean {
+	return config.visibility !== "public" && items.some(method => method.visibility != null && method.visibility !== "public");
+}
+
 /**
  * Returns a markdown table with methods
  * @param methods
@@ -114,8 +119,15 @@ function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig):
  * @param config
  */
 function methodSection(methods: ComponentMethod[], checker: TypeChecker, config: TransformerConfig): string {
-	const rows: string[][] = [["Method", "Description"]];
-	rows.push(...methods.map(method => [(method.name && markdownHighlight(method.name)) || "", method.jsDoc?.description || ""]));
+	const showVisibility = shouldShowVisibility(methods, config);
+	const rows: string[][] = [["Method", ...(showVisibility ? ["Visibility"] : []), "Description"]];
+	rows.push(
+		...methods.map(method => [
+			method.name != null ? markdownHighlight(method.name) : "",
+			...(showVisibility ? [method.visibility || "public"] : []),
+			method.jsDoc?.description || ""
+		])
+	);
 	return markdownHeader("Methods", 2, config) + "\n" + markdownTable(rows);
 }
 
@@ -126,10 +138,12 @@ function methodSection(methods: ComponentMethod[], checker: TypeChecker, config:
  * @param checker
  */
 function eventSection(events: ComponentEvent[], checker: TypeChecker, config: TransformerConfig): string {
-	const rows: string[][] = [["Event", "Detail", "Description"]];
+	const showVisibility = shouldShowVisibility(events, config);
+	const rows: string[][] = [["Event", ...(showVisibility ? ["Visibility"] : []), "Detail", "Description"]];
 	rows.push(
 		...events.map(event => [
 			(event.name && markdownHighlight(event.name)) || "",
+			...(showVisibility ? [event.visibility || "public"] : []),
 			isAssignableToSimpleTypeKind(event.type(), SimpleTypeKind.ANY, checker) ? "" : markdownHighlight(toTypeString(event.type(), checker)),
 			event.jsDoc?.description || ""
 		])
@@ -161,16 +175,18 @@ function slotSection(slots: ComponentSlot[], config: TransformerConfig): string 
  * @param config
  */
 function memberAttributeSection(members: ComponentMemberAttribute[], checker: TypeChecker, config: TransformerConfig): string {
-	const rows: string[][] = [["Attribute", "Type", "Default", "Description"]];
+	const showVisibility = shouldShowVisibility(members, config);
+	const rows: string[][] = [["Attribute", ...(showVisibility ? ["Visibility"] : []), "Type", "Default", "Description"]];
 
 	// Add members as rows one by one
 	for (const member of members) {
 		const attrName = markdownHighlight(member.attrName);
 		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker));
+		const visibility = member.visibility || "public";
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";
 		const comment = member.jsDoc?.description || "";
 
-		rows.push([attrName, type, def, comment]);
+		rows.push([attrName, ...(showVisibility ? [visibility] : []), type, def, comment]);
 	}
 
 	return markdownHeader("Attributes", 2, config) + "\n" + markdownTable(rows);
@@ -183,17 +199,20 @@ function memberAttributeSection(members: ComponentMemberAttribute[], checker: Ty
  * @param config
  */
 function memberPropertySection(members: ComponentMemberProperty[], checker: TypeChecker, config: TransformerConfig): string {
-	const rows: string[][] = [["Property", "Attribute", "Type", "Default", "Description"]];
+	const showVisibility = shouldShowVisibility(members, config);
+	const rows: string[][] = [["Property", "Attribute", ...(showVisibility ? ["Visibility"] : []), "Type", "Default", "Description"]];
 
 	// Add properties as rows one by one
 	for (const member of members) {
 		const propName = markdownHighlight(member.propName);
 		const attrName = (member.attrName && markdownHighlight(member.attrName)) || "";
+		const visibility = member.visibility || "public";
 		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker));
+
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";
 		const comment = member.jsDoc?.description || "";
 
-		rows.push([propName, attrName, type, def, comment]);
+		rows.push([propName, attrName, ...(showVisibility ? [visibility] : []), type, def, comment]);
 	}
 
 	return markdownHeader("Properties", 2, config) + "\n" + markdownTable(rows);
