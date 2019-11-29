@@ -20,9 +20,15 @@ export interface HtmlDataMember {
 	attribute?: string;
 }
 
-export interface HtmlDataAttribute extends HtmlDataMember {}
+export interface HtmlDataAttribute extends HtmlDataMember {
+	// Suggested fields:
+	default?: string;
+}
 
-export interface HtmlDataProperty extends HtmlDataMember {}
+export interface HtmlDataProperty extends HtmlDataMember {
+	// Suggested fields:
+	default?: string;
+}
 
 export interface HtmlDataSlot extends HtmlDataMember {}
 

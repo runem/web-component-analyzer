@@ -10,8 +10,8 @@ import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { arrayFlat } from "../../util/array-util";
 import { filterVisibility } from "../../util/model-util";
-import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
+import { TransformerFunction } from "../transformer-function";
 import {
 	HtmlData,
 	HtmlDataAttribute,
@@ -126,23 +126,24 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 		name: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-		type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined)
+		type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined),
+		default: member.default != null ? JSON.stringify(member.default) : undefined
 	};
 }
 
 function componentMemberToHtmlDataProperty(member: ComponentMember, checker: TypeChecker): HtmlDataProperty | undefined {
-	switch (member.kind) {
-		case "property":
-			return {
-				name: member.propName,
-				attribute: member.attrName,
-				description: getDescriptionFromJsDoc(member.jsDoc),
-				jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-				type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined)
-			};
+	if (member.propName == null) {
+		return undefined;
 	}
 
-	return undefined;
+	return {
+		name: member.propName,
+		attribute: member.attrName,
+		description: getDescriptionFromJsDoc(member.jsDoc),
+		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
+		type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined),
+		default: member.default != null ? JSON.stringify(member.default) : undefined
+	};
 }
 
 function getDescriptionFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
