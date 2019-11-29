@@ -2,6 +2,55 @@ import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
+test("Handles circular inheritance", t => {
+	const { result } = analyzeText(`
+		class MyElement extends MyElement {
+		}
+		
+		/**
+		 * @element
+		 */
+		class MyElement extends MyBase {
+			static get observedAttributes() {
+				return ["a", "b"];
+			}
+		}
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b"]);
+});
+
+test("Handles circular inheritance using mixins", t => {
+	const { result } = analyzeText(`
+		const Mixin1 = (Base) => {
+			return class Mixin1 extends Mixin2(Base) {}
+		}
+		
+		const Mixin2 = (Base) => {
+			return class Mixin2 extends Mixin1(Base) {}
+		}
+		
+		/**
+		 * @element
+		 */
+		class MyElement extends Mixin1(Mixin2(HTMLElement)) {
+			static get observedAttributes() {
+				return ["a", "b"];
+			}
+		}
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b"]);
+});
+
 test("Handles simple mixin", t => {
 	const { result } = analyzeText(`
 		const MyMixin = (Base) => {
