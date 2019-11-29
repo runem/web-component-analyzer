@@ -5,9 +5,9 @@ import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "t
 import { analyzeSourceFile } from "../analyze/analyze-source-file";
 import { AnalyzerResult } from "../analyze/types/analyzer-result";
 import { arrayFlat } from "../util/array-util";
-import { CompileResult, compileTypescript } from "./compile";
-import { prepareResultForPrettyPrint } from "./util";
+import { stripTypescriptValues } from "../util/strip-typescript-values";
 import { AnalyzerCliConfig } from "./analyzer-cli-config";
+import { CompileResult, compileTypescript } from "./compile";
 
 const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
 //const DEFAULT_DIR_GLOB = "{,!(node_modules|web_modules)/}**/*.{js,jsx,ts,tsx}";
@@ -68,7 +68,7 @@ export async function analyzeGlobs(
 		const result = analyzeComponentsInFile(file, program, config);
 
 		if (config.debug) {
-			console.dir(prepareResultForPrettyPrint([result], program.getTypeChecker()), { depth: 10 });
+			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 10 });
 		}
 
 		// Callback

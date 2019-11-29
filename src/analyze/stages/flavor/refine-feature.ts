@@ -20,7 +20,9 @@ export function refineFeature<FeatureKind extends ComponentFeature, ValueType = 
 	for (const flavor of context.flavors) {
 		const refineFunc = flavor.refineFeature?.[featureKind];
 		if (refineFunc != null) {
-			if (Array.isArray(refinedValue)) {
+			if (refinedValue == null) {
+				return;
+			} else if (Array.isArray(refinedValue)) {
 				const newValue: ValueType[] = [];
 				for (const val of refinedValue) {
 					const refined = refineFunc(val as any, context);

@@ -1,12 +1,17 @@
 import test, { ExecutionContext, ImplementationResult } from "ava";
+import { Program } from "typescript";
 import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
 import { analyzeGlobs } from "../../src/cli/analyze-globs";
-import { stripTypescriptValues } from "./strip-typescript-values";
+import { stripTypescriptValues } from "../../src/util/strip-typescript-values";
 
-export function testResult(testName: string, globs: string[], callback: (result: AnalyzerResult[], t: ExecutionContext) => ImplementationResult) {
+export function testResult(
+	testName: string,
+	globs: string[],
+	callback: (result: AnalyzerResult[], program: Program, t: ExecutionContext) => ImplementationResult
+) {
 	// Skip all snapshot tests (temporary)
 	test.skip(testName, async t => {
-		const { results } = await analyzeGlobs(globs, {
+		const { results, program } = await analyzeGlobs(globs, {
 			discoverLibraryFiles: true
 		});
 
@@ -23,12 +28,12 @@ export function testResult(testName: string, globs: string[], callback: (result:
 				componentDefinitions: result.componentDefinitions.sort((a, b) => (a.tagName < b.tagName ? -1 : 1))
 			}));
 
-		callback(sortedResults, t);
+		callback(sortedResults, program, t);
 	});
 }
 
 export function testResultSnapshot(globs: string[]) {
-	testResult(`Snapshot Test: ${globs.map(glob => `"${glob}"`).join(", ")}`, globs, (result, t) => {
-		t.snapshot(stripTypescriptValues(result));
+	testResult(`Snapshot Test: ${globs.map(glob => `"${glob}"`).join(", ")}`, globs, (result, program, t) => {
+		t.snapshot(stripTypescriptValues(result, program.getTypeChecker()));
 	});
 }

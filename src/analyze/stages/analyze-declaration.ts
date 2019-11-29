@@ -32,6 +32,21 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 
 	//console.dir(featureCollections, { depth: 4 });
 
+	// If all nodes were excluded, return empty declaration
+	if (featureCollections.length === 0) {
+		return {
+			events: [],
+			cssParts: [],
+			cssProperties: [],
+			members: [],
+			methods: [],
+			slots: [],
+			inheritanceTree,
+			declarationNodes,
+			jsDoc: undefined
+		};
+	}
+
 	const mergedFeatureCollection = featureCollections.length > 1 ? mergeFeatures(featureCollections, context) : featureCollections[0];
 
 	//console.dir(mergedFeatureCollection, { depth: 3 });

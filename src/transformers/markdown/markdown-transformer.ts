@@ -224,6 +224,7 @@ function getTypeHintFromType(type: string | Type | SimpleType | undefined, check
 
 	const typeHint = toTypeString(type, checker);
 	if (typeHint === "any") return undefined;
+	if (typeHint === "{}") return "object";
 
 	return typeHint;
 }

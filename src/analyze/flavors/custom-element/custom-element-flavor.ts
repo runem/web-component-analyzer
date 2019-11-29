@@ -5,6 +5,7 @@ import { discoverInheritance } from "./discover-inheritance";
 import { discoverMembers } from "./discover-members";
 import { discoverMethods } from "./discover-methods";
 import { excludeNode } from "./exclude-node";
+import { refineFeature } from "./refine-feature";
 
 export class CustomElementFlavor implements AnalyzerFlavor {
 	excludeNode = excludeNode;
@@ -16,6 +17,8 @@ export class CustomElementFlavor implements AnalyzerFlavor {
 		event: discoverEvents,
 		method: discoverMethods
 	};
+
+	refineFeature = refineFeature;
 
 	discoverInheritance = discoverInheritance;
 }
