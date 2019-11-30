@@ -131,11 +131,12 @@ function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig):
  */
 function methodSection(methods: ComponentMethod[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(methods, config);
-	const rows: string[][] = [["Method", ...(showVisibility ? ["Visibility"] : []), "Description"]];
+	const rows: string[][] = [["Method", ...(showVisibility ? ["Visibility"] : []), "Type", "Description"]];
 	rows.push(
 		...methods.map(method => [
 			method.name != null ? markdownHighlight(method.name) : "",
 			...(showVisibility ? [method.visibility || "public"] : []),
+			markdownHighlight(getTypeHintFromType(method.type?.(), checker)),
 			method.jsDoc?.description || ""
 		])
 	);

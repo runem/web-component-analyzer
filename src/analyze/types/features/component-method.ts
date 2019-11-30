@@ -1,5 +1,6 @@
+import { SimpleType } from "ts-simple-type";
+import { Node, Type } from "typescript";
 import { JsDoc } from "../js-doc";
-import { Node } from "typescript";
 import { VisibilityKind } from "../visibility-kind";
 
 export interface ComponentMethod {
@@ -7,4 +8,5 @@ export interface ComponentMethod {
 	jsDoc: JsDoc | undefined;
 	node?: Node;
 	visibility?: VisibilityKind;
+	type?: () => SimpleType | Type;
 }

@@ -3,6 +3,7 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMethod } from "../../types/features/component-method";
 import { getMemberVisibilityFromNode, isMemberAndWritable } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
+import { lazy } from "../../util/lazy";
 
 export function discoverMethods(node: Node, context: AnalyzerVisitContext): ComponentMethod[] | undefined {
 	const { ts } = context;
@@ -23,7 +24,8 @@ export function discoverMethods(node: Node, context: AnalyzerVisitContext): Comp
 				jsDoc: getJsDoc(node, ts),
 				name,
 				node: node,
-				visibility: getMemberVisibilityFromNode(node, ts)
+				visibility: getMemberVisibilityFromNode(node, ts),
+				type: lazy(() => context.checker.getTypeAtLocation(node))
 			}
 		];
 	}
