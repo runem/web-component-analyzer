@@ -1,5 +1,4 @@
-import { SimpleType, toTypeString } from "ts-simple-type";
-import { Program, Type, TypeChecker } from "typescript";
+import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDefinition } from "../../analyze/types/component-definition";
 import { ComponentCssPart } from "../../analyze/types/features/component-css-part";
@@ -9,6 +8,7 @@ import { ComponentMember } from "../../analyze/types/features/component-member";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { arrayFlat } from "../../util/array-util";
+import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
@@ -126,7 +126,7 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 		name: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-		type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined),
+		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
 		default: member.default != null ? JSON.stringify(member.default) : undefined
 	};
 }
@@ -141,7 +141,7 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 		attribute: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
-		type: member.typeHint ?? (member.type != null ? getTypeHintFromType(member.type(), checker) : undefined),
+		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
 		default: member.default != null ? JSON.stringify(member.default) : undefined
 	};
 }
@@ -152,17 +152,4 @@ function getDescriptionFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 
 function getJsDocTextFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	return jsDoc != null && jsDoc.node != null ? jsDoc.node.getText() : undefined;
-}
-
-function getTypeHintFromType(type: Type | SimpleType | undefined, checker: TypeChecker): string | undefined {
-	if (type == null) return undefined;
-
-	const typeHint = isTypescriptType(type) ? checker.typeToString(type) : toTypeString(type);
-	if (typeHint === "any") return undefined;
-
-	return typeHint;
-}
-
-function isTypescriptType(value: any): value is Type {
-	return value instanceof Object && "flags" in value && "checker" in value;
 }

@@ -1,5 +1,5 @@
-import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind, toTypeString } from "ts-simple-type";
-import { Program, Type, TypeChecker } from "typescript";
+import { isAssignableToSimpleTypeKind, SimpleTypeKind, toTypeString } from "ts-simple-type";
+import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentCssPart } from "../../analyze/types/features/component-css-part";
 import { ComponentCssProperty } from "../../analyze/types/features/component-css-property";
@@ -9,9 +9,10 @@ import { ComponentMethod } from "../../analyze/types/features/component-method";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { arrayFlat } from "../../util/array-util";
+import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
 import { filterVisibility } from "../../util/model-util";
-import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
+import { TransformerFunction } from "../transformer-function";
 import { markdownHeader, markdownHighlight, markdownTable } from "./markdown-util";
 
 /**
@@ -216,15 +217,4 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 	}
 
 	return markdownHeader("Properties", 2, config) + "\n" + markdownTable(rows);
-}
-
-function getTypeHintFromType(type: string | Type | SimpleType | undefined, checker: TypeChecker): string | undefined {
-	if (type == null) return undefined;
-	if (typeof type === "string") return type;
-
-	const typeHint = toTypeString(type, checker);
-	if (typeHint === "any") return undefined;
-	if (typeHint === "{}") return "object";
-
-	return typeHint;
 }
