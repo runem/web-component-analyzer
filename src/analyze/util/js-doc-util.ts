@@ -259,10 +259,10 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 		}
 	} else {
 		// Match required name
-		const nameResult = str.match(/^(\s*(\S+))((\s*- [\s\S]+)|\s*)$/);
+		const nameResult = str.match(/^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/);
 		if (nameResult != null) {
 			moveStr(nameResult[1]);
-			jsDocTag.name = unqouteStr(nameResult[2]);
+			jsDocTag.name = unqouteStr(nameResult[2].trim());
 		}
 	}
 

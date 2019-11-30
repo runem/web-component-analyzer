@@ -23,7 +23,7 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 	} else if (typeof input === "function") {
 		return stripTypescriptValues(input(), checker);
 	} else if (isTypescriptNode(input)) {
-		return `{NODE:${input.getSourceFile?.()?.fileName.match(".*/(.+)")?.[1]}:${input.pos}`;
+		return `{NODE:${input.getSourceFile?.()?.fileName.match(".*/(.+)")?.[1]}:${input.pos}}`;
 	} else if (isTypescriptSourceFile(input)) {
 		return `{SOURCEFILE:${input.fileName.match(".*/(.+)")?.[1]}}`;
 	} else if (isTypescriptType(input)) {

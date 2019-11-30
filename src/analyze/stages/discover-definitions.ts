@@ -102,6 +102,20 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 		}
 	});
 
+	// Remove duplicates where "tagName" is equals to ""
+	const results = Array.from(definitionToDeclarationMap.entries());
+	for (const [definition, declarations] of results) {
+		if (definition.tagName === "") {
+			for (const [checkDefinition, checkDeclarations] of results) {
+				// Find duplicated based on overlapping declarations
+				if (definition !== checkDefinition && Array.from(declarations).find(decl => checkDeclarations.has(decl) != null)) {
+					definitionToDeclarationMap.delete(definition);
+					break;
+				}
+			}
+		}
+	}
+
 	return definitionToDeclarationMap;
 
 	/*const definitionContext: ComponentAnalyzerVisitContext = {
