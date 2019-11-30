@@ -72,7 +72,7 @@ export function resolveNodeValue(
 
 	// Resolve values of variables.
 	else if (ts.isIdentifier(node) && checker != null) {
-		const declaration = resolveDeclarations(node, { checker, ts }).filter(decl => ts.isVariableDeclaration(decl));
+		const declaration = resolveDeclarations(node, { checker, ts });
 		return resolveNodeValue(declaration[0], { ...context, depth });
 	}
 
@@ -87,7 +87,7 @@ export function resolveNodeValue(
 	// static get is() {
 	//    return "my-element";
 	// }
-	else if (ts.isGetAccessor(node) && node.body != null) {
+	else if ((ts.isGetAccessor(node) || ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) && node.body != null) {
 		for (const stm of node.body.statements) {
 			if (ts.isReturnStatement(stm)) {
 				return resolveNodeValue(stm.expression, { ...context, depth });

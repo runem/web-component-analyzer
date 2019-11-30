@@ -66,3 +66,20 @@ test("Does not discover elements defined using custom define function", t => {
 
 	t.is(componentDefinitions.length, 0);
 });
+
+test("Discovers elements defined using customElements.define without string literal", t => {
+	const { result } = analyzeText(`
+		class MyElement extends HTMLElement {
+			static get tag() {
+				return "my-element";
+	        }
+		}
+		
+		customElements.define(MyElement.tag, MyElement);
+	 `);
+
+	const { componentDefinitions } = result;
+
+	t.is(componentDefinitions.length, 1);
+	t.is(componentDefinitions[0].tagName, "my-element");
+});
