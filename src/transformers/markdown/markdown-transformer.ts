@@ -8,6 +8,7 @@ import { ComponentMemberAttribute, ComponentMemberProperty } from "../../analyze
 import { ComponentMethod } from "../../analyze/types/features/component-method";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { VisibilityKind } from "../../analyze/types/visibility-kind";
+import { getMixinsForInheritanceTree } from "../../analyze/util/inheritance-tree-util";
 import { arrayFlat } from "../../util/array-util";
 import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
 import { filterVisibility } from "../../util/model-util";
@@ -34,6 +35,13 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 
 		// Add component jsdoc comment to the output
 		if (declaration.jsDoc?.description != null) segmentText += `\n\n${declaration.jsDoc?.description}\n`;
+
+		// Add mixins
+		const mixins = getMixinsForInheritanceTree(declaration.inheritanceTree);
+
+		if (mixins.size > 0) {
+			segmentText += `\n**Mixins:** ${Array.from(mixins).join(", ")}\n`;
+		}
 
 		// Grab all items from the component and add them as tables to the output.
 		const properties = filterVisibility(
