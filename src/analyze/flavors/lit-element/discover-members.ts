@@ -2,12 +2,12 @@ import { SimpleTypeKind } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { getMemberVisibilityFromNode, getNodeSourceFileLang, hasModifier, isNodeWritableMember } from "../../util/ast-util";
+import { getExtendsForInheritanceTree } from "../../util/inheritance-tree-util";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { camelToDashCase } from "../../util/text-util";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerDeclarationVisitContext, ComponentMemberResult } from "../analyzer-flavor";
 import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPropertyOption } from "./parse-lit-property-configuration";
 
 /**
@@ -16,7 +16,7 @@ import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPr
  * @param node
  * @param context
  */
-export function discoverMembers(node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined {
+export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
 	const { ts } = context;
 
 	// static get properties() { return { myProp: {type: String} } }
@@ -43,7 +43,7 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
  */
 function parsePropertyDecorator(
 	node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature,
-	context: AnalyzerVisitContext
+	context: AnalyzerDeclarationVisitContext
 ): ComponentMemberResult[] | undefined {
 	const { ts, checker } = context;
 
@@ -103,11 +103,30 @@ function parsePropertyDecorator(
  * Returns if we are in a Polymer context.
  * @param context
  */
-function inPolymerFlavorContext(context: AnalyzerVisitContext): boolean {
-	//const inherits = context.features != null ? context.features.getInherits() : [];
-	// TODO: check!
-	const inherits: string[] = [];
-	return inherits.includes("PolymerElement") || inherits.includes("Polymer.Element");
+function inPolymerFlavorContext(context: AnalyzerDeclarationVisitContext): boolean {
+	const declaration = context.getDeclaration();
+
+	const cacheKey = `isPolymerFlavorContext:${context.getDefinition().tagName}`;
+
+	if (context.cache.general.has(cacheKey)) {
+		return context.cache.general.get(cacheKey) as boolean;
+	}
+
+	let result = false;
+
+	// Use "@polymer" jsdoc tag to indicate that this is polymer context
+	if (declaration.jsDoc?.tags?.some(t => t.tag === "polymer" || t.tag === "polymerElement")) {
+		result = true;
+	}
+
+	const extnds = getExtendsForInheritanceTree(declaration.inheritanceTree);
+	if (extnds.has("PolymerElement") || extnds.has("Polymer.Element")) {
+		result = true;
+	}
+
+	context.cache.general.set(cacheKey, result);
+
+	return result;
 }
 
 /**
@@ -116,7 +135,7 @@ function inPolymerFlavorContext(context: AnalyzerVisitContext): boolean {
  * @param litConfig
  * @param context
  */
-function getLitAttributeName(propName: string, litConfig: LitElementPropertyConfig, context: AnalyzerVisitContext): string {
+function getLitAttributeName(propName: string, litConfig: LitElementPropertyConfig, context: AnalyzerDeclarationVisitContext): string {
 	// Get the attribute name either by looking at "{attribute: ...}" or just taking the property name.
 	let attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
 
@@ -134,7 +153,7 @@ function getLitAttributeName(propName: string, litConfig: LitElementPropertyConf
  * @param returnStatement
  * @param context
  */
-function parseStaticProperties(returnStatement: ReturnStatement, context: AnalyzerVisitContext): ComponentMemberResult[] {
+function parseStaticProperties(returnStatement: ReturnStatement, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] {
 	const { ts } = context;
 
 	const memberResults: ComponentMemberResult[] = [];

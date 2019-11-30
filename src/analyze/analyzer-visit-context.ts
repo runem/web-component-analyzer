@@ -1,7 +1,7 @@
-import { TypeChecker, Node } from "typescript";
 import * as tsModule from "typescript";
-import { AnalyzerConfig } from "./types/analyzer-config";
+import { Node, TypeChecker } from "typescript";
 import { AnalyzerFlavor, ComponentFeatureCollection } from "./flavors/analyzer-flavor";
+import { AnalyzerConfig } from "./types/analyzer-config";
 
 export interface AnalyzerVisitContext {
 	checker: TypeChecker;
@@ -11,5 +11,6 @@ export interface AnalyzerVisitContext {
 	emitContinue?(): void;
 	cache: {
 		featureCollection: WeakMap<Node, ComponentFeatureCollection>;
+		general: Map<any, any>;
 	};
 }

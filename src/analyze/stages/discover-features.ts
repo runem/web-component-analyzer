@@ -1,11 +1,10 @@
 import { Node } from "typescript";
-import { AnalyzerVisitContext } from "../analyzer-visit-context";
-import { ComponentFeatureCollection } from "../flavors/analyzer-flavor";
-import { visitFeatures } from "./flavor/visit-features";
+import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { refineFeature, RefineFeatureEmitMap } from "./flavor/refine-feature";
+import { visitFeatures } from "./flavor/visit-features";
 import { mergeFeatures } from "./merge/merge-features";
 
-export function discoverFeatures(node: Node, context: AnalyzerVisitContext): ComponentFeatureCollection {
+export function discoverFeatures(node: Node, context: AnalyzerDeclarationVisitContext): ComponentFeatureCollection {
 	if (context.cache.featureCollection.has(node)) {
 		return context.cache.featureCollection.get(node)!;
 	}

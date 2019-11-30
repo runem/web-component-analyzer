@@ -29,7 +29,7 @@ function flattenInheritsClauseChain(inheritsClause: InheritanceTreeClause): Inhe
 	return [inheritsClause, ...next];
 }
 
-function visitInheritanceTreeClause(inheritsClauses: InheritanceTreeClause[], { line, start }: Position, context: Context): number {
+function visitInheritanceTreeClauseEmitText(inheritsClauses: InheritanceTreeClause[], { line, start }: Position, context: Context): number {
 	const flattenedInheritsClauses = arrayFlat(inheritsClauses.map(inheritsClause => flattenInheritsClauseChain(inheritsClause))).filter(
 		clause => clause.resolved?.[0]?.node?.kind !== 155
 		//clause => clause.resolved?.some(({ node }) => node?.kind !== 155) != null
@@ -40,7 +40,7 @@ function visitInheritanceTreeClause(inheritsClauses: InheritanceTreeClause[], { 
 		let nextStart: number | undefined;
 
 		if (flatInheritsClause.resolved != null) {
-			nextStart = visitInheritanceTreeNode(flatInheritsClause.resolved, { line: line + 1, start }, context);
+			nextStart = visitInheritanceTreeNodeEmitText(flatInheritsClause.resolved, { line: line + 1, start }, context);
 		}
 
 		const name = getNameFromInheritanceClause(flatInheritsClause);
@@ -60,9 +60,9 @@ function visitInheritanceTreeClause(inheritsClauses: InheritanceTreeClause[], { 
 	return start;
 }
 
-function visitInheritanceTreeNode(treeNode: InheritanceTreeNode[], { line, start }: Position, context: Context): number {
+function visitInheritanceTreeNodeEmitText(treeNode: InheritanceTreeNode[], { line, start }: Position, context: Context): number {
 	const inherits = arrayFlat(treeNode.map(n => n.inherits || [])).sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "interface" ? 1 : -1));
-	return visitInheritanceTreeClause(inherits, { line, start }, context);
+	return visitInheritanceTreeClauseEmitText(inherits, { line, start }, context);
 }
 
 export function generateInheritanceTreeText(treeNode: InheritanceTreeNode): string {
@@ -74,7 +74,7 @@ export function generateInheritanceTreeText(treeNode: InheritanceTreeNode): stri
 	lines.set(0, startText);
 	const pos = { line: 0, start: startText.length };
 
-	visitInheritanceTreeNode([treeNode], pos, {
+	visitInheritanceTreeNodeEmitText([treeNode], pos, {
 		rightPadding: 3,
 		minArrowSize: 5,
 		emitText: (text, { line, start }) => {
@@ -91,18 +91,50 @@ export function generateInheritanceTreeText(treeNode: InheritanceTreeNode): stri
 		.join("\n");
 }
 
-export function visiti2InheritanceTreeClause(treeClause: InheritanceTreeClause, nodes: Set<Node>) {
-	treeClause.resolved?.forEach(treeNode => visit2InheritanceTreeNode(treeNode, nodes));
-	treeClause.horizontalInherits?.forEach(clause => visiti2InheritanceTreeClause(clause, nodes));
+interface VisitInheritanceTreeContext {
+	emitTreeNode?: (treeNode: InheritanceTreeNode) => void;
+	emitTreeClause?: (treeNode: InheritanceTreeClause) => void;
 }
 
-export function visit2InheritanceTreeNode(treeNode: InheritanceTreeNode, nodes: Set<Node>) {
-	nodes.add(treeNode.node);
-	treeNode.inherits?.forEach(clause => visiti2InheritanceTreeClause(clause, nodes));
+function visitInheritanceTreeClause(treeClause: InheritanceTreeClause, context: VisitInheritanceTreeContext) {
+	context.emitTreeClause?.(treeClause);
+	treeClause.resolved?.forEach(treeNode => visitInheritanceTreeNode(treeNode, context));
+	treeClause.horizontalInherits?.forEach(clause => visitInheritanceTreeClause(clause, context));
+}
+
+function visitInheritanceTreeNode(treeNode: InheritanceTreeNode, context: VisitInheritanceTreeContext) {
+	context.emitTreeNode?.(treeNode);
+	treeNode.inherits?.forEach(clause => visitInheritanceTreeClause(clause, context));
 }
 
 export function getUniqueResolvedNodeForInheritanceTree(tree: InheritanceTreeNode): Set<Node> {
 	const nodes = new Set<Node>();
-	visit2InheritanceTreeNode(tree, nodes);
+	visitInheritanceTreeNode(tree, {
+		emitTreeNode: treeNode => nodes.add(treeNode.node)
+	});
 	return nodes;
+}
+
+export function getMixinsForInheritanceTree(tree: InheritanceTreeNode): Set<string> {
+	const mixins = new Set<string>();
+	visitInheritanceTreeNode(tree, {
+		emitTreeClause: treeClause => {
+			if (treeClause.kind === "mixin") {
+				mixins.add(treeClause.identifier.text);
+			}
+		}
+	});
+	return mixins;
+}
+
+export function getExtendsForInheritanceTree(tree: InheritanceTreeNode): Set<string> {
+	const ext = new Set<string>();
+	visitInheritanceTreeNode(tree, {
+		emitTreeClause: treeClause => {
+			if (treeClause.kind === "class" || treeClause.kind === "interface") {
+				ext.add(treeClause.identifier.text);
+			}
+		}
+	});
+	return ext;
 }

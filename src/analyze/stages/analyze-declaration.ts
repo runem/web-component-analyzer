@@ -1,6 +1,6 @@
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
-import { ComponentFeatureCollection } from "../flavors/analyzer-flavor";
+import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { getUniqueResolvedNodeForInheritanceTree } from "../util/inheritance-tree-util";
 import { getJsDoc } from "../util/js-doc-util";
@@ -10,7 +10,7 @@ import { excludeNode } from "./flavor/exclude-node";
 import { refineDeclaration } from "./flavor/refine-declaration";
 import { mergeFeatures } from "./merge/merge-features";
 
-export function analyzeComponentDeclaration(declarationNode: Node, context: AnalyzerVisitContext): ComponentDeclaration {
+export function analyzeComponentDeclaration(declarationNode: Node, context: AnalyzerDeclarationVisitContext): ComponentDeclaration {
 	const inheritanceTree = discoverInheritance(declarationNode, context);
 
 	const declarationNodes = getUniqueResolvedNodeForInheritanceTree(inheritanceTree);
@@ -21,6 +21,23 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 	);*/
 
 	const featureCollections: ComponentFeatureCollection[] = [];
+
+	const baseDeclaration: ComponentDeclaration = {
+		events: [],
+		cssParts: [],
+		cssProperties: [],
+		members: [],
+		methods: [],
+		slots: [],
+		jsDoc: getJsDoc(declarationNode, context.ts),
+		inheritanceTree,
+		declarationNodes
+	};
+
+	context = {
+		...context,
+		getDeclaration: () => baseDeclaration
+	};
 
 	for (const node of declarationNodes) {
 		if (shouldExcludeNode(node, context)) {
@@ -34,17 +51,7 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 
 	// If all nodes were excluded, return empty declaration
 	if (featureCollections.length === 0) {
-		return {
-			events: [],
-			cssParts: [],
-			cssProperties: [],
-			members: [],
-			methods: [],
-			slots: [],
-			inheritanceTree,
-			declarationNodes,
-			jsDoc: undefined
-		};
+		return baseDeclaration;
 	}
 
 	const mergedFeatureCollection = featureCollections.length > 1 ? mergeFeatures(featureCollections, context) : featureCollections[0];
@@ -53,15 +60,13 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 
 	return refineDeclaration(
 		{
+			...baseDeclaration,
 			cssParts: mergedFeatureCollection.cssParts,
 			cssProperties: mergedFeatureCollection.cssProperties,
 			events: mergedFeatureCollection.events,
 			methods: mergedFeatureCollection.methods,
 			members: mergedFeatureCollection.memberResults.map(({ member }) => member),
-			slots: mergedFeatureCollection.slots,
-			declarationNodes,
-			inheritanceTree,
-			jsDoc: getJsDoc(declarationNode, context.ts)
+			slots: mergedFeatureCollection.slots
 		},
 		context
 	);

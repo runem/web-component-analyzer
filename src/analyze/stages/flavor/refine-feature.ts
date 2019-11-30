@@ -1,13 +1,13 @@
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { AnalyzerDeclarationVisitContext, FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
 import { ComponentFeature } from "../../types/features/component-feature";
-import { FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
 
 export type RefineFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K]) => void };
 
 export function refineFeature<FeatureKind extends ComponentFeature, ValueType = FeatureVisitReturnTypeMap[FeatureKind]>(
 	featureKind: FeatureKind,
 	value: ValueType | ValueType[],
-	context: AnalyzerVisitContext,
+
+	context: AnalyzerDeclarationVisitContext,
 	emitMap: Partial<RefineFeatureEmitMap>
 ): void {
 	/*if (Array.isArray(value)) {

@@ -25,7 +25,8 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 		ts,
 		flavors,
 		cache: {
-			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE
+			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
+			general: new Map()
 		},
 		config: {
 			analyzeLibDom: false,
@@ -36,8 +37,12 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 	};
 
 	// Parse all components
-	const componentDefinitions = discoverDefinitions(sourceFile, context, declarationNodes =>
-		analyzeComponentDeclaration(Array.from(declarationNodes)[0], context)
+	const componentDefinitions = discoverDefinitions(sourceFile, context, (definition, declarationNodes) =>
+		analyzeComponentDeclaration(Array.from(declarationNodes)[0], {
+			...context,
+			getDeclaration: definition.declaration,
+			getDefinition: () => definition
+		})
 	);
 
 	// Parse all global events

@@ -1,6 +1,7 @@
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
+import { ComponentDefinition } from "../types/component-definition";
 import { ComponentCssPart } from "../types/features/component-css-part";
 import { ComponentCssProperty } from "../types/features/component-css-property";
 import { ComponentEvent } from "../types/features/component-event";
@@ -43,14 +44,19 @@ export interface ComponentFeatureCollection {
 	cssParts: ComponentCssPart[];
 }
 
+export interface AnalyzerDeclarationVisitContext extends AnalyzerVisitContext {
+	getDefinition: () => ComponentDefinition;
+	getDeclaration: () => ComponentDeclaration;
+}
+
 export type FeatureAnalyzeVisitMap = {
-	[K in ComponentFeature]: (node: Node, context: AnalyzerVisitContext) => FeatureVisitReturnTypeMap[K][] | undefined;
+	[K in ComponentFeature]: (node: Node, context: AnalyzerDeclarationVisitContext) => FeatureVisitReturnTypeMap[K][] | undefined;
 };
 
 export type FeatureRefineVisitMap = {
 	[K in ComponentFeature]: (
 		feature: FeatureVisitReturnTypeMap[K],
-		context: AnalyzerVisitContext
+		context: AnalyzerDeclarationVisitContext
 	) => FeatureVisitReturnTypeMap[K] | FeatureVisitReturnTypeMap[K][] | undefined;
 };
 
@@ -60,5 +66,5 @@ export interface AnalyzerFlavor {
 	discoverInheritance?(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined;
 	discoverFeatures?: Partial<FeatureAnalyzeVisitMap>;
 	refineFeature?: Partial<FeatureRefineVisitMap>;
-	refineDeclaration?(declaration: ComponentDeclaration, context: AnalyzerVisitContext): ComponentDeclaration | undefined;
+	refineDeclaration?(declaration: ComponentDeclaration, context: AnalyzerDeclarationVisitContext): ComponentDeclaration | undefined;
 }

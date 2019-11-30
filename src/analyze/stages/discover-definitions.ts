@@ -1,8 +1,8 @@
 import { Node, SourceFile } from "typescript";
+import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentDefinition } from "../types/component-definition";
 import { lazy } from "../util/lazy";
-import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { visitDefinitions } from "./flavor/visit-definitions";
 
 /**
@@ -15,7 +15,7 @@ import { visitDefinitions } from "./flavor/visit-definitions";
 export function discoverDefinitions(
 	sourceFile: SourceFile,
 	context: AnalyzerVisitContext,
-	analyzeDeclaration: (declarationNodes: Node[]) => ComponentDeclaration
+	analyzeDeclaration: (definition: ComponentDefinition, declarationNodes: Node[]) => ComponentDeclaration
 ): ComponentDefinition[] {
 	// Find all definitions in the file
 	const definitionResults = analyzeAndDedupeDefinitions(sourceFile, context);
@@ -23,7 +23,7 @@ export function discoverDefinitions(
 	return Array.from(definitionResults.entries()).map(([definition, declarationSet]) => {
 		return {
 			...definition,
-			declaration: lazy(() => analyzeDeclaration(Array.from(declarationSet)))
+			declaration: lazy(() => analyzeDeclaration(definition, Array.from(declarationSet)))
 		};
 	});
 	// Go through each component declaration parsing and merging declarations.
