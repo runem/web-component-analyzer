@@ -37,6 +37,7 @@ export interface HtmlDataEvent extends HtmlDataMember {}
 export interface HtmlDataCssProperty extends HtmlDataMember {
 	// Suggested fields:
 	type?: string;
+	default?: string;
 }
 
 export interface HtmlDataCssPart extends HtmlDataMember {}

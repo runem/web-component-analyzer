@@ -35,12 +35,13 @@ export const discoverFeatures: AnalyzerFlavor["discoverFeatures"] = {
 			return parseJsDocForNode(
 				node,
 				["cssprop", "cssproperty", "cssvar", "cssvariable"],
-				(tagNode, { name, description, type }) => {
+				(tagNode, { name, description, type, default: def }) => {
 					if (name != null && name.length > 0) {
 						return {
 							name: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: type || undefined
+							type: type || undefined,
+							default: def
 						};
 					}
 				},

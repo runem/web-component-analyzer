@@ -68,7 +68,7 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
 	const cssParts = declaration.cssParts
-		.map(p => componentCssPropToHtmlCssPart(p, checker))
+		.map(p => componentCssPartToHtmlCssPart(p, checker))
 		.filter((val): val is NonNullable<typeof val> => val != null);
 
 	return {
@@ -89,11 +89,12 @@ function componentCssPropToHtmlCssProp(prop: ComponentCssProperty, checker: Type
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
 		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc),
-		type: prop.type
+		type: prop.type,
+		default: prop.default != null ? JSON.stringify(prop.default) : undefined
 	};
 }
 
-function componentCssPropToHtmlCssPart(part: ComponentCssPart, checker: TypeChecker): HtmlDataCssPart | undefined {
+function componentCssPartToHtmlCssPart(part: ComponentCssPart, checker: TypeChecker): HtmlDataCssPart | undefined {
 	return {
 		name: part.name || "",
 		description: getDescriptionFromJsDoc(part.jsDoc),

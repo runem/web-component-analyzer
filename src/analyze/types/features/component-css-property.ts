@@ -4,4 +4,5 @@ export interface ComponentCssProperty {
 	name: string;
 	jsDoc: JsDoc | undefined;
 	type?: string;
+	default?: any;
 }
