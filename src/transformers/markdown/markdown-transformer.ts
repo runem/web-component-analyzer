@@ -101,8 +101,14 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
  * @param config
  */
 function cssPropSection(cssProperty: ComponentCssProperty[], config: TransformerConfig): string {
-	const rows: string[][] = [["Property", "Description"]];
-	rows.push(...cssProperty.map(prop => [(prop.name && markdownHighlight(prop.name)) || "", prop.jsDoc?.description || ""]));
+	const rows: string[][] = [["Property", "Default", "Description"]];
+	rows.push(
+		...cssProperty.map(prop => {
+			const def = (prop.default !== undefined ? JSON.stringify(prop.default) : "") || "";
+
+			return [(prop.name && markdownHighlight(prop.name)) || "", def, prop.jsDoc?.description || ""];
+		})
+	);
 	return markdownHeader("CSS Custom Properties", 2, config) + "\n" + markdownTable(rows);
 }
 
@@ -115,10 +121,6 @@ function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig):
 	const rows: string[][] = [["Part", "Description"]];
 	rows.push(...cssPart.map(part => [(part.name && markdownHighlight(part.name)) || "", part.jsDoc?.description || ""]));
 	return markdownHeader("CSS Shadow Parts", 2, config) + "\n" + markdownTable(rows);
-}
-
-function shouldShowVisibility<T extends { visibility?: VisibilityKind }>(items: T[], config: TransformerConfig): boolean {
-	return config.visibility !== "public" && items.some(method => method.visibility != null && method.visibility !== "public");
 }
 
 /**
@@ -225,4 +227,8 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 	}
 
 	return markdownHeader("Properties", 2, config) + "\n" + markdownTable(rows);
+}
+
+function shouldShowVisibility<T extends { visibility?: VisibilityKind }>(items: T[], config: TransformerConfig): boolean {
+	return config.visibility !== "public" && items.some(method => method.visibility != null && method.visibility !== "public");
 }
