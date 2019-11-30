@@ -1,4 +1,5 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { ComponentMethod } from "../../types/features/component-method";
 import { isNamePrivate } from "../../util/ast-util";
 import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
 
@@ -20,5 +21,15 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 		}
 
 		return memberResult;
+	},
+	method: (method: ComponentMethod, context: AnalyzerVisitContext): ComponentMethod | undefined => {
+		if (method.visibility == null && isNamePrivate(method.name)) {
+			return {
+				...method,
+				visibility: "private"
+			};
+		}
+
+		return method;
 	}
 };
