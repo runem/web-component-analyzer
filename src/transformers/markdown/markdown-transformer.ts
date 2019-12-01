@@ -231,5 +231,7 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 }
 
 function shouldShowVisibility<T extends { visibility?: VisibilityKind }>(items: T[], config: TransformerConfig): boolean {
-	return config.visibility !== "public" && items.some(method => method.visibility != null && method.visibility !== "public");
+	return (
+		config.visibility != null && config.visibility !== "public" && items.some(method => method.visibility != null && method.visibility !== "public")
+	);
 }

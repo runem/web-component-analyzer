@@ -20,7 +20,7 @@ export function transformAnalyzerResult(
 	kind: TransformerKind,
 	results: AnalyzerResult | AnalyzerResult[],
 	program: Program,
-	config: TransformerConfig
+	config: Partial<TransformerConfig>
 ): string {
 	const func = transformerFunctionMap[kind];
 
@@ -28,5 +28,8 @@ export function transformAnalyzerResult(
 		throw new Error(`Couldn't find transformer function for transformer kind: ${kind}`);
 	}
 
-	return func(Array.isArray(results) ? results : [results], program, config);
+	return func(Array.isArray(results) ? results : [results], program, {
+		visibility: "public",
+		...config
+	});
 }
