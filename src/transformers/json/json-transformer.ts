@@ -69,7 +69,9 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 		events: events.length === 0 ? undefined : events,
 		slots: slots.length === 0 ? undefined : slots,
 		cssProperties: cssProperties.length === 0 ? undefined : cssProperties,
-		cssParts: cssParts.length === 0 ? undefined : cssParts
+		cssParts: cssParts.length === 0 ? undefined : cssParts,
+		deprecated: declaration.deprecated === true || typeof declaration.deprecated === "string" || undefined,
+		deprecatedMessage: typeof declaration.deprecated === "string" ? declaration.deprecated : undefined
 	};
 }
 
@@ -99,7 +101,9 @@ function componentSlotToHtmlDataSlot(slot: ComponentSlot, checker: TypeChecker):
 function componentEventToHtmlDataEvent(event: ComponentEvent, checker: TypeChecker): HtmlDataEvent | undefined {
 	return {
 		name: event.name,
-		description: getDescriptionFromJsDoc(event.jsDoc)
+		description: getDescriptionFromJsDoc(event.jsDoc),
+		deprecated: event.deprecated === true || undefined,
+		deprecatedMessage: typeof event.deprecated === "string" ? event.deprecated : undefined
 	};
 }
 
@@ -112,7 +116,9 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 		name: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
 		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
-		default: member.default != null ? JSON.stringify(member.default) : undefined
+		default: member.default != null ? JSON.stringify(member.default) : undefined,
+		deprecated: member.deprecated === true || undefined,
+		deprecatedMessage: typeof member.deprecated === "string" ? member.deprecated : undefined
 	};
 }
 
@@ -126,7 +132,9 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 		attribute: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
 		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
-		default: member.default != null ? JSON.stringify(member.default) : undefined
+		default: member.default != null ? JSON.stringify(member.default) : undefined,
+		deprecated: member.deprecated === true || undefined,
+		deprecatedMessage: typeof member.deprecated === "string" ? member.deprecated : undefined
 	};
 }
 

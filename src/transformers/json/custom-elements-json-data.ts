@@ -17,6 +17,8 @@ export interface HtmlDataMember {
 	// Suggested fields:
 	type?: any;
 	attribute?: string;
+	deprecated?: boolean;
+	deprecatedMessage?: string;
 }
 
 export interface HtmlDataAttribute extends HtmlDataMember {
@@ -35,7 +37,6 @@ export interface HtmlDataEvent extends HtmlDataMember {}
 
 export interface HtmlDataCssProperty extends HtmlDataMember {
 	// Suggested fields:
-	type?: string;
 	default?: string;
 }
 
@@ -44,7 +45,6 @@ export interface HtmlDataCssPart extends HtmlDataMember {}
 export interface HtmlDataTag {
 	name: string;
 	description?: string;
-	jsDoc?: string;
 	attributes?: HtmlDataAttribute[];
 
 	// Suggested fields:
@@ -53,6 +53,8 @@ export interface HtmlDataTag {
 	events?: HtmlDataEvent[];
 	cssProperties?: HtmlDataCssProperty[];
 	cssParts?: HtmlDataCssPart[];
+	deprecated?: boolean;
+	deprecatedMessage?: string;
 }
 
 export interface HtmlDataV2 {

@@ -10,4 +10,5 @@ export interface ComponentEvent {
 	type: () => SimpleType | Type;
 	typeHint?: string;
 	visibility?: VisibilityKind;
+	deprecated?: boolean | string;
 }
