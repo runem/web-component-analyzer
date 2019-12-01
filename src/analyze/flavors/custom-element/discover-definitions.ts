@@ -1,7 +1,7 @@
 import { Node } from "typescript";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { getInterfaceKeys, resolveDeclarations } from "../../util/ast-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
 /**
@@ -34,7 +34,7 @@ export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitCo
 					const [unresolvedTagNameNode, identifierNode] = node.arguments;
 
 					// ("my-element", MyElement)
-					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker });
+					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker, strict: true });
 
 					if (resolvedTagNameNode != null && identifierNode != null && typeof resolvedTagNameNode.value === "string") {
 						const tagName = resolvedTagNameNode.value;

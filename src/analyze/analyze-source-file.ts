@@ -17,7 +17,7 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 
 	// Parse all components
 	const componentDefinitions = discoverDefinitions(sourceFile, context, (definition, declarationNodes) =>
-		analyzeComponentDeclaration(Array.from(declarationNodes)[0], {
+		analyzeComponentDeclaration(declarationNodes, {
 			...context,
 			getDeclaration: definition.declaration,
 			getDefinition: () => definition

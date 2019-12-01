@@ -22,17 +22,18 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 		return input;
 	} else if (typeof input === "function") {
 		return stripTypescriptValues(input(), checker);
-	} else if (isTypescriptNode(input)) {
-		return `{NODE:${input.getSourceFile?.()?.fileName.match(".*/(.+)")?.[1]}:${input.pos}}`;
 	} else if (isTypescriptSourceFile(input)) {
 		return `{SOURCEFILE:${input.fileName.match(".*/(.+)")?.[1]}}`;
+	} else if (isTypescriptNode(input)) {
+		let title = "escapedText" in input ? (input as any).escapedText : undefined;
+		return `{NODE:${input.getSourceFile?.()?.fileName.match(".*/(.+)")?.[1]}${title != null ? `:${title}` : ""}:${input.pos}}`;
 	} else if (isTypescriptType(input)) {
 		if (checker == null) {
 			return "{TYPE}";
 		}
 		return `{TYPE:${checker.typeToString(input)}}`;
 	} else if (isSimpleType(input)) {
-		return `{SIMPLETYPE:${toTypeString(input)}}`;
+		return `{SIMPLE_TYPE:${toTypeString(input)}}`;
 	} else if (Array.isArray(input)) {
 		return input.map(i => stripTypescriptValues(i, checker));
 	} else if (input instanceof Object) {

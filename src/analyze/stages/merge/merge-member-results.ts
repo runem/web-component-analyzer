@@ -18,7 +18,7 @@ interface MergeMap {
 export function mergeMemberResults(memberResults: ComponentMemberResult[], context: AnalyzerVisitContext): ComponentMemberResult[] {
 	// Start merging by sorting member results from high to low priority.
 	// If two priorities are the same: prioritize the first found element
-	memberResults.sort((a, b) => {
+	memberResults = [...memberResults].sort((a, b) => {
 		const vA = priorityValueMap[a.priority];
 		const vB = priorityValueMap[b.priority];
 

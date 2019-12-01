@@ -11,4 +11,5 @@ export interface AnalyzerOptions {
 	ts?: typeof tsModule;
 	flavors?: AnalyzerFlavor[];
 	config?: AnalyzerConfig;
+	debug?: boolean;
 }

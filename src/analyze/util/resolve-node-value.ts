@@ -6,6 +6,7 @@ export interface Context {
 	ts: typeof tsModule;
 	checker?: TypeChecker;
 	depth?: number;
+	strict?: boolean;
 }
 
 /**
@@ -87,7 +88,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 		const declarations = resolveDeclarations(node, { checker, ts });
 		if (declarations.length > 0) {
 			const resolved = resolveNodeValue(declarations[0], { ...context, depth });
-			if (resolved != null) {
+			if (context.strict || resolved != null) {
 				return resolved;
 			}
 		}

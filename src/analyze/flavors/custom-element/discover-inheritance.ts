@@ -1,7 +1,7 @@
 import { ClassLikeDeclaration, HeritageClause, InterfaceDeclaration, Node } from "typescript";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { InheritanceTreeClause, InheritanceTreeNode } from "../../types/inheritance-tree";
 import { findChild, resolveDeclarations } from "../../util/ast-util";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
 export function discoverInheritance(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined {
 	if (node == null) return;
@@ -131,9 +131,15 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 			identifier: ts.isClassLike(declaration) || ts.isInterfaceDeclaration(declaration) ? declaration.name : undefined
 		}));
 		//extendWithDeclarationNode(declaration, context);
+		const kind =
+			heritage.token === ts.SyntaxKind.ImplementsKeyword || ts.isInterfaceDeclaration(heritage.parent)
+				? node.text?.toLowerCase().includes("mixin")
+					? "mixin"
+					: "interface"
+				: "class";
 
 		context.emitHeritageClause?.({
-			kind: heritage.token === ts.SyntaxKind.ImplementsKeyword || ts.isInterfaceDeclaration(heritage.parent) ? "interface" : "class",
+			kind,
 			identifier: node,
 			resolved
 		});

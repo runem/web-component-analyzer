@@ -10,15 +10,24 @@ import { excludeNode } from "./flavor/exclude-node";
 import { refineDeclaration } from "./flavor/refine-declaration";
 import { mergeFeatures } from "./merge/merge-features";
 
-export function analyzeComponentDeclaration(declarationNode: Node, context: AnalyzerDeclarationVisitContext): ComponentDeclaration {
-	const inheritanceTree = discoverInheritance(declarationNode, context);
+export function analyzeComponentDeclaration(initialDeclarationNodes: Node[], context: AnalyzerDeclarationVisitContext): ComponentDeclaration {
+	const mainDeclarationNode = initialDeclarationNodes[0];
+	if (mainDeclarationNode == null) {
+		throw new Error("Couldn't find main declaration node");
+	}
+
+	const inheritanceTree = discoverInheritance(initialDeclarationNodes, context);
 
 	const declarationNodes = getUniqueResolvedNodeForInheritanceTree(inheritanceTree);
 
-	/*console.dir(
-		Array.from(declarationNodes).map(n => n.getText()),
-		{ depth: 3 }
-	);*/
+	// Add initial declaration nodes to the set (nodes that aren't the main declaration node)
+	for (const node of initialDeclarationNodes) {
+		if (node !== mainDeclarationNode) {
+			declarationNodes.add(node);
+		}
+	}
+
+	//console.log(Array.from(declarationNodes).map(n => n.getText().substr(0, 20)));
 
 	const featureCollections: ComponentFeatureCollection[] = [];
 
@@ -29,7 +38,7 @@ export function analyzeComponentDeclaration(declarationNode: Node, context: Anal
 		members: [],
 		methods: [],
 		slots: [],
-		jsDoc: getJsDoc(declarationNode, context.ts),
+		jsDoc: getJsDoc(mainDeclarationNode, context.ts),
 		inheritanceTree,
 		declarationNodes
 	};
