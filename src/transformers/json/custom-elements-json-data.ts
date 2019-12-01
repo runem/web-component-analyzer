@@ -15,7 +15,6 @@ export interface HtmlDataMember {
 	valueSet?: string;
 
 	// Suggested fields:
-	jsDoc?: string;
 	type?: any;
 	attribute?: string;
 }

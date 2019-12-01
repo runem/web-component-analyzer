@@ -74,7 +74,6 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 	return {
 		name: definition.tagName,
 		description: getDescriptionFromJsDoc(declaration.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(declaration.jsDoc),
 		attributes: attributes.length === 0 ? undefined : attributes,
 		properties: properties.length === 0 ? undefined : properties,
 		events: events.length === 0 ? undefined : events,
@@ -88,7 +87,6 @@ function componentCssPropToHtmlCssProp(prop: ComponentCssProperty, checker: Type
 	return {
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(prop.jsDoc),
 		type: prop.type,
 		default: prop.default != null ? JSON.stringify(prop.default) : undefined
 	};
@@ -97,24 +95,21 @@ function componentCssPropToHtmlCssProp(prop: ComponentCssProperty, checker: Type
 function componentCssPartToHtmlCssPart(part: ComponentCssPart, checker: TypeChecker): HtmlDataCssPart | undefined {
 	return {
 		name: part.name || "",
-		description: getDescriptionFromJsDoc(part.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(part.jsDoc)
+		description: getDescriptionFromJsDoc(part.jsDoc)
 	};
 }
 
 function componentSlotToHtmlDataSlot(slot: ComponentSlot, checker: TypeChecker): HtmlDataSlot | undefined {
 	return {
 		name: slot.name || "",
-		description: getDescriptionFromJsDoc(slot.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(slot.jsDoc)
+		description: getDescriptionFromJsDoc(slot.jsDoc)
 	};
 }
 
 function componentEventToHtmlDataEvent(event: ComponentEvent, checker: TypeChecker): HtmlDataEvent | undefined {
 	return {
 		name: event.name,
-		description: getDescriptionFromJsDoc(event.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(event.jsDoc)
+		description: getDescriptionFromJsDoc(event.jsDoc)
 	};
 }
 
@@ -126,7 +121,6 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 	return {
 		name: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
 		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
 		default: member.default != null ? JSON.stringify(member.default) : undefined
 	};
@@ -141,7 +135,6 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 		name: member.propName,
 		attribute: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
-		jsDoc: getJsDocTextFromJsDoc(member.jsDoc),
 		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
 		default: member.default != null ? JSON.stringify(member.default) : undefined
 	};
@@ -149,8 +142,4 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 
 function getDescriptionFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	return jsDoc?.description;
-}
-
-function getJsDocTextFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
-	return jsDoc != null && jsDoc.node != null ? jsDoc.node.getText() : undefined;
 }
