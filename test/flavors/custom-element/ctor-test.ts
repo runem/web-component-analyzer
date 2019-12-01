@@ -22,7 +22,7 @@ test("Property assignments in the constructor are picked up", t => {
 				 */
 				this.darkMode = false;
 				
-				this.location = { x: 0, y: 0 };
+				this.item = { title: "foo", description: "bar" };
 				
 				this._formatter = null;
 				this._timeout = setTimeout(console.log, 1000);
@@ -70,10 +70,10 @@ test("Property assignments in the constructor are picked up", t => {
 			},
 			{
 				kind: "property",
-				propName: "location",
+				propName: "item",
 				attrName: undefined,
 				jsDoc: undefined,
-				default: { x: 0, y: 0 },
+				default: { title: "foo", description: "bar" },
 				type: () => ({ kind: SimpleTypeKind.OBJECT }),
 				visibility: undefined,
 				reflect: undefined,

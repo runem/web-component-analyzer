@@ -3,7 +3,7 @@ import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
-test.skip("Polymer components are correctly picked up", t => {
+test("Polymer components are correctly picked up", t => {
 	const { result, checker } = analyzeText(`
 		class XCustom extends PolymerElement {
 			static get properties() {

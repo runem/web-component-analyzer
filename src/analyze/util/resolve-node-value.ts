@@ -14,10 +14,7 @@ export interface Context {
  * @param node
  * @param context
  */
-export function resolveNodeValue(
-	node: Node | undefined,
-	context: Context
-): { value: string | number | boolean | undefined | null; node: Node } | undefined {
+export function resolveNodeValue(node: Node | undefined, context: Context): { value: any; node: Node } | undefined {
 	if (node == null) return undefined;
 
 	const { ts, checker } = context;
@@ -32,15 +29,25 @@ export function resolveNodeValue(
 	} else if (ts.isNumericLiteral(node)) {
 		return { value: Number(node.text), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
-		try {
-			// Try to parse object literal expressions as JSON by converting it to something parsable
-			const regex = /([a-zA-Z1-9]*?):/gm;
-			const json = node.getText().replace(regex, m => `"${m[0]}":`);
-			return { value: JSON.parse(json), node };
-		} catch {
-			// If something crashes it probably means that the object is more complex.
-			// Therefore do nothing
+		const objectEntries: [string, any][] = [];
+
+		for (const prop of node.properties) {
+			if (ts.isPropertyAssignment(prop)) {
+				// Resolve the "key"
+				const name = resolveNodeValue(prop.name, { ...context, depth })?.value || prop.name.getText();
+
+				// Resolve the "value
+				const resolvedValue = resolveNodeValue(prop.initializer, { ...context, depth });
+				if (resolvedValue != null) {
+					objectEntries.push([name, resolvedValue.value]);
+				}
+			}
 		}
+
+		return {
+			value: Object.fromEntries(objectEntries),
+			node
+		};
 	} else if (node.kind === ts.SyntaxKind.TrueKeyword) {
 		return { value: true, node };
 	} else if (node.kind === ts.SyntaxKind.FalseKeyword) {
@@ -61,6 +68,11 @@ export function resolveNodeValue(
 		return resolveNodeValue(node.name, { ...context, depth });
 	}
 
+	// Resolve [expression] parts of {[expression]: "value"}
+	else if (ts.isComputedPropertyName(node)) {
+		return resolveNodeValue(node.expression, { ...context, depth });
+	}
+
 	// Resolve initializer value of enum members.
 	else if (ts.isEnumMember(node)) {
 		if (node.initializer != null) {
@@ -72,8 +84,12 @@ export function resolveNodeValue(
 
 	// Resolve values of variables.
 	else if (ts.isIdentifier(node) && checker != null) {
-		const declaration = resolveDeclarations(node, { checker, ts });
-		return resolveNodeValue(declaration[0], { ...context, depth });
+		const declarations = resolveDeclarations(node, { checker, ts });
+		if (declarations.length > 0) {
+			return resolveNodeValue(declarations[0], { ...context, depth });
+		} else {
+			return { value: node.getText(), node };
+		}
 	}
 
 	// Fallthrough
