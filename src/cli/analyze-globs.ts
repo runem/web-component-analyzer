@@ -87,12 +87,10 @@ export async function analyzeGlobs(
  * @param config
  */
 function analyzeComponentsInFile(file: SourceFile, program: Program, config: AnalyzerCliConfig): AnalyzerResult {
-	const options = {
-		checker: program.getTypeChecker(),
+	return analyzeSourceFile(file, {
+		program,
 		config: config.analyze
-	};
-
-	return analyzeSourceFile(file, options);
+	});
 }
 
 /**

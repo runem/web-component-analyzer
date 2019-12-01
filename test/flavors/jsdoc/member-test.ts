@@ -4,7 +4,10 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("jsdoc: Discovers properties with @prop", t => {
-	const { result, checker } = analyzeText(`
+	const {
+		results: [result],
+		checker
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @prop {String} [prop1=def] - This is a comment

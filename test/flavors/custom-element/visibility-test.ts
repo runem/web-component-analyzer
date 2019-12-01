@@ -3,7 +3,10 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("Handle Typescript visibility modifiers", t => {
-	const { result, checker } = analyzeText(`
+	const {
+		results: [result],
+		checker
+	} = analyzeText(`
 	/**
 	 * @element
 	 */
@@ -35,7 +38,10 @@ test("Handle Typescript visibility modifiers", t => {
 });
 
 test("Handle visibility for private '_' prefixed names", t => {
-	const { result, checker } = analyzeText(`
+	const {
+		results: [result],
+		checker
+	} = analyzeText(`
 	/**
 	 * @element
 	 */

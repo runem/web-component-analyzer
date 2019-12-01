@@ -4,7 +4,10 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("Property assignments in the constructor are picked up", t => {
-	const { result, checker } = analyzeText({
+	const {
+		results: [result],
+		checker
+	} = analyzeText({
 		fileName: "test.js",
 		text: `
 		class MyElement extends HTMLElement {
@@ -114,7 +117,10 @@ test("Property assignments in the constructor are picked up", t => {
 });
 
 test("Property assignments in the constructor are correctly merged", t => {
-	const { result, checker } = analyzeText({
+	const {
+		results: [result],
+		checker
+	} = analyzeText({
 		fileName: "test.js",
 		text: `
 	    /**
@@ -165,7 +171,10 @@ test("Property assignments in the constructor are correctly merged", t => {
 });
 
 test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
-	const { result, checker } = analyzeText({
+	const {
+		results: [result],
+		checker
+	} = analyzeText({
 		fileName: "test.js",
 		text: `
 		class MyElement extends HTMLElement {

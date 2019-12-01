@@ -3,7 +3,9 @@ import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind } from "ts-sim
 import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers custom events with @fires", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @fires my-event - This is a comment
@@ -21,7 +23,9 @@ test("jsdoc: Discovers custom events with @fires", t => {
 });
 
 test("jsdoc: Discovers the detail type of custom events with @fires", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @fires {string} my-event

@@ -3,7 +3,9 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("jsDoc: Handles visibility modifier on internal event", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		/**
 		 * @element
 	     */
@@ -26,7 +28,9 @@ test("jsDoc: Handles visibility modifier on internal event", t => {
 });
 
 test("jsDoc: Handles visibility modifier on constructor assignment", t => {
-	const { result } = analyzeText({
+	const {
+		results: [result]
+	} = analyzeText({
 		fileName: "test.js",
 		text: `
 		/**

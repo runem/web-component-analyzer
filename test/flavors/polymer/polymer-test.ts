@@ -4,7 +4,10 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("Polymer components are correctly picked up", t => {
-	const { result, checker } = analyzeText(`
+	const {
+		results: [result],
+		checker
+	} = analyzeText(`
 		class XCustom extends PolymerElement {
 			static get properties() {
 				return {

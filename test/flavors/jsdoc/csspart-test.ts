@@ -2,7 +2,9 @@ import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers css parts with @csspart", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @csspart thumb - This is a comment

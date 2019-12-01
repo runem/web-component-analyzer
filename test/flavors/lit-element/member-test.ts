@@ -4,7 +4,10 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
 test("litElement: Discovers properties from 'static get properties'", t => {
-	const { result, checker } = analyzeText(`
+	const {
+		results: [result],
+		checker
+	} = analyzeText(`
 	/**
 	 * @element
 	 */

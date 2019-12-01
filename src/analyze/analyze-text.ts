@@ -4,20 +4,21 @@ import {
 	createSourceFile,
 	getDefaultLibFileName,
 	ModuleKind,
+	Program,
 	ScriptKind,
 	ScriptTarget,
 	SourceFile,
 	sys,
-	TypeChecker,
-	Program
+	TypeChecker
 } from "typescript";
+import { arrayDefined } from "../util/array-util";
 import { analyzeSourceFile } from "./analyze-source-file";
 import { AnalyzerResult } from "./types/analyzer-result";
 
 export interface IVirtualSourceFile {
 	fileName: string;
 	text?: string;
-	entry?: boolean;
+	analyze?: boolean;
 }
 
 export type VirtualSourceFile = IVirtualSourceFile | string;
@@ -29,7 +30,9 @@ const system: typeof sys | undefined = sys;
  * Analyzes components in code
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
  */
-export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile): { result: AnalyzerResult; checker: TypeChecker; program: Program } {
+export function analyzeText(
+	inputFiles: VirtualSourceFile[] | VirtualSourceFile
+): { results: AnalyzerResult[]; checker: TypeChecker; program: Program } {
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
 			typeof file === "string"
@@ -41,11 +44,6 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile)
 				: file
 		)
 		.map(file => ({ ...file, fileName: file.fileName }));
-
-	const entryFile = files.find(file => file.entry === true) || files[0];
-	if (entryFile == null) {
-		throw new ReferenceError(`No entry could be found`);
-	}
 
 	const readFile = (fileName: string): string | undefined => {
 		const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
@@ -104,12 +102,10 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile)
 
 	const checker = program.getTypeChecker();
 
-	// Analyze the entry file
-	const entrySourceFile = program.getSourceFile(entryFile.fileName)!;
+	const sourceFilesToAnalyze = arrayDefined(files.filter(file => file.analyze !== false).map(file => program.getSourceFile(file.fileName)));
 
-	return {
-		checker,
-		program,
-		result: analyzeSourceFile(entrySourceFile, { checker })
-	};
+	// Analyze the entry file
+	const results = sourceFilesToAnalyze.map(sf => analyzeSourceFile(sf, { program }));
+
+	return { checker, program, results };
 }

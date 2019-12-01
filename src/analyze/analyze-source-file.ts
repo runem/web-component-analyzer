@@ -14,10 +14,14 @@ import { ALL_COMPONENT_FEATURES } from "./types/features/component-feature";
  * @param options
  */
 export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptions): AnalyzerResult {
+	if (options.program == null) {
+		throw new Error("A program is required when running 'analyzeSourceFile'");
+	}
+
 	// Assign defaults
 	const flavors = options.flavors || DEFAULT_FLAVORS;
 	const ts = options.ts || tsModule;
-	const checker = options.checker;
+	const checker = options.program.getTypeChecker();
 
 	// Create context
 	const context: AnalyzerVisitContext = {

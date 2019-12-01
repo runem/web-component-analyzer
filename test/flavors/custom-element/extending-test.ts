@@ -3,9 +3,12 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getComponentProp } from "../../helpers/util";
 
 test("Correctly extends interface with interface from different file", t => {
-	const { result } = analyzeText([
+	const {
+		results: [result]
+	} = analyzeText([
 		{
 			fileName: "base.ts",
+			analyze: false,
 			text: `
 export interface Checked {
   checked: boolean;
@@ -13,7 +16,6 @@ export interface Checked {
 		},
 		{
 			fileName: "main.ts",
-			entry: true,
 			text: `
 import {Checked} from "./base";
 
@@ -35,9 +37,12 @@ declare global {
 });
 
 test("Correctly extends interface with interface+value from different file", t => {
-	const { result } = analyzeText([
+	const {
+		results: [result]
+	} = analyzeText([
 		{
 			fileName: "base.ts",
+			analyze: false,
 			text: `
 interface Checked {
   checked: boolean;
@@ -48,7 +53,6 @@ export {Checked};
 		},
 		{
 			fileName: "main.ts",
-			entry: true,
 			text: `
 import {Checked} from "./base";
 
@@ -70,9 +74,12 @@ declare global {
 });
 
 test("Correctly extends class with class from different file", t => {
-	const { result } = analyzeText([
+	const {
+		results: [result]
+	} = analyzeText([
 		{
 			fileName: "base.ts",
+			analyze: false,
 			text: `
 export class Checked {
   checked: boolean;
@@ -80,7 +87,6 @@ export class Checked {
 		},
 		{
 			fileName: "main.ts",
-			entry: true,
 			text: `
 import {Checked} from "./base";
 
@@ -102,10 +108,11 @@ declare global {
 });
 
 test("Correctly extends interface with interface from same file", t => {
-	const { result } = analyzeText([
+	const {
+		results: [result]
+	} = analyzeText([
 		{
 			fileName: "main.ts",
-			entry: true,
 			text: `
 interface Checked {
 	checked: boolean;
@@ -129,10 +136,11 @@ declare global {
 });
 
 test("Correctly extends class with class from same file", t => {
-	const { result } = analyzeText([
+	const {
+		results: [result]
+	} = analyzeText([
 		{
 			fileName: "main.ts",
-			entry: true,
 			text: `
 class Checked {
 	checked: boolean;

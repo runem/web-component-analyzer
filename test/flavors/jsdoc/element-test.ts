@@ -2,7 +2,9 @@ import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers custom elements with @element", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element my-element
 	 */
@@ -15,7 +17,9 @@ test("jsdoc: Discovers custom elements with @element", t => {
 });
 
 test("jsdoc: Discovers custom elements with @element but without tag name", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 */
@@ -28,7 +32,9 @@ test("jsdoc: Discovers custom elements with @element but without tag name", t =>
 });
 
 test("jsdoc: Discovers custom elements with multiline @element", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element my-element
 	 * \`This is a multiline element\`

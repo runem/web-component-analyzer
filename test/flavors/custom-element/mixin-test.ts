@@ -3,7 +3,9 @@ import { analyzeText } from "../../../src/analyze/analyze-text";
 import { getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
 test("Handles circular inheritance", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		class MyElement extends MyElement {
 		}
 		
@@ -25,7 +27,9 @@ test("Handles circular inheritance", t => {
 });
 
 test("Handles circular inheritance using mixins", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const Mixin1 = (Base) => {
 			return class Mixin1 extends Mixin2(Base) {}
 		}
@@ -52,7 +56,9 @@ test("Handles circular inheritance using mixins", t => {
 });
 
 test("Handles simple mixin", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -78,7 +84,9 @@ test("Handles simple mixin", t => {
 });
 
 test("Handles 2 levels of mixins", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -112,7 +120,9 @@ test("Handles 2 levels of mixins", t => {
 });
 
 test("Handles mixins with properties", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		type Constructor<T = {}> = new (...args: any[]) => T;
 		const SomeMixin = <C extends Constructor<HTMLElement>>(Base: C) => {
 			class Mixin extends Base {
@@ -135,7 +145,9 @@ test("Handles mixins with properties", t => {
 });
 
 test("Handles mixins generated with factory functions", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		export const FieldCustomMixin = dedupeMixin(
 		superclass =>
 			class FieldCustomMixin extends superclass {
@@ -160,7 +172,9 @@ test("Handles mixins generated with factory functions", t => {
 });
 
 test("Handles nested mixin extends", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -192,7 +206,9 @@ test("Handles nested mixin extends", t => {
 });
 
 test("Handles nested mixin wrapper functions", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 
 	/* =============== Mixin 1 ===================== */
 	export function AtFormItemMixin<A>(base: A) {

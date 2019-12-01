@@ -2,7 +2,9 @@ import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers slots with @slots", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @slot myslot - This is a comment
@@ -19,7 +21,9 @@ test("jsdoc: Discovers slots with @slots", t => {
 });
 
 test("jsdoc: Discovers unnamed slots with @slots", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @slot - This is a comment
@@ -37,7 +41,9 @@ test("jsdoc: Discovers unnamed slots with @slots", t => {
 });
 
 test("jsdoc: Discovers permitted tag names on @slot", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @slot {"div"|"span"} myslot1

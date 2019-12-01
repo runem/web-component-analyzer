@@ -2,7 +2,9 @@ import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 
 test("jsdoc: Discovers css properties with @cssprop", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @cssprop --this-is-a-css-prop  - This is a comment
@@ -19,7 +21,9 @@ test("jsdoc: Discovers css properties with @cssprop", t => {
 });
 
 test("jsdoc: Discovers css properties with @cssproperty", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @cssproperty --this-is-a-css-prop  - This is a comment
@@ -36,7 +40,9 @@ test("jsdoc: Discovers css properties with @cssproperty", t => {
 });
 
 test("jsdoc: Discovers css properties with @cssproperty and default", t => {
-	const { result } = analyzeText(`
+	const {
+		results: [result]
+	} = analyzeText(`
 	/**
 	 * @element
 	 * @cssproperty [--element-color=red] - This is a comment
