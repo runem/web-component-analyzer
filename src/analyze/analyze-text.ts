@@ -8,7 +8,8 @@ import {
 	ScriptTarget,
 	SourceFile,
 	sys,
-	TypeChecker
+	TypeChecker,
+	Program
 } from "typescript";
 import { analyzeSourceFile } from "./analyze-source-file";
 import { AnalyzerResult } from "./types/analyzer-result";
@@ -25,7 +26,7 @@ export type VirtualSourceFile = IVirtualSourceFile | string;
  * Analyzes components in code
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
  */
-export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile): { result: AnalyzerResult; checker: TypeChecker } {
+export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile): { result: AnalyzerResult; checker: TypeChecker; program: Program } {
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
 			typeof file === "string"
@@ -105,6 +106,7 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile)
 
 	return {
 		checker,
+		program,
 		result: analyzeSourceFile(entrySourceFile, { checker })
 	};
 }
