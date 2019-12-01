@@ -1,11 +1,11 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
-import { getMemberVisibilityFromNode, getNodeSourceFileLang, hasModifier, isNamePrivate, isNodeWritableMember } from "../../util/ast-util";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { getMemberVisibilityFromNode, hasModifier, isNamePrivate, isNodeWritableMember } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { relaxType } from "../../util/type-util";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMemberResult } from "../analyzer-flavor";
 
 export function discoverMembers(node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined {
@@ -92,7 +92,7 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
 	}
 
 	// constructor { super(); this.title = "Hello"; }
-	else if (ts.isConstructorDeclaration(node) && getNodeSourceFileLang(node) === "js") {
+	else if (ts.isConstructorDeclaration(node)) {
 		if (node.body != null) {
 			const assignments = node.body.statements
 				.filter((stmt): stmt is ExpressionStatement => ts.isExpressionStatement(stmt))
