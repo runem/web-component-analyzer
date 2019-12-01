@@ -22,6 +22,9 @@ export interface IVirtualSourceFile {
 
 export type VirtualSourceFile = IVirtualSourceFile | string;
 
+// "sys" can be undefined when running in the browser
+const system: typeof sys | undefined = sys;
+
 /**
  * Analyzes components in code
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
@@ -78,7 +81,7 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile)
 			},
 
 			getDirectories(directoryName: string) {
-				return sys.getDirectories(directoryName);
+				return system?.getDirectories(directoryName) ?? [];
 			},
 
 			getDefaultLibFileName(options: CompilerOptions): string {
@@ -90,11 +93,11 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile)
 			},
 
 			getNewLine(): string {
-				return sys.newLine;
+				return system?.newLine ?? "\n";
 			},
 
 			useCaseSensitiveFileNames() {
-				return sys.useCaseSensitiveFileNames;
+				return system?.useCaseSensitiveFileNames ?? false;
 			}
 		}
 	});
