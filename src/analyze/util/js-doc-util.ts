@@ -1,6 +1,7 @@
 import { SimpleType, SimpleTypeKind, SimpleTypeStringLiteral } from "ts-simple-type";
 import * as tsModule from "typescript";
 import { JSDoc, Node } from "typescript";
+import { arrayDefined } from "../../util/array-util";
 import { JsDoc, JsDocTag, JsDocTagParsed } from "../types/js-doc";
 import { getLeadingCommentForNode } from "./ast-util";
 import { lazy } from "./lazy";
@@ -49,8 +50,8 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 		tags:
 			jsDocNode.tags == null
 				? []
-				: jsDocNode.tags
-						.map(node => {
+				: arrayDefined(
+						jsDocNode.tags.map(node => {
 							const tag = String(node.tagName.escapedText);
 
 							if (tagNames != null && tagNames.length > 0 && !tagNames.includes(tag.toLowerCase())) {
@@ -65,7 +66,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 								parsed: lazy(() => parseJsDocTagString(tag === "type" ? node.getText() : `@${tag} ${node.comment || ""}`))
 							};
 						})
-						.filter((tag): tag is NonNullable<typeof tag> => tag != null)
+				  )
 	};
 }
 

@@ -1,7 +1,6 @@
 import { SourceFile } from "typescript";
+import { ComponentFeatures } from "./component-declaration";
 import { ComponentDefinition } from "./component-definition";
-import { ComponentMember } from "./features/component-member";
-import { ComponentEvent } from "./features/component-event";
 
 /**
  * The result returned after components have been analyzed.
@@ -9,6 +8,5 @@ import { ComponentEvent } from "./features/component-event";
 export interface AnalyzerResult {
 	sourceFile: SourceFile;
 	componentDefinitions: ComponentDefinition[];
-	globalEvents: ComponentEvent[];
-	globalMembers: ComponentMember[];
+	globalFeatures?: ComponentFeatures;
 }

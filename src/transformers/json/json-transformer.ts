@@ -7,7 +7,7 @@ import { ComponentEvent } from "../../analyze/types/features/component-event";
 import { ComponentMember } from "../../analyze/types/features/component-member";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { JsDoc } from "../../analyze/types/js-doc";
-import { arrayFlat } from "../../util/array-util";
+import { arrayDefined, arrayFlat } from "../../util/array-util";
 import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
@@ -49,27 +49,17 @@ export const jsonTransformer: TransformerFunction = (results: AnalyzerResult[], 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker, config: TransformerConfig): HtmlDataTag {
 	const declaration = definition.declaration();
 
-	const attributes = filterVisibility(config.visibility, declaration.members)
-		.map(d => componentMemberToHtmlDataAttribute(d, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const attributes = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataAttribute(d, checker)));
 
-	const properties = filterVisibility(config.visibility, declaration.members)
-		.map(d => componentMemberToHtmlDataProperty(d, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const properties = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataProperty(d, checker)));
 
-	const events = filterVisibility(config.visibility, declaration.events)
-		.map(e => componentEventToHtmlDataEvent(e, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const events = arrayDefined(filterVisibility(config.visibility, declaration.events).map(e => componentEventToHtmlDataEvent(e, checker)));
 
-	const slots = declaration.slots.map(e => componentSlotToHtmlDataSlot(e, checker)).filter((val): val is NonNullable<typeof val> => val != null);
+	const slots = arrayDefined(declaration.slots.map(e => componentSlotToHtmlDataSlot(e, checker)));
 
-	const cssProperties = declaration.cssProperties
-		.map(p => componentCssPropToHtmlCssProp(p, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const cssProperties = arrayDefined(declaration.cssProperties.map(p => componentCssPropToHtmlCssProp(p, checker)));
 
-	const cssParts = declaration.cssParts
-		.map(p => componentCssPartToHtmlCssPart(p, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const cssParts = arrayDefined(declaration.cssParts.map(p => componentCssPartToHtmlCssPart(p, checker)));
 
 	return {
 		name: definition.tagName,

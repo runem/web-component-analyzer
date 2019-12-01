@@ -8,17 +8,19 @@ import { ComponentSlot } from "./features/component-slot";
 import { InheritanceTreeNode } from "./inheritance-tree";
 import { JsDoc } from "./js-doc";
 
-export interface ComponentDeclaration {
-	inheritanceTree: InheritanceTreeNode;
-	declarationNodes: Set<Node>;
-	jsDoc: JsDoc | undefined;
-
+export interface ComponentFeatures {
 	members: ComponentMember[];
 	methods: ComponentMethod[];
 	events: ComponentEvent[];
 	slots: ComponentSlot[];
 	cssProperties: ComponentCssProperty[];
 	cssParts: ComponentCssPart[];
+}
+
+export interface ComponentDeclaration extends ComponentFeatures {
+	inheritanceTree: InheritanceTreeNode;
+	declarationNodes: Set<Node>;
+	jsDoc: JsDoc | undefined;
 
 	deprecated?: boolean | string;
 }

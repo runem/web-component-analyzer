@@ -1,4 +1,5 @@
 import { JSDocTag, Node } from "typescript";
+import { arrayDefined } from "../../../util/array-util";
 import { JsDocTagParsed } from "../../types/js-doc";
 import { getJsDoc } from "../../util/js-doc-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
@@ -13,7 +14,7 @@ export function parseJsDocForNode<T>(
 
 	if (tags != null && tags.length > 0) {
 		context.emitContinue?.();
-		return tags.map(tag => transform(tag.node, tag.parsed())).filter((item): item is NonNullable<typeof item> => item != null);
+		return arrayDefined(tags.map(tag => transform(tag.node, tag.parsed())));
 	}
 
 	return undefined;

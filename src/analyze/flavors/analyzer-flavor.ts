@@ -49,14 +49,14 @@ export interface AnalyzerDeclarationVisitContext extends AnalyzerVisitContext {
 	getDeclaration: () => ComponentDeclaration;
 }
 
-export type FeatureAnalyzeVisitMap = {
-	[K in ComponentFeature]: (node: Node, context: AnalyzerDeclarationVisitContext) => FeatureVisitReturnTypeMap[K][] | undefined;
+export type FeatureDiscoverVisitMap<Context extends AnalyzerVisitContext> = {
+	[K in ComponentFeature]: (node: Node, context: Context) => FeatureVisitReturnTypeMap[K][] | undefined;
 };
 
 export type FeatureRefineVisitMap = {
 	[K in ComponentFeature]: (
 		feature: FeatureVisitReturnTypeMap[K],
-		context: AnalyzerDeclarationVisitContext
+		context: AnalyzerVisitContext
 	) => FeatureVisitReturnTypeMap[K] | FeatureVisitReturnTypeMap[K][] | undefined;
 };
 
@@ -64,7 +64,8 @@ export interface AnalyzerFlavor {
 	excludeNode?(node: Node, context: AnalyzerVisitContext): boolean | undefined;
 	discoverDefinitions?(node: Node, context: AnalyzerVisitContext): DefinitionNodeResult[] | undefined;
 	discoverInheritance?(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined;
-	discoverFeatures?: Partial<FeatureAnalyzeVisitMap>;
+	discoverFeatures?: Partial<FeatureDiscoverVisitMap<AnalyzerDeclarationVisitContext>>;
+	discoverGlobalFeatures?: Partial<FeatureDiscoverVisitMap<AnalyzerVisitContext>>;
 	refineFeature?: Partial<FeatureRefineVisitMap>;
 	refineDeclaration?(declaration: ComponentDeclaration, context: AnalyzerDeclarationVisitContext): ComponentDeclaration | undefined;
 }

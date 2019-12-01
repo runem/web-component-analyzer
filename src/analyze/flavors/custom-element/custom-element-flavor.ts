@@ -1,6 +1,7 @@
 import { AnalyzerFlavor } from "../analyzer-flavor";
 import { discoverDefinitions } from "./discover-definitions";
 import { discoverEvents } from "./discover-events";
+import { discoverGlobalFeatures } from "./discover-global-features";
 import { discoverInheritance } from "./discover-inheritance";
 import { discoverMembers } from "./discover-members";
 import { discoverMethods } from "./discover-methods";
@@ -17,6 +18,8 @@ export class CustomElementFlavor implements AnalyzerFlavor {
 		event: discoverEvents,
 		method: discoverMethods
 	};
+
+	discoverGlobalFeatures = discoverGlobalFeatures;
 
 	refineFeature = refineFeature;
 

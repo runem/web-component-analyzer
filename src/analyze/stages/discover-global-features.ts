@@ -1,18 +1,15 @@
 import { Node } from "typescript";
-import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
+import { AnalyzerVisitContext } from "../analyzer-visit-context";
+import { ComponentFeatures } from "../types/component-declaration";
 import { prepareRefineEmitMap } from "../util/get-refine-emit-map";
 import { refineFeature } from "./flavor/refine-feature";
-import { visitFeatures } from "./flavor/visit-features";
+import { visitGlobalFeatures } from "./flavor/visit-global-features";
 import { mergeFeatures } from "./merge/merge-features";
 
-export function discoverFeatures(node: Node, context: AnalyzerDeclarationVisitContext): ComponentFeatureCollection {
-	if (context.cache.featureCollection.has(node)) {
-		return context.cache.featureCollection.get(node)!;
-	}
-
+export function discoverGlobalFeatures(node: Node, context: AnalyzerVisitContext): ComponentFeatures {
 	const { collection, refineEmitMap } = prepareRefineEmitMap();
 
-	visitFeatures(node, context, {
+	visitGlobalFeatures(node, context, {
 		event: event => refineFeature("event", event, context, refineEmitMap),
 		member: memberResult => refineFeature("member", memberResult, context, refineEmitMap),
 		csspart: cssPart => refineFeature("csspart", cssPart, context, refineEmitMap),
@@ -21,9 +18,10 @@ export function discoverFeatures(node: Node, context: AnalyzerDeclarationVisitCo
 		slot: slot => refineFeature("slot", slot, context, refineEmitMap)
 	});
 
-	const mergedCollection = mergeFeatures(collection, context);
+	const mergedFeatures = mergeFeatures(collection, context);
 
-	context.cache.featureCollection.set(node, mergedCollection);
-
-	return mergedCollection;
+	return {
+		...mergedFeatures,
+		members: mergedFeatures.memberResults.map(res => res.member)
+	};
 }

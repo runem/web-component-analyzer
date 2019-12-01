@@ -13,6 +13,7 @@ import {
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
+import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { VisibilityKind } from "../types/visibility-kind";
 
 export interface AstContext {
@@ -246,4 +247,8 @@ export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): strin
 	}
 
 	return undefined;
+}
+
+export function isHTMLElementExtensionInterface(node: Node, context: AnalyzerVisitContext): node is InterfaceDeclaration {
+	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === "HTMLElement";
 }

@@ -126,8 +126,8 @@ Options:
 			await analyzeGlobs(inputGlobs, config, {
 				...context,
 				emitAnalyzedFile: (file: SourceFile, result: AnalyzerResult, { program }): Promise<void> | void => {
-					// Only emit the result if there is in fact components in the file.
-					if (result.componentDefinitions.length > 0 || result.globalEvents.length > 0) {
+					// Only emit the result if there are in fact components in the file.
+					if (result.componentDefinitions.length > 0) {
 						const transformed = this.transformResults(result, program, config);
 						console.log(transformed);
 					}

@@ -6,6 +6,7 @@ import { ComponentFeature } from "./features/component-feature";
 export interface AnalyzerConfig {
 	analyzeLibDom?: boolean;
 	analyzeLib?: boolean;
+	analyzeGlobalFeatures?: boolean;
 	excludedDeclarationNames?: string[];
 	features?: ComponentFeature[];
 }

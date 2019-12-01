@@ -2,6 +2,7 @@ import { ExecutionContext } from "ava";
 import { isAssignableToType, toTypeString } from "ts-simple-type";
 import { TypeChecker } from "typescript";
 import { ComponentMember, ComponentMemberProperty } from "../../src/analyze/types/features/component-member";
+import { arrayDefined } from "../../src/util/array-util";
 
 export function assertHasMembers(
 	actualMembers: ComponentMember[],
@@ -61,9 +62,9 @@ export function getComponentProp(members: ComponentMember[], propName: string) {
 }
 
 export function getAttributeNames(members: ComponentMember[]): string[] {
-	return members.map(member => ("attrName" in member ? member.attrName : undefined)).filter((n): n is NonNullable<typeof n> => n != null);
+	return arrayDefined(members.map(member => ("attrName" in member ? member.attrName : undefined)));
 }
 
 export function getPropertyNames(members: ComponentMember[]): string[] {
-	return members.map(member => (member.kind === "property" ? member.propName : undefined)).filter((n): n is NonNullable<typeof n> => n != null);
+	return arrayDefined(members.map(member => (member.kind === "property" ? member.propName : undefined)));
 }

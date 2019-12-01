@@ -9,10 +9,10 @@ import { ComponentSlot } from "../../types/features/component-slot";
 import { getNodeSourceFileLang } from "../../util/ast-util";
 import { parseJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
-import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
+import { ComponentMemberResult, FeatureDiscoverVisitMap } from "../analyzer-flavor";
 import { parseJsDocForNode } from "./parse-js-doc-for-node";
 
-export const discoverFeatures: AnalyzerFlavor["discoverFeatures"] = {
+export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitContext>> = {
 	csspart: (node: Node, context: AnalyzerVisitContext): ComponentCssPart[] | undefined => {
 		if (context.ts.isInterfaceDeclaration(node) || context.ts.isClassDeclaration(node)) {
 			return parseJsDocForNode(

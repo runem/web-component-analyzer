@@ -86,10 +86,13 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	else if (ts.isIdentifier(node) && checker != null) {
 		const declarations = resolveDeclarations(node, { checker, ts });
 		if (declarations.length > 0) {
-			return resolveNodeValue(declarations[0], { ...context, depth });
-		} else {
-			return { value: node.getText(), node };
+			const resolved = resolveNodeValue(declarations[0], { ...context, depth });
+			if (resolved != null) {
+				return resolved;
+			}
 		}
+
+		return { value: node.getText(), node };
 	}
 
 	// Fallthrough

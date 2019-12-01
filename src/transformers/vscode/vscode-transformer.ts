@@ -5,9 +5,10 @@ import { ComponentDefinition } from "../../analyze/types/component-definition";
 import { ComponentEvent } from "../../analyze/types/features/component-event";
 import { ComponentMember } from "../../analyze/types/features/component-member";
 import { JsDoc } from "../../analyze/types/js-doc";
+import { arrayDefined } from "../../util/array-util";
 import { markdownHighlight } from "../markdown/markdown-util";
-import { TransformerFunction } from "../transformer-function";
 import { TransformerConfig } from "../transformer-config";
+import { TransformerFunction } from "../transformer-function";
 import { HtmlDataAttr, HtmlDataAttrValue, HtmlDataTag, VscodeHtmlData } from "./vscode-html-data";
 
 /**
@@ -39,12 +40,8 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 	const declaration = definition.declaration();
 
 	// Transform all members into "attributes"
-	const customElementAttributes = declaration.members
-		.map(d => componentMemberToVscodeAttr(d, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
-	const eventAttributes = declaration.events
-		.map(e => componentEventToVscodeAttr(e, checker))
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	const customElementAttributes = arrayDefined(declaration.members.map(d => componentMemberToVscodeAttr(d, checker)));
+	const eventAttributes = arrayDefined(declaration.events.map(e => componentEventToVscodeAttr(e, checker)));
 
 	const attributes = [...customElementAttributes, ...eventAttributes];
 
@@ -116,8 +113,8 @@ function typeToVscodeValuePart(type: SimpleType | Type, checker: TypeChecker): {
  * @param types
  */
 function typesToStringUnion(types: SimpleType[]): HtmlDataAttrValue[] {
-	return types
-		.map(t => {
+	return arrayDefined(
+		types.map(t => {
 			switch (t.kind) {
 				case SimpleTypeKind.STRING_LITERAL:
 				case SimpleTypeKind.NUMBER_LITERAL:
@@ -126,7 +123,7 @@ function typesToStringUnion(types: SimpleType[]): HtmlDataAttrValue[] {
 					return undefined;
 			}
 		})
-		.filter((val): val is NonNullable<typeof val> => val != null);
+	);
 }
 
 /**
@@ -138,12 +135,12 @@ function formatMetadata(
 	doc: string | undefined | JsDoc,
 	metadata: { [key: string]: string | undefined | (string | undefined)[] }
 ): string | undefined {
-	const metaText = Object.entries(metadata)
-		.map(([key, value]) => {
+	const metaText = arrayDefined(
+		Object.entries(metadata).map(([key, value]) => {
 			if (value == null) {
 				return undefined;
 			} else if (Array.isArray(value)) {
-				const filtered = value.filter((v): v is NonNullable<typeof v> => v != null);
+				const filtered = arrayDefined(value);
 				if (filtered.length === 0) return undefined;
 
 				return `${key}:\n\n${filtered.map(v => `  * ${v}`).join(`\n\n`)}`;
@@ -151,8 +148,7 @@ function formatMetadata(
 				return `${key}: ${value}`;
 			}
 		})
-		.filter((value): value is NonNullable<typeof value> => value != null)
-		.join(`\n\n`);
+	).join(`\n\n`);
 
 	const comment = typeof doc === "string" ? doc : doc?.description || "";
 

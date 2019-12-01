@@ -6,5 +6,9 @@ export function excludeNode(node: Node, context: AnalyzerVisitContext): boolean 
 		return undefined;
 	}
 
+	return isLibDom(node);
+}
+
+function isLibDom(node: Node) {
 	return node.getSourceFile().fileName.endsWith("lib.dom.d.ts");
 }

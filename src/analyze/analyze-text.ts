@@ -13,6 +13,7 @@ import {
 } from "typescript";
 import { arrayDefined } from "../util/array-util";
 import { analyzeSourceFile } from "./analyze-source-file";
+import { AnalyzerOptions } from "./types/analyzer-options";
 import { AnalyzerResult } from "./types/analyzer-result";
 
 export interface IVirtualSourceFile {
@@ -29,9 +30,11 @@ const system: typeof sys | undefined = sys;
 /**
  * Analyzes components in code
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
+ * @param config
  */
 export function analyzeText(
-	inputFiles: VirtualSourceFile[] | VirtualSourceFile
+	inputFiles: VirtualSourceFile[] | VirtualSourceFile,
+	config: Partial<AnalyzerOptions> = {}
 ): { results: AnalyzerResult[]; checker: TypeChecker; program: Program } {
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
@@ -105,7 +108,7 @@ export function analyzeText(
 	const sourceFilesToAnalyze = arrayDefined(files.filter(file => file.analyze !== false).map(file => program.getSourceFile(file.fileName)));
 
 	// Analyze the entry file
-	const results = sourceFilesToAnalyze.map(sf => analyzeSourceFile(sf, { program }));
+	const results = sourceFilesToAnalyze.map(sf => analyzeSourceFile(sf, { program, ...config }));
 
 	return { checker, program, results };
 }
