@@ -29,7 +29,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	} else if (ts.isNumericLiteral(node)) {
 		return { value: Number(node.text), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
-		const objectEntries: [string, any][] = [];
+		const object: any = {};
 
 		for (const prop of node.properties) {
 			if (ts.isPropertyAssignment(prop)) {
@@ -39,13 +39,13 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 				// Resolve the "value
 				const resolvedValue = resolveNodeValue(prop.initializer, { ...context, depth });
 				if (resolvedValue != null) {
-					objectEntries.push([name, resolvedValue.value]);
+					object[name] = resolvedValue.value;
 				}
 			}
 		}
 
 		return {
-			value: Object.fromEntries(objectEntries),
+			value: object,
 			node
 		};
 	} else if (node.kind === ts.SyntaxKind.TrueKeyword) {
