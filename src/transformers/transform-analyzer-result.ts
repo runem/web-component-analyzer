@@ -20,7 +20,7 @@ export function transformAnalyzerResult(
 	kind: TransformerKind,
 	results: AnalyzerResult | AnalyzerResult[],
 	program: Program,
-	config: Partial<TransformerConfig>
+	config: Partial<TransformerConfig> = {}
 ): string {
 	const func = transformerFunctionMap[kind];
 
