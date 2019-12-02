@@ -3,7 +3,7 @@ import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeText } from "../../../src/analyze/analyze-text";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Discovers global features on HTMLElement", t => {
+test("Discovers global members on HTMLElement", t => {
 	const {
 		results: [result],
 		checker
@@ -41,4 +41,33 @@ test("Discovers global features on HTMLElement", t => {
 		t,
 		checker
 	);
+});
+
+test("Discovers global events on HTMLElementEventMap and HTMLElement", t => {
+	const {
+		results: [result]
+	} = analyzeText(
+		{
+			fileName: "test.d.ts",
+			text: `
+	declare global {
+	  /**
+	   * @fires update
+	   */
+	  interface HTMLElement {
+	  }
+	  interface HTMLElementEventMap {
+        'change': CustomEvent;
+        }
+	}
+	 `
+		},
+		{ config: { analyzeGlobalFeatures: true } }
+	);
+
+	const { globalFeatures } = result;
+
+	t.is(globalFeatures?.events.length, 2);
+	t.is(globalFeatures?.events[0].name, "update");
+	t.is(globalFeatures?.events[1].name, "change");
 });

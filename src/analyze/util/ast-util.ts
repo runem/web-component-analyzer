@@ -2,19 +2,18 @@ import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
 import {
 	Declaration,
-	Identifier,
 	InterfaceDeclaration,
 	Node,
 	PropertyDeclaration,
 	PropertySignature,
 	SetAccessorDeclaration,
-	StringLiteral,
 	Symbol,
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { VisibilityKind } from "../types/visibility-kind";
+import { resolveNodeValue } from "./resolve-node-value";
 
 export interface AstContext {
 	ts: typeof tsModule;
@@ -134,26 +133,21 @@ export function getMemberVisibilityFromNode(
 /**
  * Returns all keys and corresponding interface/class declarations for keys in an interface.
  * @param interfaceDeclaration
- * @param ts
- * @param checker
+ * @param context
  */
 export function getInterfaceKeys(
 	interfaceDeclaration: InterfaceDeclaration,
-	{ ts, checker }: AstContext
-): { key: string; keyNode: StringLiteral | Identifier; identifier?: Node; declaration: Declaration }[] {
-	const extensions: { key: string; keyNode: StringLiteral | Identifier; identifier?: Node; declaration: Declaration }[] = [];
+	context: AstContext
+): { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] {
+	const extensions: { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] = [];
+
+	const { ts, checker } = context;
 
 	for (const member of interfaceDeclaration.members) {
 		// { "my-button": MyButton; }
 		if (ts.isPropertySignature(member) && member.type != null) {
-			const keyNode = member.name;
-
-			let key: string | undefined;
-			if (ts.isStringLiteral(keyNode)) {
-				key = keyNode.text;
-			} else if (ts.isIdentifier(keyNode)) {
-				key = keyNode.getText();
-			} else {
+			const resolvedKey = resolveNodeValue(member.name, context);
+			if (resolvedKey == null) {
 				continue;
 			}
 
@@ -170,7 +164,7 @@ export function getInterfaceKeys(
 			}
 
 			if (declaration != null) {
-				extensions.push({ key, keyNode, declaration, identifier });
+				extensions.push({ key: String(resolvedKey.value), keyNode: resolvedKey.node, declaration, identifier });
 			}
 		}
 	}
@@ -257,8 +251,8 @@ export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): strin
 	return undefined;
 }
 
-export function isHTMLElementExtensionInterface(node: Node, context: AnalyzerVisitContext): node is InterfaceDeclaration {
-	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === "HTMLElement";
+export function isExtensionInterface(node: Node, context: AnalyzerVisitContext, name: string): node is InterfaceDeclaration {
+	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === name;
 }
 
 export function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
