@@ -8,7 +8,7 @@ import { ComponentMember } from "../../analyze/types/features/component-member";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { arrayDefined, arrayFlat } from "../../util/array-util";
-import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
+import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";

@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 - The library ships with different module formats `esm` and `cjs` split in two modules `api` and `cli`. This makes it possible to use WCA in the browser ([#118](https://github.com/runem/web-component-analyzer/issues/118))
 - It's now possible to specify which featues should be analyzed
 - Emitted members now include metadata that flavors can add (eg. LitElement specific metadata)
+- Examples added using the `@example` jsdoc tag will be included in the markdown format.
 
 ### Removed
 

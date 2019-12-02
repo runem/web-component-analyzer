@@ -9,7 +9,8 @@ import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { getMixinsForInheritanceTree } from "../../analyze/util/inheritance-tree-util";
 import { arrayFlat } from "../../util/array-util";
-import { getTypeHintFromType } from "../../util/get-type-hind-from-type";
+import { getExamplesFromComponent } from "../../util/get-examples-from-component";
+import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
@@ -30,16 +31,29 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 		const declaration = definition.declaration();
 
 		// Add tagName as header
-		let segmentText = markdownHeader(definition.tagName, 1, config);
+		let segmentText = markdownHeader(definition.tagName, 1, config) + "\n";
 
 		// Add component jsdoc comment to the output
-		if (declaration.jsDoc?.description != null) segmentText += `\n\n${declaration.jsDoc?.description}\n`;
+		if (declaration.jsDoc?.description != null) segmentText += `\n${declaration.jsDoc?.description}\n`;
 
 		// Add mixins
 		const mixins = getMixinsForInheritanceTree(declaration.inheritanceTree);
 
 		if (mixins.size > 0) {
 			segmentText += `\n**Mixins:** ${Array.from(mixins).join(", ")}\n`;
+		}
+
+		// Add examples
+		const examples = getExamplesFromComponent(declaration);
+		if (examples.length > 0) {
+			segmentText += "\n" + markdownHeader(`Example${examples.length > 1 ? "s" : ""}`, 2, config) + "\n";
+
+			for (const example of examples) {
+				if (example.description != null) {
+					segmentText += `\n${example.description}\n`;
+				}
+				segmentText += `\n\`\`\`${example.lang}\n${example.code}\n\`\`\`\n`;
+			}
 		}
 
 		// Grab all items from the component and add them as tables to the output.
