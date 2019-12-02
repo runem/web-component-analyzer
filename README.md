@@ -35,7 +35,7 @@ $ npm install -g web-component-analyzer
 
 ## Analyze
 
-The analyze command analyses an optional `input glob` and emits the output to the console as default. When the `input glob` is omitted it will find all components excluding `node_modules`. The default format is `markdown`.
+The analyze command analyses an optional `<input glob>` and emits the output to the console as default. When the `<input glob>` is omitted it will find all components excluding `node_modules`. The default format is `markdown`.
 
 <img src="https://user-images.githubusercontent.com/5372940/54445420-02fd9700-4745-11e9-9305-47d6ec3c6307.gif" />
 
@@ -49,11 +49,12 @@ $ wca analyze my-element.js --outFile custom-elements.json
 
 ### Options
 
-| Option               | Type                             | Description                                                                  |
-| -------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
-| `--format FORMAT`    | `markdown` \| `json` \| `vscode` | Specify output format.                                                       |
-| `--outFile FILE`     | `file path`                      | Concatenate and emit output to a single file.                                |
-| `--outDir DIRECTORY` | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
+| Option                      | Type                             | Description                                                                  |
+| --------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| `--format <format>`         | `markdown` \| `json` \| `vscode` | Specify output format. Default is `markdown`.                                |
+| `--outFile <path>`          | `file path`                      | Concatenate and emit output to a single file.                                |
+| `--outDir <path>`           | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
+| `--visibility <visibility>` | `public | protected | private`   | The mininmum member visibility to output. Default is `public`.               |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#api)
 
@@ -92,19 +93,6 @@ VSCode supports a JSON format called [vscode custom data](https://github.com/mic
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
 
-## ➤ API
-
-You can also use the underlying functionality of this tool if you don't want to use the CLI. Documentation will be added as soon as the API is considered stable.
-
-<!-- prettier-ignore -->
-```typescript
-import { analyzeComponents } from "web-component-analyzer";
-
-analyzeComponents(sourceFile, { checker });
-```
-
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
-
 ## ➤ How does this tool analyze my components?
 
 This tool extract information about your components by looking at your code directly and by looking at your JSDoc comments.
@@ -119,7 +107,7 @@ This tool extract information about your components by looking at your code dire
 
 In addition to analyzing the code of your components, this library also use JSDoc to construct the documentation. It's especially a good idea to use JSDoc for documenting `slots`, `events`, `css custom properties` and `css shadow parts` as these not analyzed statically by this tool as of now (except when constructing a CustomEvent within your component).
 
-Here's an example including all supported JSDoc tags. All JSDoc tags are on the the form `@tag {type} name - comment`.
+Here's an example including all supported JSDoc tags. All JSDoc tags are on the the form `@tag {type} name - comment` and `@tag {type} [name=default] - comment`.
 
 <!-- prettier-ignore -->
 ```javascript
@@ -133,7 +121,7 @@ Here's an example including all supported JSDoc tags. All JSDoc tags are on the 
  * 
  * @attr {Boolean} disabled - This jsdoc tag documents an attribute.
  * @attr {on|off} switch - Here is an attribute with either the "on" or "off" value.
- * @attr my-attr
+ * @attr [my-attr=default value]
  * 
  * @prop {String} myProp - You can use this jsdoc tag to document properties.
  * @prop value
@@ -143,7 +131,7 @@ Here's an example including all supported JSDoc tags. All JSDoc tags are on the 
  * @slot end
  * 
  * @cssprop --main-bg-color - This jsdoc tag can be used to document css custom properties.
- * @cssprop --main-color
+ * @cssprop [--main-color=red]
 
  * @csspart container 
  */
@@ -164,6 +152,15 @@ class MyElement extends HTMLElement {
    */
   myProp = 10
 
+  static get observedAttributes () {
+    return [
+      /**
+       * The header text of this element
+       */
+      "header"
+    ];
+  }
+
 }
 ```
 
@@ -180,6 +177,59 @@ class MyElement extends HTMLElement {
 | `@csspart`                   | Documents a css shadow part on your component.                                                                                               |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#contributors)
+
+## ➤ API
+
+You can also use the underlying functionality of this tool if you don't want to use the CLI. Web Component Analyzer analyzes Typescript source files, so you will have to include the Typescript parser. Here are some examples of how to use the API.
+
+### Analyze Typescript source file
+
+<!-- prettier-ignore -->
+```typescript
+import { analyzeSourceFile } from "web-component-analyzer";
+
+const result = analyzeSourceFile(sourceFile, { checker });
+```
+
+### Analyze text
+
+<!-- prettier-ignore -->
+```javascript
+import { analyzeText } from "web-component-analyzer";
+
+const code = `class MyElement extends HTMLElement {
+
+}
+
+customElements.define("my-element", MyElement);
+`;
+
+
+const { results, program } = analyzeText(code);
+// or
+const { results, program } = analyzeText([
+  { fileName: "file1.js", text: code },
+  { fileName: "file2.js", text: "..." }, // these files can depend on each other
+  { fileName: "file3.js", text: "...", analyze: false }
+]);
+// each result in "results" is the result of analyzing the corresponding text where "analyze" is not false
+```
+
+### Transform the result
+
+```javascript
+import { transformAnalyzerResult } from "web-component-analyzer";
+
+const result = // the result of analyzing the component using one of the above functions
+
+const format = "markdown"; // or "json"
+
+const output = transformAnalyzerResult(format, result, program);
+
+// "output" is now a string containing the result of the "markdown" transformer
+```
+
+[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
 
 ## ➤ Contributors
 
