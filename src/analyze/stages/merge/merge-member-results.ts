@@ -138,6 +138,7 @@ function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemb
 				return rightMember.type ?? leftMember.type;
 			}
 		})(),
+		typeHint: leftMember.typeHint ?? rightMember.typeHint,
 		jsDoc: mergeJsDocIntoJsDoc(leftMember.jsDoc, rightMember.jsDoc),
 		meta: leftMember.meta ?? rightMember.meta,
 		default: leftMember.default === undefined ? rightMember.default : leftMember.default,
