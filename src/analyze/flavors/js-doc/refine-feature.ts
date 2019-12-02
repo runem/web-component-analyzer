@@ -13,7 +13,10 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	event: (event: ComponentEvent) => {
 		if (event.jsDoc == null || event.jsDoc.tags == null) return event;
 
-		return [applyJsDocDeprecated, applyJsDocVisibility].reduce((event, applyFunc) => (applyFunc as Function)(event, event.jsDoc), event);
+		return [applyJsDocDeprecated, applyJsDocVisibility, applyJsDocType].reduce(
+			(event, applyFunc) => (applyFunc as Function)(event, event.jsDoc),
+			event
+		);
 	},
 	method: (method: ComponentMethod) => {
 		if (method.jsDoc == null || method.jsDoc.tags == null) return method;

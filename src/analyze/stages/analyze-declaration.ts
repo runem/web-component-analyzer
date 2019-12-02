@@ -2,6 +2,7 @@ import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { ComponentDeclaration } from "../types/component-declaration";
+import { getDeclarationName } from "../util/ast-util";
 import { getUniqueResolvedNodeForInheritanceTree } from "../util/inheritance-tree-util";
 import { getJsDoc } from "../util/js-doc-util";
 import { discoverFeatures } from "./discover-features";
@@ -82,7 +83,7 @@ export function analyzeComponentDeclaration(initialDeclarationNodes: Node[], con
 }
 
 function shouldExcludeNode(node: Node, context: AnalyzerVisitContext): boolean {
-	if (!context.config.analyzeLibDom && excludeNode(node.getSourceFile(), context)) {
+	if (!context.config.analyzeLibDom && excludeNode(node, context)) {
 		return true;
 	}
 
@@ -93,14 +94,4 @@ function shouldExcludeNode(node: Node, context: AnalyzerVisitContext): boolean {
 	}
 
 	return false;
-}
-
-function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
-	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
-		return node.name?.text;
-	} else if (context.ts.isVariableDeclaration(node)) {
-		return node.name?.getText();
-	}
-
-	return undefined;
 }

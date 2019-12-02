@@ -4,7 +4,7 @@ import { customElement, LitElement, property } from "lit-element";
  * This is my element
  * @fires {string} change - This is a change event
  * @fires my-event - This event is awesome
- * @cssprop --main-bg-color - This css property is nice!
+ * @cssprop {Color} --main-bg-color - This css property is nice!
  * @cssprop --main-color - This css property is also nice!
  * @attr {on|off} switch - This is a great attribute
  * @attr {String} my-attr - This is an attribute defined from jsdoc

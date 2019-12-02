@@ -40,7 +40,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 						return {
 							name: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: type || undefined,
+							typeHint: type || undefined,
 							default: def
 						};
 					}

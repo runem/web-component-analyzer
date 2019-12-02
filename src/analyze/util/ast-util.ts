@@ -252,3 +252,13 @@ export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): strin
 export function isHTMLElementExtensionInterface(node: Node, context: AnalyzerVisitContext): node is InterfaceDeclaration {
 	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === "HTMLElement";
 }
+
+export function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
+	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
+		return node.name?.text;
+	} else if (context.ts.isVariableDeclaration(node)) {
+		return node.name?.getText();
+	}
+
+	return undefined;
+}

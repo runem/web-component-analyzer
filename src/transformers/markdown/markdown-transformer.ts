@@ -1,4 +1,3 @@
-import { isAssignableToSimpleTypeKind, SimpleTypeKind, toTypeString } from "ts-simple-type";
 import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentCssPart } from "../../analyze/types/features/component-css-part";
@@ -97,16 +96,16 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 
 /**
  * Returns a markdown table with css props
- * @param cssProperty
+ * @param cssProperties
  * @param config
  */
-function cssPropSection(cssProperty: ComponentCssProperty[], config: TransformerConfig): string {
-	const rows: string[][] = [["Property", "Default", "Description"]];
+function cssPropSection(cssProperties: ComponentCssProperty[], config: TransformerConfig): string {
+	const rows: string[][] = [["Property", "Type", "Default", "Description"]];
 	rows.push(
-		...cssProperty.map(prop => {
+		...cssProperties.map(prop => {
 			const def = (prop.default !== undefined ? JSON.stringify(prop.default) : "") || "";
 
-			return [(prop.name && markdownHighlight(prop.name)) || "", def, prop.jsDoc?.description || ""];
+			return [(prop.name && markdownHighlight(prop.name)) || "", prop.typeHint || "", def, prop.jsDoc?.description || ""];
 		})
 	);
 	return markdownHeader("CSS Custom Properties", 2, config) + "\n" + markdownTable(rows);
@@ -156,7 +155,7 @@ function eventSection(events: ComponentEvent[], checker: TypeChecker, config: Tr
 		...events.map(event => [
 			(event.name && markdownHighlight(event.name)) || "",
 			...(showVisibility ? [event.visibility || "public"] : []),
-			isAssignableToSimpleTypeKind(event.type(), SimpleTypeKind.ANY, checker) ? "" : markdownHighlight(toTypeString(event.type(), checker)),
+			markdownHighlight(getTypeHintFromType(event.typeHint ?? event.type?.(), checker)),
 			event.jsDoc?.description || ""
 		])
 	);

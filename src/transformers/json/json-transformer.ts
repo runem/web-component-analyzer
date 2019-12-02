@@ -79,7 +79,7 @@ function componentCssPropToHtmlCssProp(prop: ComponentCssProperty, checker: Type
 	return {
 		name: prop.name || "",
 		description: getDescriptionFromJsDoc(prop.jsDoc),
-		type: prop.type,
+		type: prop.typeHint,
 		default: prop.default != null ? JSON.stringify(prop.default) : undefined
 	};
 }
