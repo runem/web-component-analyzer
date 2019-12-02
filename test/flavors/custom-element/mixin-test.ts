@@ -1,6 +1,6 @@
 import test from "ava";
 import { analyzeText } from "../../../src/analyze/analyze-text";
-import { getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
+import { assertHasMembers, getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
 test("Handles circular inheritance", t => {
 	const {
@@ -53,6 +53,64 @@ test("Handles circular inheritance using mixins", t => {
 	const attributeNames = getAttributeNames(members);
 
 	t.deepEqual(attributeNames, ["a", "b"]);
+});
+
+test("Handles mixin with variable declaration in TS declaration file", t => {
+	const {
+		results: [result]
+	} = analyzeText([
+		{
+			fileName: "main.js",
+			text: `
+		import { Mixin1 } from "./mixins";
+		/**
+		 * @element
+		 */
+		class MyElement extends Mixin1(HTMLElement) {
+			c: number;
+		}	
+		`
+		},
+		{
+			fileName: "mixins.d.ts",
+			text: `
+	declare type Constructor<T = object> = new (...args: any[]) => T;
+	export interface MyInterface {
+		a: number;
+	}
+
+	export declare abstract class MyClass {
+		b: number;
+	}
+	
+	export declare const Mixin1: <T extends Constructor<MyInterface & MyClass>>(base: T) => Constructor<MyClass & MyInterface> & T;
+
+		
+		`,
+			analyze: false
+		}
+	]);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "a"
+			},
+			{
+				kind: "property",
+				propName: "b"
+			},
+			{
+				kind: "property",
+				propName: "c"
+			}
+		],
+		t
+	);
 });
 
 test("Handles simple mixin", t => {

@@ -1,7 +1,7 @@
 import { ClassLikeDeclaration, HeritageClause, InterfaceDeclaration, Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { InheritanceTreeClause, InheritanceTreeNode } from "../../types/inheritance-tree";
-import { findChild, resolveDeclarations } from "../../util/ast-util";
+import { findChild, findChildren, resolveDeclarations } from "../../util/ast-util";
 
 export function discoverInheritance(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined {
 	if (node == null) return;
@@ -84,7 +84,7 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 		// Example: class MyElement extends MyMixin(MyBase) --> MyMixin
 		if (identifier != null && ts.isIdentifier(identifier)) {
 			const declarations = resolveDeclarations(identifier, context);
-			//const resolved: InheritanceTreeNode[] = arrayDefined(declarations.map(declaration => resolveMixin(declaration, context)));
+
 			const resolved: InheritanceTreeNode[] = [];
 
 			for (const declaration of declarations) {
@@ -115,6 +115,28 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 						}
 					});
 
+					continue;
+				}
+
+				// Resolve any identifiers if the node is in a declaration file
+				if (declaration.getSourceFile().isDeclarationFile) {
+					//context.ts.isVariableDeclaration(declaration)
+					const foundIdentifiers = new Set<string>();
+
+					findChildren(declaration, ts.isIdentifier, identifier => {
+						if (foundIdentifiers.has(identifier.text)) {
+							return;
+						}
+
+						foundIdentifiers.add(identifier.text);
+
+						resolveHeritageClause(heritage, identifier, {
+							...context,
+							emitHeritageClause: clause => {
+								horizontalInheritance.push(clause);
+							}
+						});
+					});
 					continue;
 				}
 			}

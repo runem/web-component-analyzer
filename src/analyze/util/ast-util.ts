@@ -219,9 +219,9 @@ export function isNodeInDeclarationFile(node: Node): boolean {
  * @param node
  * @param test
  */
-export function findParent<T = Node>(node: Node | undefined, test: (node: Node) => boolean): T | undefined {
+export function findParent<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T): T | undefined {
 	if (node == null) return;
-	return test(node) ? ((node as unknown) as T) : findParent(node.parent, test);
+	return test(node) ? node : findParent(node.parent, test);
 }
 
 /**
@@ -229,10 +229,18 @@ export function findParent<T = Node>(node: Node | undefined, test: (node: Node) 
  * @param node
  * @param test
  */
-export function findChild<T = Node>(node: Node | undefined, test: (node: Node) => node is T & Node): T | undefined {
+export function findChild<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T): T | undefined {
 	if (!node) return;
-	if (test(node)) return (node as unknown) as T;
+	if (test(node)) return node;
 	return node.forEachChild(child => findChild(child, test));
+}
+
+export function findChildren<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T, emit: (node: T) => void) {
+	if (!node) return;
+	if (test(node)) {
+		emit(node);
+	}
+	node.forEachChild(child => findChildren(child, test, emit));
 }
 
 export function getNodeSourceFileLang(node: Node): "js" | "ts" {

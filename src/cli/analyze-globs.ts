@@ -68,7 +68,7 @@ export async function analyzeGlobs(
 		const result = analyzeComponentsInFile(file, program, config);
 
 		if (config.debug) {
-			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 10 });
+			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 20 });
 		}
 
 		// Callback
