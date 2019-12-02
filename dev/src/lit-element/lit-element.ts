@@ -48,5 +48,7 @@ export class MyElement extends LitElement {
 		return ["attr1", "attr2"];
 	}
 
+	render() {}
+
 	@property({ type: String }) set value(str: string) {}
 }

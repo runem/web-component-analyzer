@@ -13,6 +13,10 @@ export function discoverInheritance(node: Node, context: AnalyzerVisitContext): 
 			...context,
 			emitHeritageClause: clause => clauses.push(clause)
 		});
+
+		//console.log((node.getSourceFile() as any)["locals"]);
+		//context.checker.getSymbolsInScope()
+
 		return clauses;
 	}
 

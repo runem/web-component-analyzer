@@ -22,4 +22,8 @@ export class MyElement extends LitElement {
 			}
 		};
 	}
+
+	update(changedProperties: Map<PropertyKey, unknown>): void {
+		super.update();
+	}
 }
