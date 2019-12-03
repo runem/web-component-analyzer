@@ -141,6 +141,44 @@ test("Handles simple mixin", t => {
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
+test("Handles mixin with local variable subclass", t => {
+	const {
+		results: [result]
+	} = analyzeText(`
+		const ExtraMixin = (Base) => {
+			return class ExtraMixinClass extends Base {
+				static get observedAttributes() {
+					return ["d", ...super.observedAttributes];
+				}
+			}
+		}
+		
+		const MyMixin = (base) => {
+            const Base = ExtraMixin(base);
+
+            class MixinClass extends Base {
+				static get observedAttributes() {
+					return ["c", ...super.observedAttributes];
+				}
+            }
+        }
+
+		class MyElement extends MyMixin(HTMLElement) {
+			static get observedAttributes() {
+				return ["a", "b", ...super.observedAttributes];
+			}
+		}
+		
+		customElements.define("my-element", MyElement);
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
+});
+
 test("Handles 2 levels of mixins", t => {
 	const {
 		results: [result]

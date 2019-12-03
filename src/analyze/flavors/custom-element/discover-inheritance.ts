@@ -13,10 +13,6 @@ export function discoverInheritance(node: Node, context: AnalyzerVisitContext): 
 			...context,
 			emitHeritageClause: clause => clauses.push(clause)
 		});
-
-		//console.log((node.getSourceFile() as any)["locals"]);
-		//context.checker.getSymbolsInScope()
-
 		return clauses;
 	}
 
@@ -25,7 +21,7 @@ export function discoverInheritance(node: Node, context: AnalyzerVisitContext): 
 
 interface VisitContext extends AnalyzerVisitContext {
 	emitHeritageClause?: (clause: InheritanceTreeClause) => void;
-	//emitHeritageNode?: (node: InheritanceTreeNode) => void;
+	emitHeritageNode?: (node: InheritanceTreeNode) => void;
 }
 
 /**
@@ -40,25 +36,6 @@ function resolveHeritageClauses(node: InterfaceDeclaration | ClassLikeDeclaratio
 				resolveHeritageClause(heritage, type.expression, context);
 			}
 		}
-		// class Test implements MyBase
-		// Don't visit interfaces if we are looking at a class, because the class already declares all things from the interface
-		/*if (ts.isClassLike(node) && heritage.token === ts.SyntaxKind.ImplementsKeyword) {
-				for (const type of heritage.types) {
-					//console.log("context.emitInheritNode(", type.expression);
-					//console.log("context.emitInherit(", type.expression.getText());
-					//context.emitInheritanceNode(type.expression);
-					//context.emitInheritanceIdentifier(type.expression);
-					if (ts.isIdentifier(type.expression)) {
-						emit({
-							kind: "interface",
-							identifier: type.expression
-						});
-					}
-				}
-				continue;
-			}*/
-
-		// [extends|implements] MyBase
 	}
 }
 
@@ -83,63 +60,17 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 		// Resolve and traverse the mixin function
 		// Example: class MyElement extends MyMixin(MyBase) --> MyMixin
 		if (identifier != null && ts.isIdentifier(identifier)) {
-			const declarations = resolveDeclarations(identifier, context);
-
 			const resolved: InheritanceTreeNode[] = [];
-
-			for (const declaration of declarations) {
-				// Extend right away if the node is a class declaration
-				if (context.ts.isClassLike(declaration)) {
-					//extendWithDeclarationNode(declaration, context);
-					resolved.push({ node: declaration, identifier: declaration.name });
-					continue;
-				}
-
-				// Else find the first class declaration in the block
-				// Note that we don't look for a return statement because this would complicate things
-				const clzDecl = findChild(declaration, context.ts.isClassLike);
-				if (clzDecl != null) {
-					//extendWithDeclarationNode(clzDecl, context);
-					resolved.push({ node: clzDecl, identifier: clzDecl.name });
-					continue;
-				}
-
-				// If we didn't find any class declarations, we might be in a function that wraps a mixin
-				// Therefore find the return statement and call this method recursively
-				const returnNode = findChild(declaration, context.ts.isReturnStatement);
-				if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
-					resolveHeritageClause(heritage, returnNode.expression, {
-						...context,
-						emitHeritageClause: clause => {
-							horizontalInheritance.push(clause);
-						}
-					});
-
-					continue;
-				}
-
-				// Resolve any identifiers if the node is in a declaration file
-				if (declaration.getSourceFile().isDeclarationFile) {
-					//context.ts.isVariableDeclaration(declaration)
-					const foundIdentifiers = new Set<string>();
-
-					findChildren(declaration, ts.isIdentifier, identifier => {
-						if (foundIdentifiers.has(identifier.text)) {
-							return;
-						}
-
-						foundIdentifiers.add(identifier.text);
-
-						resolveHeritageClause(heritage, identifier, {
-							...context,
-							emitHeritageClause: clause => {
-								horizontalInheritance.push(clause);
-							}
-						});
-					});
-					continue;
-				}
-			}
+			resolveMixin(heritage, identifier, {
+				...context,
+				emitHeritageNode: heritageNode => {
+					resolved.push(heritageNode);
+				},
+				emitHeritageClause: clause => {
+					horizontalInheritance.push(clause);
+				},
+				resolvedIdentifiers: new Set()
+			});
 
 			context.emitHeritageClause?.({
 				kind: "mixin",
@@ -149,14 +80,22 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 			});
 		}
 	} else if (ts.isIdentifier(node)) {
-		const declarations = resolveDeclarations(node, context);
-
 		// Visit component declarations for each inherited node.
-		const resolved: InheritanceTreeNode[] = declarations.map(declaration => ({
-			node: declaration,
-			identifier: ts.isClassLike(declaration) || ts.isInterfaceDeclaration(declaration) ? declaration.name : undefined
-		}));
-		//extendWithDeclarationNode(declaration, context);
+		const declarations = resolveDeclarationsDeep(node, context);
+
+		const resolved: InheritanceTreeNode[] = [];
+
+		for (const declaration of declarations) {
+			if (ts.isCallLikeExpression(declaration) || ts.isIdentifier(declaration)) {
+				resolveHeritageClause(heritage, declaration, context);
+			} else {
+				resolved.push({
+					node: declaration,
+					identifier: ts.isClassLike(declaration) || ts.isInterfaceDeclaration(declaration) ? declaration.name : undefined
+				});
+			}
+		}
+
 		const kind =
 			heritage.token === ts.SyntaxKind.ImplementsKeyword || ts.isInterfaceDeclaration(heritage.parent)
 				? node.text?.toLowerCase().includes("mixin")
@@ -174,40 +113,58 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 	return undefined;
 }
 
-// @ts-ignore
-function resolveMixin(node: Node, context: AnalyzerVisitContext): InheritanceTreeNode | undefined {
-	// Extend right away if the node is a class declaration
-	if (context.ts.isClassLike(node)) {
-		//extendWithDeclarationNode(declaration, context);
-		return { node, identifier: node.name };
-	}
+function resolveDeclarationsDeep(node: Node, context: VisitContext): Node[] {
+	return resolveDeclarations(node, context).map(declaration => {
+		if (context.ts.isVariableDeclaration(declaration) && declaration.initializer != null) {
+			return declaration.initializer;
+		}
 
-	// Else find the first class declaration in the block
-	// Note that we don't look for a return statement because this would complicate things
-	const clzDecl = findChild(node, context.ts.isClassLike);
-	if (clzDecl != null) {
-		//extendWithDeclarationNode(clzDecl, context);
-		return { node: clzDecl, identifier: clzDecl.name };
-	}
+		return declaration;
+	});
+}
 
-	// If we didn't find any class declarations, we might be in a function that wraps a mixin
-	// Therefore find the return statement and call this method recursively
-	const returnNode = findChild(node, context.ts.isReturnStatement);
-	if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
-		/*const aa = (() => {
-			// find identifier
-			if (context.ts.isCallExpression(returnNode.expression)) {
-				return returnNode.expression.expression;
-			}
-			return returnNode.expression;
-		})();*/
+function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContext & { resolvedIdentifiers: Set<any> }) {
+	const { ts } = context;
+	const declarations = resolveDeclarations(node, context);
 
-		const declarations = resolveDeclarations(returnNode.expression, context);
+	for (const declaration of declarations) {
+		// Extend right away if the node is a class declaration
+		if (context.ts.isClassLike(declaration) || context.ts.isInterfaceDeclaration(declaration)) {
+			//extendWithDeclarationNode(declaration, context);
+			context.emitHeritageNode?.({ node: declaration, identifier: declaration.name });
+			continue;
+		}
 
-		if (declarations.length > 0) {
-			return resolveMixin(declarations[0], context);
+		// Else find the first class declaration in the block
+		// Note that we don't look for a return statement because this would complicate things
+		const clzDecl = findChild(declaration, context.ts.isClassLike);
+		if (clzDecl != null) {
+			//extendWithDeclarationNode(clzDecl, context);
+			context.emitHeritageNode?.({ node: clzDecl, identifier: clzDecl.name });
+			continue;
+		}
+
+		// If we didn't find any class declarations, we might be in a function that wraps a mixin
+		// Therefore find the return statement and call this method recursively
+		const returnNode = findChild(declaration, context.ts.isReturnStatement);
+		if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
+			resolveHeritageClause(heritage, returnNode.expression, context);
+
+			continue;
+		}
+
+		// Resolve any identifiers if the node is in a declaration file
+		if (declaration.getSourceFile().isDeclarationFile) {
+			findChildren(declaration, ts.isIdentifier, identifier => {
+				if (context.resolvedIdentifiers.has(identifier.text)) {
+					return;
+				}
+
+				context.resolvedIdentifiers.add(identifier.text);
+
+				resolveMixin(heritage, identifier, context);
+			});
+			continue;
 		}
 	}
-
-	return undefined;
 }

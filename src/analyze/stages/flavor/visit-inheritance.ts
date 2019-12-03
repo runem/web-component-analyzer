@@ -3,7 +3,7 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { InheritanceTreeClause, InheritanceTreeNode } from "../../types/inheritance-tree";
 import { executeFunctionsUntilMatch } from "../../util/execute-functions-until-match";
 
-export function visitAndExpandInheritClause(
+function visitAndExpandInheritClause(
 	inheritClause: InheritanceTreeClause,
 	context: AnalyzerVisitContext,
 	visitSet: Set<Node>
