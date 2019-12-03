@@ -28,6 +28,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 - It's now possible to specify which featues should be analyzed
 - Emitted members now include metadata that flavors can add (eg. LitElement specific metadata)
 - Examples added using the `@example` jsdoc tag will be included in the markdown format.
+- Getter are now also analyzed, making it possible to emit `readonly` properties.
+- Support for the `@readonly` jsdoc tag
 
 ### Removed
 
