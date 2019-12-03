@@ -17,8 +17,6 @@ export function getExamplesFromComponent(declaration: ComponentDeclaration): Exa
 function exampleFromJsDocTag(tag: JsDocTag): Example {
 	const { code, lang, description } = discoverCodeFromExampleText(tag.comment || "");
 
-	console.log(`description`, description, "hmm");
-
 	return {
 		lang: lang || discoverLanguageFromExampleText(code),
 		description,

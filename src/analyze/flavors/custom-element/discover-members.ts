@@ -1,7 +1,7 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { getMemberVisibilityFromNode, hasModifier, isNamePrivate, isNodeWritableMember } from "../../util/ast-util";
+import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier, isNamePrivate } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -43,7 +43,7 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
 	}
 
 	// class { myProp = "hello"; }
-	else if ((ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && isNodeWritableMember(node, ts)) {
+	else if (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) {
 		const { name, initializer } = node;
 
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
@@ -60,7 +60,8 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
 						propName: name.text,
 						type: lazy(() => checker.getTypeAtLocation(node)),
 						default: def,
-						visibility: getMemberVisibilityFromNode(node, ts)
+						visibility: getMemberVisibilityFromNode(node, ts),
+						modifiers: getModifiersFromNode(node, ts)
 						//required: isPropertyRequired(node, context.checker),
 					}
 				}
@@ -69,11 +70,11 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
 	}
 
 	// class { set myProp(value: string) { ... } }
-	else if (ts.isSetAccessor(node) && isNodeWritableMember(node, ts)) {
+	else if (ts.isSetAccessor(node) || ts.isGetAccessor(node)) {
 		const { name, parameters } = node;
 
-		if (ts.isIdentifier(name) && parameters.length > 0) {
-			const parameter = parameters[0];
+		if (ts.isIdentifier(name)) {
+			const parameter = ts.isSetAccessor(node) != null && parameters?.length > 0 ? parameters[0] : undefined;
 
 			return [
 				{
@@ -83,8 +84,9 @@ export function discoverMembers(node: Node, context: AnalyzerVisitContext): Comp
 						jsDoc: getJsDoc(node, ts),
 						kind: "property",
 						propName: name.text,
-						type: lazy(() => context.checker.getTypeAtLocation(parameter)),
-						visibility: getMemberVisibilityFromNode(node, ts)
+						type: lazy(() => (parameter == null ? context.checker.getTypeAtLocation(node) : context.checker.getTypeAtLocation(parameter))),
+						visibility: getMemberVisibilityFromNode(node, ts),
+						modifiers: getModifiersFromNode(node, ts)
 					}
 				}
 			];

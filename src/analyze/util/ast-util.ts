@@ -12,6 +12,7 @@ import {
 	TypeChecker
 } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
+import { ModifierKind } from "../types/modifier-kind";
 import { VisibilityKind } from "../types/visibility-kind";
 import { resolveNodeValue } from "./resolve-node-value";
 
@@ -80,6 +81,24 @@ export function isMemberAndWritable(node: Node, ts: typeof tsModule): boolean {
  */
 export function isNodeWritableMember(node: Node, ts: typeof tsModule): boolean {
 	return !hasModifier(node, ts.SyntaxKind.ReadonlyKeyword) && !hasModifier(node, ts.SyntaxKind.StaticKeyword);
+}
+
+export function getModifiersFromNode(node: Node, ts: typeof tsModule): Set<ModifierKind> | undefined {
+	const modifiers: Set<ModifierKind> = new Set();
+
+	if (hasModifier(node, ts.SyntaxKind.ReadonlyKeyword)) {
+		modifiers.add("readonly");
+	}
+
+	if (hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+		modifiers.add("static");
+	}
+
+	if (ts.isGetAccessor(node)) {
+		modifiers.add("readonly");
+	}
+
+	return modifiers.size > 0 ? modifiers : undefined;
 }
 /*export function hasPublicSetter(node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration, ts: typeof tsModule): boolean {
 	return (

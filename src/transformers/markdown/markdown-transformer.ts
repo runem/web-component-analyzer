@@ -144,11 +144,11 @@ function cssPartSection(cssPart: ComponentCssPart[], config: TransformerConfig):
  */
 function methodSection(methods: ComponentMethod[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(methods, config);
-	const rows: string[][] = [["Method", ...(showVisibility ? ["Visibility"] : []), "Type", "Description"]];
+	const rows: string[][] = [["Method", "Visibility", "Type", "Description"]];
 	rows.push(
 		...methods.map(method => [
 			method.name != null ? markdownHighlight(method.name) : "",
-			...(showVisibility ? [method.visibility || "public"] : []),
+			showVisibility ? method.visibility || "public" : "",
 			markdownHighlight(getTypeHintFromType(method.type?.(), checker)),
 			method.jsDoc?.description || ""
 		])
@@ -164,11 +164,11 @@ function methodSection(methods: ComponentMethod[], checker: TypeChecker, config:
  */
 function eventSection(events: ComponentEvent[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(events, config);
-	const rows: string[][] = [["Event", ...(showVisibility ? ["Visibility"] : []), "Detail", "Description"]];
+	const rows: string[][] = [["Event", "Visibility", "Detail", "Description"]];
 	rows.push(
 		...events.map(event => [
 			(event.name && markdownHighlight(event.name)) || "",
-			...(showVisibility ? [event.visibility || "public"] : []),
+			showVisibility ? event.visibility || "public" : "",
 			markdownHighlight(getTypeHintFromType(event.typeHint ?? event.type?.(), checker)),
 			event.jsDoc?.description || ""
 		])
@@ -201,7 +201,7 @@ function slotSection(slots: ComponentSlot[], config: TransformerConfig): string 
  */
 function memberAttributeSection(members: ComponentMemberAttribute[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(members, config);
-	const rows: string[][] = [["Attribute", ...(showVisibility ? ["Visibility"] : []), "Type", "Default", "Description"]];
+	const rows: string[][] = [["Attribute", "Visibility", "Type", "Default", "Description"]];
 
 	// Add members as rows one by one
 	for (const member of members) {
@@ -211,7 +211,7 @@ function memberAttributeSection(members: ComponentMemberAttribute[], checker: Ty
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";
 		const comment = member.jsDoc?.description || "";
 
-		rows.push([attrName, ...(showVisibility ? [visibility] : []), type, def, comment]);
+		rows.push([attrName, showVisibility ? visibility : "", type, def, comment]);
 	}
 
 	return markdownHeader("Attributes", 2, config) + "\n" + markdownTable(rows);
@@ -225,7 +225,7 @@ function memberAttributeSection(members: ComponentMemberAttribute[], checker: Ty
  */
 function memberPropertySection(members: ComponentMemberProperty[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(members, config);
-	const rows: string[][] = [["Property", "Attribute", ...(showVisibility ? ["Visibility"] : []), "Type", "Default", "Description"]];
+	const rows: string[][] = [["Property", "Attribute", "Visibility", "Modifiers", "Type", "Default", "Description"]];
 
 	// Add properties as rows one by one
 	for (const member of members) {
@@ -233,11 +233,12 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 		const attrName = (member.attrName && markdownHighlight(member.attrName)) || "";
 		const visibility = member.visibility || "public";
 		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker));
+		const mods = member.modifiers != null ? Array.from(member.modifiers).join(", ") : "";
 
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";
 		const comment = member.jsDoc?.description || "";
 
-		rows.push([propName, attrName, ...(showVisibility ? [visibility] : []), type, def, comment]);
+		rows.push([propName, attrName, showVisibility ? visibility : "", mods, type, def, comment]);
 	}
 
 	return markdownHeader("Properties", 2, config) + "\n" + markdownTable(rows);

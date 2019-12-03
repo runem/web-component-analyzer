@@ -1,6 +1,5 @@
-import { JsDoc } from "../js-doc";
+import { ComponentFeatureBase } from "./component-feature";
 
-export interface ComponentCssPart {
+export interface ComponentCssPart extends ComponentFeatureBase {
 	name: string;
-	jsDoc: JsDoc | undefined;
 }

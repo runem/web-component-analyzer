@@ -36,10 +36,17 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 		return `{SIMPLE_TYPE:${toTypeString(input)}}`;
 	} else if (Array.isArray(input)) {
 		return input.map(i => stripTypescriptValues(i, checker));
+	} else if (input instanceof Set) {
+		return stripTypescriptValues(Array.from(input), checker);
+	} else if (input instanceof Map) {
+		return stripTypescriptValues(Array.from(input), checker);
 	} else if (input instanceof Object) {
-		const obj = { ...input };
+		const obj: any = {};
 		for (let [key, value] of Object.entries(input)) {
-			obj[key] = stripTypescriptValues(value, checker);
+			const strippedValue = stripTypescriptValues(value, checker);
+			if (strippedValue !== undefined) {
+				obj[key] = strippedValue;
+			}
 		}
 		return obj;
 	}

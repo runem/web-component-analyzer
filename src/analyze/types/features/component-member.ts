@@ -1,17 +1,17 @@
 import { SimpleType } from "ts-simple-type";
 import { Node, Type } from "typescript";
-import { JsDoc } from "../js-doc";
-import { LitElementPropertyConfig } from "./lit-element-property-config";
+import { ModifierKind } from "../modifier-kind";
 import { VisibilityKind } from "../visibility-kind";
+import { ComponentFeatureBase } from "./component-feature";
+import { LitElementPropertyConfig } from "./lit-element-property-config";
 
 export type ComponentMemberKind = "property" | "attribute";
 
 export type ComponentMemberReflectKind = "to-attribute" | "to-property" | "both";
 
-export interface ComponentMemberBase {
+export interface ComponentMemberBase extends ComponentFeatureBase {
 	kind: ComponentMemberKind;
 	node: Node;
-	jsDoc: JsDoc | undefined;
 	typeHint?: string;
 	type: undefined | (() => Type | SimpleType);
 
@@ -22,6 +22,7 @@ export interface ComponentMemberBase {
 	required?: boolean;
 	deprecated?: boolean | string;
 	default?: any;
+	modifiers?: Set<ModifierKind>;
 }
 
 export interface ComponentMemberProperty extends ComponentMemberBase {
@@ -34,6 +35,7 @@ export interface ComponentMemberAttribute extends ComponentMemberBase {
 	kind: "attribute";
 	attrName: string;
 	propName?: undefined;
+	modifiers?: undefined;
 }
 
 export type ComponentMember = ComponentMemberProperty | ComponentMemberAttribute;

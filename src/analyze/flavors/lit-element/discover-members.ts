@@ -1,7 +1,7 @@
 import { SimpleTypeKind } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
-import { getMemberVisibilityFromNode, getNodeSourceFileLang, hasModifier, isNodeWritableMember } from "../../util/ast-util";
+import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLang, hasModifier } from "../../util/ast-util";
 import { getExtendsForInheritanceTree } from "../../util/inheritance-tree-util";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
@@ -31,7 +31,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 	}
 
 	// @property({type: String}) myProp = "hello";
-	else if ((ts.isSetAccessorDeclaration(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) && isNodeWritableMember(node, ts)) {
+	else if (ts.isSetAccessor(node) || ts.isGetAccessor(node) || ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) {
 		return parsePropertyDecorator(node, context);
 	}
 }
@@ -90,7 +90,8 @@ function parsePropertyDecorator(
 					jsDoc,
 					meta: litConfig,
 					visibility: getMemberVisibilityFromNode(node, ts),
-					reflect: litConfig.reflect ? "both" : "to-property"
+					reflect: litConfig.reflect ? "both" : "to-property",
+					modifiers: getModifiersFromNode(node, ts)
 				}
 			}
 		];

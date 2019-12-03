@@ -1,6 +1,7 @@
 import { JsDoc } from "../../types/js-doc";
+import { ModifierKind } from "../../types/modifier-kind";
 
-export function mergeJsDocIntoJsDoc(leftJsDoc: JsDoc | undefined, rightJsDoc: JsDoc | undefined): JsDoc | undefined {
+export function mergeJsDoc(leftJsDoc: JsDoc | undefined, rightJsDoc: JsDoc | undefined): JsDoc | undefined {
 	if (leftJsDoc == null) {
 		return rightJsDoc;
 	} else if (rightJsDoc == null) {
@@ -11,6 +12,27 @@ export function mergeJsDocIntoJsDoc(leftJsDoc: JsDoc | undefined, rightJsDoc: Js
 		...(leftJsDoc ?? rightJsDoc),
 		description: leftJsDoc.description ?? rightJsDoc.description
 	};
+}
+
+export function mergeModifiers(
+	leftModifiers: Set<ModifierKind> | undefined,
+	rightModifiers: Set<ModifierKind> | undefined
+): Set<ModifierKind> | undefined {
+	const newSet = new Set<ModifierKind>();
+
+	if (leftModifiers?.has("static") && rightModifiers?.has("static")) {
+		newSet.add("static");
+	}
+
+	if (leftModifiers?.has("readonly") && rightModifiers?.has("readonly")) {
+		newSet.add("readonly");
+	}
+
+	if (newSet.size === 0) {
+		return undefined;
+	}
+
+	return newSet;
 }
 
 /**
@@ -36,4 +58,29 @@ export function mergeNamedEntries<T>(entries: T[], getName: (entry: T) => string
 	}
 
 	return Array.from(merged.values());
+}
+
+export function mergeEntries<T>(entries: T[], isMergeable: (entry: T, merged: T) => boolean, merge: (left: T, right: T) => T): T[] {
+	let mergedEntries: T[] = [];
+
+	for (const entry of entries) {
+		let mergeableEntry: T | undefined = undefined;
+		for (const mergedEntry of mergedEntries) {
+			if (isMergeable(entry, mergedEntry)) {
+				mergeableEntry = mergedEntry;
+				break;
+			}
+		}
+
+		let newEntry: T | undefined = undefined;
+		if (mergeableEntry == null) {
+			newEntry = entry;
+		} else {
+			mergedEntries = mergedEntries.filter(mergedEntry => mergedEntry !== entry && mergedEntry !== mergeableEntry);
+			newEntry = merge(mergeableEntry, entry);
+		}
+		mergedEntries.push(newEntry);
+	}
+
+	return mergedEntries;
 }

@@ -1,12 +1,13 @@
 import { SimpleType } from "ts-simple-type";
 import { Node, Type } from "typescript";
-import { JsDoc } from "../js-doc";
 import { VisibilityKind } from "../visibility-kind";
+import { ComponentFeatureBase } from "./component-feature";
 
-export interface ComponentMethod {
+export interface ComponentMethod extends ComponentFeatureBase {
 	name: string;
-	jsDoc: JsDoc | undefined;
 	node?: Node;
-	visibility?: VisibilityKind;
 	type?: () => SimpleType | Type;
+
+	visibility?: VisibilityKind;
+	//modifiers?: Set<ModifierKind>;
 }

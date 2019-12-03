@@ -1,7 +1,6 @@
-import { JsDoc } from "../js-doc";
+import { ComponentFeatureBase } from "./component-feature";
 
-export interface ComponentSlot {
+export interface ComponentSlot extends ComponentFeatureBase {
 	name?: string;
-	jsDoc: JsDoc | undefined;
 	permittedTagNames?: string[];
 }

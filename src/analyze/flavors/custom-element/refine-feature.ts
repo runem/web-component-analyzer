@@ -7,6 +7,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	member: (memberResult: ComponentMemberResult, context: AnalyzerVisitContext): ComponentMemberResult | undefined => {
 		const { member } = memberResult;
 
+		// Outscope "statics" for now
+		if (member?.modifiers?.has("static")) {
+			return undefined;
+		}
+
 		if (member.visibility == null) {
 			const name = member.kind === "attribute" ? member.attrName : member.propName;
 			if (isNamePrivate(name)) {
@@ -23,6 +28,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 		return memberResult;
 	},
 	method: (method: ComponentMethod, context: AnalyzerVisitContext): ComponentMethod | undefined => {
+		// Outscope "statics" for now
+		/*if (method?.modifiers?.has("static")) {
+			return undefined;
+		}*/
+
 		if (method.visibility == null && isNamePrivate(method.name)) {
 			return {
 				...method,

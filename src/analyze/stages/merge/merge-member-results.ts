@@ -2,7 +2,7 @@ import { TypeChecker } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMemberResult, PriorityKind } from "../../flavors/analyzer-flavor";
 import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
-import { mergeJsDocIntoJsDoc } from "./merge-util";
+import { mergeJsDoc, mergeModifiers } from "./merge-util";
 
 const priorityValueMap: Record<PriorityKind, number> = {
 	low: 0,
@@ -139,7 +139,8 @@ function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemb
 			}
 		})(),
 		typeHint: leftMember.typeHint ?? rightMember.typeHint,
-		jsDoc: mergeJsDocIntoJsDoc(leftMember.jsDoc, rightMember.jsDoc),
+		jsDoc: mergeJsDoc(leftMember.jsDoc, rightMember.jsDoc),
+		modifiers: mergeModifiers(leftMember.modifiers, rightMember.modifiers),
 		meta: leftMember.meta ?? rightMember.meta,
 		default: leftMember.default === undefined ? rightMember.default : leftMember.default,
 		required: leftMember.required ?? rightMember.required,

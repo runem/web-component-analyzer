@@ -4,6 +4,7 @@ import { ComponentEvent } from "../../types/features/component-event";
 import { ComponentMemberReflectKind } from "../../types/features/component-member";
 import { ComponentMethod } from "../../types/features/component-method";
 import { JsDoc } from "../../types/js-doc";
+import { ModifierKind } from "../../types/modifier-kind";
 import { VisibilityKind } from "../../types/visibility-kind";
 import { parseJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
@@ -37,7 +38,8 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 			applyJsDocRequired,
 			applyJsDocDefault,
 			applyJsDocReflect,
-			applyJsDocType
+			applyJsDocType,
+			applyJsDocModifiers
 		].reduce((member, applyFunc) => (applyFunc as Function)(member, jsDoc), member);
 
 		// only member
@@ -116,6 +118,19 @@ function applyJsDocRequired<T extends { required?: boolean }>(feature: T, jsDoc:
 		return {
 			...feature,
 			required: requiredTag.tag === "required"
+		};
+	}
+
+	return feature;
+}
+
+function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(feature: T, jsDoc: JsDoc): T {
+	const readonlyTag = jsDoc.tags?.find(tag => tag.tag === "readonly");
+
+	if (readonlyTag != null) {
+		return {
+			...feature,
+			modifiers: (feature.modifiers != null ? new Set(feature.modifiers) : new Set()).add("readonly")
 		};
 	}
 
