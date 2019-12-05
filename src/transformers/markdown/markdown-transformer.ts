@@ -10,6 +10,7 @@ import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { getMixinsForInheritanceTree } from "../../analyze/util/inheritance-tree-util";
 import { arrayFlat } from "../../util/array-util";
 import { getExamplesFromComponent } from "../../util/get-examples-from-component";
+import { getTypeHintFromMethod } from "../../util/get-type-hint-from-method";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
@@ -146,12 +147,26 @@ function methodSection(methods: ComponentMethod[], checker: TypeChecker, config:
 	const showVisibility = shouldShowVisibility(methods, config);
 	const rows: string[][] = [["Method", "Visibility", "Type", "Description"]];
 	rows.push(
-		...methods.map(method => [
-			method.name != null ? markdownHighlight(method.name) : "",
-			showVisibility ? method.visibility || "public" : "",
-			markdownHighlight(getTypeHintFromType(method.type?.(), checker)),
-			method.jsDoc?.description || ""
-		])
+		...methods.map(method => {
+			// Build up a description of parameters
+			const paramDescription =
+				method.jsDoc?.tags
+					?.filter(tag => tag.tag === "param" && tag.comment != null)
+					.map(tag => {
+						return `**${tag.parsed().name}**: ${tag.parsed().description}`;
+					})
+					.join("\n")
+					.trim() || undefined;
+
+			const description = method.jsDoc?.description || undefined;
+
+			return [
+				method.name != null ? markdownHighlight(method.name) : "",
+				showVisibility ? method.visibility || "public" : "",
+				markdownHighlight(getTypeHintFromMethod(method, checker)),
+				`${description || ""}${description != null && paramDescription != null ? "\n\n" : ""}${paramDescription || ""}`
+			];
+		})
 	);
 	return markdownHeader("Methods", 2, config) + "\n" + markdownTable(rows);
 }

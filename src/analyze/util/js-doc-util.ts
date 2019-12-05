@@ -1,6 +1,6 @@
 import { SimpleType, SimpleTypeKind, SimpleTypeStringLiteral } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { JSDoc, Node } from "typescript";
+import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node } from "typescript";
 import { arrayDefined } from "../../util/array-util";
 import { JsDoc, JsDocTag, JsDocTagParsed } from "../types/js-doc";
 import { getLeadingCommentForNode } from "./ast-util";
@@ -34,6 +34,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 
 	const jsDocNode = getJSDocNode(node, ts);
 
+	// If we couldn't find jsdoc, find and parse the jsdoc string ourselves
 	if (jsDocNode == null) {
 		const leadingComment = getLeadingCommentForNode(node, ts);
 
@@ -58,12 +59,25 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 								return undefined;
 							}
 
+							// If Typescript generated a "type expression" or "name", comment will not include those.
+							// We can't just use what typescript parsed because it doesn't include things like optional jsdoc: name notation [...]
+							// Therefore we need to manually get the text and remove newlines/*
+							const typeExpressionPart = "typeExpression" in node ? (node as JSDocTypeTag).typeExpression?.getText() : undefined;
+							const namePart = "name" in node ? (node as JSDocParameterTag).name?.getText() : undefined;
+
+							let fullComment = typeExpressionPart?.startsWith("@")
+								? // To make matters worse, if Typescript can't parse a certain jsdoc, it will include the rest of the jsdocs tag from there in "typeExpressionPart"
+								  // Therefore we check if there are multiple jsdoc tags in the string to only take the first one
+								  // This will discard the following jsdocs, but at least we don't crash :-)
+								  typeExpressionPart.split(/\n\s*\*\s?@/)[0] || ""
+								: `@${tag}${typeExpressionPart != null ? ` ${typeExpressionPart} ` : ""}${namePart != null ? ` ${namePart} ` : ""} ${node.comment ||
+										""}`;
+
 							return {
 								node,
 								tag,
-								comment: node.comment,
-								// Parse the jsdoc tag comment. Typescript strips descriptions on @type, so in that case, use "node.getText()"
-								parsed: lazy(() => parseJsDocTagString(tag === "type" ? node.getText() : `@${tag} ${node.comment || ""}`))
+								comment: node.comment?.replace(/^\s*-\s*/, "").trim(),
+								parsed: lazy(() => parseJsDocTagString(fullComment))
 							};
 						})
 				  )
@@ -209,6 +223,8 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 	}
 }
 
+const JSDOC_TAGS_WITH_REQUIRED_NAME: string[] = ["param", "fires", "@element", "@customElement"];
+
 /**
  * Parses "@tag {type} name description"
  * @param str
@@ -231,37 +247,60 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 	};
 
 	// Match tag
-	const tagResult = str.match(/^(\s*@([\S-]+))/);
+	// Example: "  @mytag"
+	const tagResult = str.match(/^(\s*@(\S+))/);
 	if (tagResult == null) {
 		return jsDocTag;
 	} else {
+		// Move string to the end of the match
+		// Example: "  @mytag|"
 		moveStr(tagResult[1]);
 		jsDocTag.tag = tagResult[2];
 	}
 
 	// Match type
+	// Example: "   {MyType}"
 	const typeResult = str.match(/^(\s*\{([\s\S]*)\})/);
 	if (typeResult != null) {
+		// Move string to the end of the match
+		// Example: "  {MyType}|"
 		moveStr(typeResult[1]);
 		jsDocTag.type = typeResult[2];
 	}
 
 	// Match optional name
+	// Example: "  [myname=mydefault]"
 	const defaultNameResult = str.match(/^(\s*\[([\s\S]+)\])/);
 	if (defaultNameResult != null) {
+		// Move string to the end of the match
+		// Example: "  [myname=mydefault]|"
 		moveStr(defaultNameResult[1]);
+
+		// Using [...] means that this doc is optional
+		jsDocTag.optional = true;
+
+		// Split the inner content between [...] into parts
+		// Example:  "myname=mydefault" => "myname", "mydefault"
 		const parts = defaultNameResult[2].split("=");
 		if (parts.length === 2) {
+			// Both name and default were given
 			jsDocTag.name = unqouteStr(parts[0]);
 			jsDocTag.default = parts[1];
-			jsDocTag.optional = true;
 		} else if (parts.length !== 0) {
+			// No default was given
 			jsDocTag.name = unqouteStr(parts[0]);
 		}
 	} else {
-		// Match required name
-		const nameResult = str.match(/^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/);
+		// else, match required name
+		// Example: "   myname"
+
+		// A name is needed some jsdoc tags making it possible to include omit "-"
+		// Therefore we don't look for "-" or line end if the name is required - in that case we only need to eat the first word to find the name.
+		const regex = JSDOC_TAGS_WITH_REQUIRED_NAME.includes(jsDocTag.tag) ? /^(\s*(\S+))/ : /^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/;
+		const nameResult = str.match(regex);
 		if (nameResult != null) {
+			// Move string to end of match
+			// Example: "   myname|"
 			moveStr(nameResult[1]);
 			jsDocTag.name = unqouteStr(nameResult[2].trim());
 		}
@@ -269,7 +308,8 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 
 	// Match comment
 	if (str.length > 0) {
-		jsDocTag.description = str.replace(/^\s*-\s*/, "").trim();
+		// The rest of the string is parsed as comment. Remove "-" if needed.
+		jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
 	}
 
 	return jsDocTag;

@@ -47,6 +47,7 @@ export interface ComponentFeatureCollection {
 export interface AnalyzerDeclarationVisitContext extends AnalyzerVisitContext {
 	getDefinition: () => ComponentDefinition;
 	getDeclaration: () => ComponentDeclaration;
+	declarationNode?: Node;
 }
 
 export type FeatureDiscoverVisitMap<Context extends AnalyzerVisitContext> = {

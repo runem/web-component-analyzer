@@ -44,7 +44,7 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 		const obj: any = {};
 		for (let [key, value] of Object.entries(input)) {
 			const strippedValue = stripTypescriptValues(value, checker);
-			if (strippedValue !== undefined) {
+			if (strippedValue !== undefined && (!Array.isArray(strippedValue) || strippedValue.length > 0)) {
 				obj[key] = strippedValue;
 			}
 		}

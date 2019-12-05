@@ -23,7 +23,12 @@ export class MyCustomElement extends HTMLElement {
 		return ["my-attr"];
 	}
 
-	doSomething() {
+	/**
+	 * @param {LolBol} [param1=superduper] Description
+	 * Multiline description
+	 * @returns {Validator[]}
+	 */
+	doSomething(param1) {
 		this.dispatchEvent(new CustomEvent("my-event"));
 	}
 }

@@ -1,12 +1,17 @@
 import { Node } from "typescript";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMethod } from "../../types/features/component-method";
 import { getMemberVisibilityFromNode, isMemberAndWritable } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
+import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
 
-export function discoverMethods(node: Node, context: AnalyzerVisitContext): ComponentMethod[] | undefined {
+export function discoverMethods(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMethod[] | undefined {
 	const { ts } = context;
+
+	// Never pick up method declaration not declared directly on the declaration node being traversed
+	if (node.parent !== context.declarationNode) {
+		return undefined;
+	}
 
 	// class { myMethod () {} }
 	if ((ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) && isMemberAndWritable(node, ts)) {

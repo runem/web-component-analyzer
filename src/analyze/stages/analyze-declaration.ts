@@ -54,7 +54,7 @@ export function analyzeComponentDeclaration(initialDeclarationNodes: Node[], con
 			continue;
 		}
 
-		featureCollections.push(discoverFeatures(node, context));
+		featureCollections.push(discoverFeatures(node, { ...context, declarationNode: node }));
 	}
 
 	//console.dir(featureCollections, { depth: 4 });

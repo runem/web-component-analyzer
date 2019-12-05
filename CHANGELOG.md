@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 - Examples added using the `@example` jsdoc tag will be included in the markdown format.
 - Getter are now also analyzed, making it possible to emit `readonly` properties.
 - Support for the `@readonly` jsdoc tag
+- Support `@param` and `@returns` jsdoc tags
 
 ### Removed
 

@@ -22,7 +22,9 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	method: (method: ComponentMethod) => {
 		if (method.jsDoc == null || method.jsDoc.tags == null) return method;
 
-		return [applyJsDocDeprecated, applyJsDocVisibility].reduce((method, applyFunc) => (applyFunc as Function)(method, method.jsDoc), method);
+		method = [applyJsDocDeprecated, applyJsDocVisibility].reduce((method, applyFunc) => (applyFunc as Function)(method, method.jsDoc), method);
+
+		return method;
 	},
 	member: (memberResult: ComponentMemberResult) => {
 		const member = memberResult.member;

@@ -1,15 +1,19 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier, isNamePrivate } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { relaxType } from "../../util/type-util";
-import { ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerDeclarationVisitContext, ComponentMemberResult } from "../analyzer-flavor";
 
-export function discoverMembers(node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined {
+export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
 	const { ts, checker } = context;
+
+	// Never pick up members not declared directly on the declaration node being traversed
+	if (node.parent !== context.declarationNode) {
+		return undefined;
+	}
 
 	// static get observedAttributes() { return ['c', 'l']; }
 	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
