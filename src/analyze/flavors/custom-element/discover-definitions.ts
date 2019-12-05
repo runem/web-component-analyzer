@@ -5,9 +5,10 @@ import { resolveNodeValue } from "../../util/resolve-node-value";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
 /**
- * Visits custom element component definitions.
+ * Visits custom element definitions.
  * @param node
- * @param context
+ * @param ts
+ * @param checker
  */
 export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitContext): DefinitionNodeResult[] | undefined {
 	// customElements.define("my-element", MyElement)

@@ -9,6 +9,6 @@ export interface LitElementPropertyConfig {
 		attribute?: Node;
 	};
 	hasConverter?: boolean;
-	default?: any;
+	default?: unknown;
 	reflect?: boolean;
 }

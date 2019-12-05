@@ -21,7 +21,7 @@ export interface ComponentMemberBase extends ComponentFeatureBase {
 	reflect?: ComponentMemberReflectKind;
 	required?: boolean;
 	deprecated?: boolean | string;
-	default?: any;
+	default?: unknown;
 	modifiers?: Set<ModifierKind>;
 }
 

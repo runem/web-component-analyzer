@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { VERSION } from "../analyze/constants";
 import { AnalyzeCliCommand } from "./cli-command/analyze/analyze-cli-command";
 import { CliCommand, CommandError } from "./cli-command/cli-command";
@@ -20,7 +21,7 @@ export async function cli() {
 
 	// Find the chosen command
 	const commandId = args._[0];
-	let command = commands.find(c => c.id === commandId);
+	const command = commands.find(c => c.id === commandId);
 
 	// Print "version"
 	if ("version" in args) {
@@ -65,7 +66,7 @@ export async function cli() {
  */
 function printGlobalHelp() {
 	console.log(`Usage:
-  \$ wca <command> [<input-glob>] [options]
+  $ wca <command> [<input-glob>] [options]
 
 Available Commands:
   analyze\tAnalyses components and emits results in a specified format.

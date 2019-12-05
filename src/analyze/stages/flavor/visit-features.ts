@@ -23,6 +23,7 @@ export function visitFeaturesWithVisitMaps<ReturnType>(
 		const result = executeFunctionsUntilMatch(visitMaps, feature, node, context);
 
 		if (result != null) {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			emitMap[feature]?.(result.value as any);
 
 			if (!result.shouldContinue) return;

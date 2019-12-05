@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
 import { join } from "path";
@@ -114,7 +115,9 @@ async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig):
 							followSymbolicLinks: false
 						});
 					}
-				} catch (e) {}
+				} catch (e) {
+					// the glob wasn't a directory
+				}
 
 				// Return the result of globbing
 				return fastGlob([...(config.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {

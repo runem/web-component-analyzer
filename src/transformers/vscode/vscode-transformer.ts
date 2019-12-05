@@ -166,7 +166,7 @@ function formatEntryRow(name: string, doc: JsDoc | string | undefined, type: Typ
 	const comment = typeof doc === "string" ? doc : doc?.description || "";
 	const typeText = typeof type === "string" ? type : type == null ? "" : formatType(type, checker);
 
-	return `${markdownHighlight(name)}${typeText == null ? "" : ` \{${typeText}\}`}${comment == null ? "" : " - "}${comment || ""}`;
+	return `${markdownHighlight(name)}${typeText == null ? "" : ` {${typeText}}`}${comment == null ? "" : " - "}${comment || ""}`;
 }
 
 /**

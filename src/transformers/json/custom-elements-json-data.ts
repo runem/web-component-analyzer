@@ -15,7 +15,7 @@ export interface HtmlDataMember {
 	valueSet?: string;
 
 	// Suggested fields:
-	type?: any;
+	type?: unknown;
 	attribute?: string;
 	deprecated?: boolean;
 	deprecatedMessage?: string;

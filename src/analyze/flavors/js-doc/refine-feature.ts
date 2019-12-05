@@ -89,6 +89,8 @@ function applyJsDocVisibility<T extends { visibility?: VisibilityKind }>(feature
 							case "private":
 							case "package":
 								return "private";
+							default:
+								return undefined;
 						}
 					default:
 						return undefined;
@@ -139,7 +141,7 @@ function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(featur
 	return feature;
 }
 
-function applyJsDocDefault<T extends { default?: any }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocDefault<T extends { default?: unknown }>(feature: T, jsDoc: JsDoc): T {
 	const defaultTag = jsDoc.tags?.find(tag => tag.tag === "default");
 
 	if (defaultTag != null) {
@@ -176,7 +178,7 @@ function applyJsDocReflect<T extends { reflect?: ComponentMemberReflectKind }>(f
 	return feature;
 }
 
-function applyJsDocType<T extends { typeHint?: any; type?: () => SimpleType | Type }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocType<T extends { typeHint?: unknown; type?: () => SimpleType | Type }>(feature: T, jsDoc: JsDoc): T {
 	const typeTag = jsDoc.tags?.find(tag => tag.tag === "type");
 
 	if (typeTag != null && feature.typeHint == null) {

@@ -12,13 +12,13 @@ function getJSDocNode(node: Node, ts: typeof tsModule): JSDoc | undefined {
 		return parent;
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return ((node as any).jsDoc as Node[])?.find((n): n is JSDoc => ts.isJSDoc(n));
 }
 
 /**
  * Returns jsdoc for a given node.
  * @param node
- * @param tagNames
  * @param ts
  */
 export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined;
@@ -65,7 +65,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 							const typeExpressionPart = "typeExpression" in node ? (node as JSDocTypeTag).typeExpression?.getText() : undefined;
 							const namePart = "name" in node ? (node as JSDocParameterTag).name?.getText() : undefined;
 
-							let fullComment = typeExpressionPart?.startsWith("@")
+							const fullComment = typeExpressionPart?.startsWith("@")
 								? // To make matters worse, if Typescript can't parse a certain jsdoc, it will include the rest of the jsdocs tag from there in "typeExpressionPart"
 								  // Therefore we check if there are multiple jsdoc tags in the string to only take the first one
 								  // This will discard the following jsdocs, but at least we don't crash :-)
@@ -193,7 +193,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 
 	// Match
 	//   {[number]}
-	const arrayMatch = str.match(/^\[(.+)\]$/);
+	const arrayMatch = str.match(/^\[(.+)]$/);
 	if (arrayMatch != null) {
 		return {
 			kind: SimpleTypeKind.ARRAY,
@@ -260,7 +260,7 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 
 	// Match type
 	// Example: "   {MyType}"
-	const typeResult = str.match(/^(\s*\{([\s\S]*)\})/);
+	const typeResult = str.match(/^(\s*{([\s\S]*)})/);
 	if (typeResult != null) {
 		// Move string to the end of the match
 		// Example: "  {MyType}|"

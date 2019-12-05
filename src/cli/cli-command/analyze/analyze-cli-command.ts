@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import { extname, resolve } from "path";
 import { Program, SourceFile } from "typescript";
@@ -19,7 +20,7 @@ export class AnalyzeCliCommand implements CliCommand {
 	 */
 	printHelp(): void {
 		console.log(`Usage:
-  \$ wca analyze [<input-glob>] [options]
+  $ wca analyze [<input-glob>] [options]
   
 Examples:
   $ wca analyze

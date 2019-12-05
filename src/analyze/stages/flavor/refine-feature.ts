@@ -25,6 +25,7 @@ export function refineFeature<FeatureKind extends ComponentFeature, ValueType = 
 			} else if (Array.isArray(refinedValue)) {
 				const newValue: ValueType[] = [];
 				for (const val of refinedValue) {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					const refined = refineFunc(val as any, context);
 					if (refined != null) {
 						newValue.push(...(((Array.isArray(refined) ? refined : [refined]) as unknown) as ValueType[]));
@@ -32,12 +33,14 @@ export function refineFeature<FeatureKind extends ComponentFeature, ValueType = 
 				}
 				refinedValue = newValue.length === 0 ? undefined : newValue;
 			} else {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				refinedValue = (refineFunc(refinedValue as any, context) as unknown) as typeof refinedValue;
 			}
 		}
 	}
 
 	if (refinedValue != null) {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		(Array.isArray(refinedValue) ? refinedValue : [refinedValue]).forEach(v => emitMap?.[featureKind]?.(v as any));
 	}
 }

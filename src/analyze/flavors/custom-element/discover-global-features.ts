@@ -19,7 +19,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 				if (ts.isPropertySignature(member)) {
 					const name = resolveNodeValue(member.name, context)?.value;
 
-					if (name != null) {
+					if (name != null && typeof name === "string") {
 						events.push({
 							node: member.initializer || member,
 							jsDoc: getJsDoc(member, ts),
@@ -45,7 +45,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 				if (ts.isPropertySignature(member)) {
 					const name = resolveNodeValue(member.name, context)?.value;
 
-					if (name != null) {
+					if (name != null && typeof name === "string") {
 						members.push({
 							priority: "medium",
 							member: {

@@ -1,6 +1,7 @@
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 
 export function executeFunctionsUntilMatch<
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	T extends Partial<Record<K, any>>,
 	K extends keyof T,
 	ReturnValue extends ReturnType<NonNullable<T[K]>>,

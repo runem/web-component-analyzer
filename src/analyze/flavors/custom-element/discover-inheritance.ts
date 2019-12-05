@@ -123,7 +123,7 @@ function resolveDeclarationsDeep(node: Node, context: VisitContext): Node[] {
 	});
 }
 
-function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContext & { resolvedIdentifiers: Set<any> }) {
+function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContext & { resolvedIdentifiers: Set<unknown> }) {
 	const { ts } = context;
 	const declarations = resolveDeclarations(node, context);
 
@@ -164,7 +164,6 @@ function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContex
 
 				resolveMixin(heritage, identifier, context);
 			});
-			continue;
 		}
 	}
 }

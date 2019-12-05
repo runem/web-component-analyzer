@@ -3,7 +3,7 @@
  * @param str
  */
 export function dashToCamelCase(str: string): string {
-	return str.replace(/(\-\w)/g, m => m[1].toUpperCase());
+	return str.replace(/(-\w)/g, m => m[1].toUpperCase());
 }
 
 /**

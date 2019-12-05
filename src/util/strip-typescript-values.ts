@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { SimpleType, SimpleTypeKind, toTypeString } from "ts-simple-type";
 import { Node, SourceFile, Type, TypeChecker } from "typescript";
 
@@ -25,7 +26,7 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 	} else if (isTypescriptSourceFile(input)) {
 		return `{SOURCEFILE:${input.fileName.match(".*/(.+)")?.[1]}}`;
 	} else if (isTypescriptNode(input)) {
-		let title = "escapedText" in input ? (input as any).escapedText : undefined;
+		const title = "escapedText" in input ? (input as any).escapedText : undefined;
 		return `{NODE:${input.getSourceFile?.()?.fileName.match(".*/(.+)")?.[1]}${title != null ? `:${title}` : ""}:${input.pos}}`;
 	} else if (isTypescriptType(input)) {
 		if (checker == null) {
@@ -42,7 +43,7 @@ export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 		return stripTypescriptValues(Array.from(input), checker);
 	} else if (input instanceof Object) {
 		const obj: any = {};
-		for (let [key, value] of Object.entries(input)) {
+		for (const [key, value] of Object.entries(input)) {
 			const strippedValue = stripTypescriptValues(value, checker);
 			if (strippedValue !== undefined && (!Array.isArray(strippedValue) || strippedValue.length > 0)) {
 				obj[key] = strippedValue;

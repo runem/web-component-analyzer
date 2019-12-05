@@ -15,7 +15,7 @@ export interface Context {
  * @param node
  * @param context
  */
-export function resolveNodeValue(node: Node | undefined, context: Context): { value: any; node: Node } | undefined {
+export function resolveNodeValue(node: Node | undefined, context: Context): { value: unknown; node: Node } | undefined {
 	if (node == null) return undefined;
 
 	const { ts, checker } = context;
@@ -30,7 +30,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	} else if (ts.isNumericLiteral(node)) {
 		return { value: Number(node.text), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
-		const object: any = {};
+		const object: Record<string, unknown> = {};
 
 		for (const prop of node.properties) {
 			if (ts.isPropertyAssignment(prop)) {
@@ -39,7 +39,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 
 				// Resolve the "value
 				const resolvedValue = resolveNodeValue(prop.initializer, { ...context, depth });
-				if (resolvedValue != null) {
+				if (resolvedValue != null && typeof name === "string") {
 					object[name] = resolvedValue.value;
 				}
 			}

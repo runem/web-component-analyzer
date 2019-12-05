@@ -50,7 +50,7 @@ export function parseCliArguments(args: string[]): CliArguments {
  * Transform a string to a primitive type.
  * @param value
  */
-function transformValue(value: any): string | boolean | number {
+function transformValue(value: string | boolean | number): string | boolean | number {
 	if (typeof value === "boolean") {
 		return value;
 	} else if (!isNaN(Number(value))) {
@@ -76,6 +76,7 @@ function transformKey(key: string): string {
  * @param key
  * @param value
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function assignValue(obj: any, key: string, value: any) {
 	// The key could be "nested.key"
 	const keys = transformKey(key).split(".");

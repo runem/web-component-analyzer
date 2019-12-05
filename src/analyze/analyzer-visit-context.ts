@@ -11,6 +11,6 @@ export interface AnalyzerVisitContext {
 	emitContinue?(): void;
 	cache: {
 		featureCollection: WeakMap<Node, ComponentFeatureCollection>;
-		general: Map<any, any>;
+		general: Map<unknown, unknown>;
 	};
 }

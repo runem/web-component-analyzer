@@ -21,7 +21,7 @@ export function getTypeHintFromMethod(method: ComponentMethod, checker: TypeChec
 	for (const parameterJsDocTag of method.jsDoc?.tags?.filter(tag => tag.tag === "param") || []) {
 		const parsed = parameterJsDocTag.parsed();
 		if (parsed.type != null) {
-			signature = signature.replace(new RegExp(`${parsed.name}(.*?:\\s*)any\\[?\]?`), `${parsed.name}$1${parsed.type}`);
+			signature = signature.replace(new RegExp(`${parsed.name}(.*?:\\s*)any\\[?]?`), `${parsed.name}$1${parsed.type}`);
 		}
 	}
 
