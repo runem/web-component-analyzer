@@ -6,6 +6,5 @@ export interface ComponentDefinition {
 	tagNameNodes: Set<Node>;
 
 	tagName: string;
-	fromLib: boolean;
 	declaration: () => ComponentDeclaration;
 }

@@ -19,6 +19,11 @@ import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPr
 export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
 	const { ts } = context;
 
+	// Never pick up members not declared directly on the declaration node being traversed
+	if (node.parent !== context.declarationNode) {
+		return undefined;
+	}
+
 	// static get properties() { return { myProp: {type: String} } }
 	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
 		const name = node.name.getText();

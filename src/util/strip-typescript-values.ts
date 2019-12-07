@@ -18,6 +18,9 @@ function isSimpleType(value: any): value is SimpleType {
 	return value instanceof Object && "kind" in value && Object.values(SimpleTypeKind).includes(value.kind);
 }
 
+/**
+ * Returns a representation of the input that can be JSON stringified
+ */
 export function stripTypescriptValues(input: any, checker: TypeChecker): any {
 	if (input == null) {
 		return input;

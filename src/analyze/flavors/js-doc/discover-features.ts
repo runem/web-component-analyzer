@@ -7,7 +7,7 @@ import { ComponentEvent } from "../../types/features/component-event";
 import { ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
 import { ComponentSlot } from "../../types/features/component-slot";
 import { getNodeSourceFileLang } from "../../util/ast-util";
-import { parseJsDocTypeExpression } from "../../util/js-doc-util";
+import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { ComponentMemberResult, FeatureDiscoverVisitMap } from "../analyzer-flavor";
 import { parseJsDocForNode } from "./parse-js-doc-for-node";
@@ -59,7 +59,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 						return {
 							name: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: lazy(() => (type && parseJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
 							typeHint: type,
 							node: tagNode
 						};
@@ -77,7 +77,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 				(tagNode, { name, type, description }) => {
 					// Grab the type from jsdoc and use it to find permitted tag names
 					// Example: @slot {"div"|"span"} myslot
-					const permittedTagNameType = type == null ? undefined : parseJsDocTypeExpression(type);
+					const permittedTagNameType = type == null ? undefined : parseSimpleJsDocTypeExpression(type);
 					const permittedTagNames: string[] | undefined = (() => {
 						if (permittedTagNameType == null) {
 							return undefined;
@@ -117,7 +117,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 							propName: name,
 							jsDoc: description != null ? { description } : undefined,
 							typeHint: type,
-							type: lazy(() => (type && parseJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
 							node: tagNode,
 							default: def,
 							visibility: undefined,
@@ -139,7 +139,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 							kind: "attribute",
 							attrName: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: lazy(() => (type && parseJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
 							typeHint: type,
 							node: tagNode,
 							default: def,

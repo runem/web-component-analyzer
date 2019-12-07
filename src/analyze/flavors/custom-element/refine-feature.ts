@@ -1,13 +1,13 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMethod } from "../../types/features/component-method";
-import { isNamePrivate } from "../../util/ast-util";
+import { isNamePrivate } from "../../util/text-util";
 import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
 
 export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	member: (memberResult: ComponentMemberResult, context: AnalyzerVisitContext): ComponentMemberResult | undefined => {
 		const { member } = memberResult;
 
-		// Outscope "statics" for now
+		// Outscope "static" members for now
 		if (member?.modifiers?.has("static")) {
 			return undefined;
 		}
@@ -29,10 +29,6 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	},
 	method: (method: ComponentMethod, context: AnalyzerVisitContext): ComponentMethod | undefined => {
 		// Outscope "statics" for now
-		/*if (method?.modifiers?.has("static")) {
-			return undefined;
-		}*/
-
 		if (method.visibility == null && isNamePrivate(method.name)) {
 			return {
 				...method,

@@ -6,8 +6,7 @@ import { lazy } from "../util/lazy";
 import { visitDefinitions } from "./flavor/visit-definitions";
 
 /**
- * Visits the source file and finds all component definitions as "customElements.define".
- * Next it dedupes definitions and parses the corresponding component declaration for each definition.
+ * Visits the source file and finds all component definitions using flavors
  * @param sourceFile
  * @param context
  * @param analyzeDeclaration
@@ -17,7 +16,7 @@ export function discoverDefinitions(
 	context: AnalyzerVisitContext,
 	analyzeDeclaration: (definition: ComponentDefinition, declarationNodes: Node[]) => ComponentDeclaration
 ): ComponentDefinition[] {
-	// Find all definitions in the file
+	// Find all definitions in the file using flavors
 	const definitionResults = analyzeAndDedupeDefinitions(sourceFile, context);
 
 	return Array.from(definitionResults.entries()).map(([definition, declarationSet]) => {
@@ -26,58 +25,36 @@ export function discoverDefinitions(
 			declaration: lazy(() => analyzeDeclaration(definition, Array.from(declarationSet)))
 		};
 	});
-	// Go through each component declaration parsing and merging declarations.
-	// We can have many definition results for the same tag name but with different declaration nodes.
-	/*const declarationMap = new Map<string, ComponentDeclaration>();
-	for (const definitionResult of definitionResults) {
-		// Merge the declarations if necessary
-		const tagName = definitionResult.tagName;
-		const existingDeclaration = declarationMap.get(tagName);
-
-		if (existingDeclaration != null) {
-			declarationMap.set(tagName, mergeDeclarations([declaration, existingDeclaration], context));
-		} else {
-			declarationMap.set(tagName, declaration);
-		}
-	}
-
-	// Only emit one definition per tag name.
-	return [...declarationMap.entries()].map(([tagName, declaration]) => {
-		// Find the first definition result with this tag name in the list.
-		const { definitionNode } = definitionResults.find(res => res.tagName === tagName)!;
-
-		return {
-			fromLib: isNodeInLibDom(definitionNode),
-			node: definitionNode,
-			tagName,
-			declaration: expandDeclarationFromJsDoc(declaration)
-		};
-	});*/
 }
 
 /**
- * Finds all component definitions in a file.
+ * Finds all component definitions in a file and combine multiple declarations with same tag name.
  * @param node
  * @param context
  */
 function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext): Map<ComponentDefinition, Set<Node>> {
 	if (node == null) return new Map();
 
+	// Keep a map of "tag name" ==> "definition"
 	const tagNameDefinitionMap: Map<string, ComponentDefinition> = new Map();
+
+	// Keep a map of "definition" ==> "declaration nodes"
 	const definitionToDeclarationMap: Map<ComponentDefinition, Set<Node>> = new Map();
 
+	// Discover definitions using flavors
 	visitDefinitions(node, context, results => {
 		// Definitions are unique by tag name and are merged when pointing to multiple declaration nodes.
 		// This is because multiple definitions can exist side by side for the same tag name (think global TagName type definition and customElements.define)
 		for (const result of results) {
+			// Find existing definition with the result name
 			let definition = tagNameDefinitionMap.get(result.tagName);
 
 			if (definition == null) {
+				// No existing definition was found, - create one!
 				definition = {
 					declaration: () => {
 						throw new Error("This is a noop function. It's expected that this function is overwritten.");
 					},
-					fromLib: false, // TODO
 					tagName: result.tagName,
 					tagNameNodes: new Set(),
 					identifierNodes: new Set()
@@ -85,14 +62,18 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 
 				tagNameDefinitionMap.set(result.tagName, definition);
 			}
+
+			// Add the discovered identifier node to the definition
 			if (result.identifierNode != null) {
 				definition.identifierNodes.add(result.identifierNode);
 			}
 
+			// Add the discovered tag name node to the definition
 			if (result.tagNameNode) {
 				definition.tagNameNodes.add(result.tagNameNode);
 			}
 
+			// Add the discovered declaration node to the map from "definition" ==> "declaration nodes"
 			let declarationNodeSet = definitionToDeclarationMap.get(definition);
 			if (declarationNodeSet == null) {
 				declarationNodeSet = new Set();
@@ -102,7 +83,7 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 		}
 	});
 
-	// Remove duplicates where "tagName" is equals to ""
+	// Remove duplicates where "tagName" is equals to "" if the declaration node is not used in any other definition.
 	const results = Array.from(definitionToDeclarationMap.entries());
 	for (const [definition, declarations] of results) {
 		if (definition.tagName === "") {
@@ -117,25 +98,4 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 	}
 
 	return definitionToDeclarationMap;
-
-	/*const definitionContext: ComponentAnalyzerVisitContext = {
-		...context,
-		emitDefinitionResult(result: DefinitionNodeResult): void {
-			// Definitions are unique by the declaration node and tag name combination.
-			// This is because multiple definitions can exist side by side for the same tag name (think global TagName type definition and customElements.define)
-			const existingResult = resultMap.find(r => r.declarationNode === result.declarationNode && r.tagName === result.tagName);
-
-			if (existingResult != null) {
-				// Never overwrite a definition if it has a declaration handler.
-				if (existingResult.declarationHandler != null) return;
-
-				// Merge the two definitions.
-				Object.assign(existingResult, result);
-			} else {
-				resultMap.push(result);
-			}
-		}
-	};
-
-	*/
 }

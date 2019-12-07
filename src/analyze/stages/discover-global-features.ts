@@ -6,9 +6,15 @@ import { refineFeature } from "./flavor/refine-feature";
 import { visitGlobalFeatures } from "./flavor/visit-global-features";
 import { mergeFeatures } from "./merge/merge-features";
 
+/**
+ * Discover all global features using flavors
+ * @param node
+ * @param context
+ */
 export function discoverGlobalFeatures(node: Node, context: AnalyzerVisitContext): ComponentFeatures {
 	const { collection, refineEmitMap } = prepareRefineEmitMap();
 
+	// Discovers global features using flavors
 	visitGlobalFeatures(node, context, {
 		event: event => refineFeature("event", event, context, refineEmitMap),
 		member: memberResult => refineFeature("member", memberResult, context, refineEmitMap),
@@ -18,6 +24,7 @@ export function discoverGlobalFeatures(node: Node, context: AnalyzerVisitContext
 		slot: slot => refineFeature("slot", slot, context, refineEmitMap)
 	});
 
+	// Merge features in the collection
 	const mergedFeatures = mergeFeatures(collection, context);
 
 	return {

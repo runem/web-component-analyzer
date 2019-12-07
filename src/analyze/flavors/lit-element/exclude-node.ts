@@ -7,6 +7,7 @@ export function excludeNode(node: Node, context: AnalyzerVisitContext): boolean 
 		return undefined;
 	}
 
+	// Exclude lit element related super classes if "analyzeLib" is false
 	const declName = getDeclarationName(node, context);
 	if (declName != null) {
 		return declName === "LitElement" || declName === "UpdatingElement";

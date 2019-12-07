@@ -14,10 +14,15 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 
 	// @customElement("my-element")
 	if (ts.isClassDeclaration(node)) {
+		// Visit all decorators on the class
 		for (const decorator of node.decorators || []) {
 			const callExpression = decorator.expression;
+
+			// Find "@customElement"
 			if (ts.isCallExpression(callExpression) && ts.isIdentifier(callExpression.expression)) {
 				const decoratorIdentifierName = callExpression.expression.escapedText;
+
+				// Decorators called "customElement"
 				if (decoratorIdentifierName === "customElement") {
 					// Resolve the value of the first argument. This is the tag name.
 					const unresolvedTagNameNode = callExpression.arguments[0];

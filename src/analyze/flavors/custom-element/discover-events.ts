@@ -5,6 +5,11 @@ import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
+/**
+ * Discovers events dispatched
+ * @param node
+ * @param context
+ */
 export function discoverEvents(node: Node, context: AnalyzerVisitContext): ComponentEvent[] | undefined {
 	const { ts, checker } = context;
 

@@ -13,9 +13,10 @@ import { DefinitionNodeResult } from "../analyzer-flavor";
 export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitContext): DefinitionNodeResult[] | undefined {
 	// customElements.define("my-element", MyElement)
 	if (ts.isCallExpression(node)) {
-		if (ts.isPropertyAccessExpression(node.expression)) {
+		if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.escapedText === "define") {
 			let leftExpression = node.expression.expression;
 
+			// Take "window.customElements" into account and return the "customElements" part
 			if (
 				ts.isPropertyAccessExpression(leftExpression) &&
 				ts.isIdentifier(leftExpression.expression) &&
@@ -24,45 +25,45 @@ export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitCo
 				leftExpression = leftExpression.name;
 			}
 
+			// Check if the "left expression" is called "customElements"
 			if (
 				ts.isIdentifier(leftExpression) &&
 				leftExpression.escapedText === "customElements" &&
 				node.expression.name != null &&
 				ts.isIdentifier(node.expression.name)
 			) {
-				// define("my-element", MyElement)
-				if (node.expression.name.escapedText === "define") {
-					const [unresolvedTagNameNode, identifierNode] = node.arguments;
+				// Find the arguments of: define("my-element", MyElement)
+				const [unresolvedTagNameNode, identifierNode] = node.arguments;
 
-					// ("my-element", MyElement)
-					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker, strict: true });
+				// Resolve the tag name node
+				// ("my-element", MyElement)
+				const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker, strict: true });
 
-					if (resolvedTagNameNode != null && identifierNode != null && typeof resolvedTagNameNode.value === "string") {
-						const tagName = resolvedTagNameNode.value;
-						const tagNameNode = resolvedTagNameNode.node;
+				if (resolvedTagNameNode != null && identifierNode != null && typeof resolvedTagNameNode.value === "string") {
+					const tagName = resolvedTagNameNode.value;
+					const tagNameNode = resolvedTagNameNode.node;
 
-						// (___, MyElement)
-						if (ts.isIdentifier(identifierNode)) {
-							const declarationNodes = resolveDeclarations(identifierNode, { checker, ts });
+					// (___, MyElement)
+					if (ts.isIdentifier(identifierNode)) {
+						const declarationNodes = resolveDeclarations(identifierNode, { checker, ts });
 
-							return declarationNodes.map(declarationNode => ({
+						return declarationNodes.map(declarationNode => ({
+							tagName,
+							identifierNode,
+							tagNameNode,
+							declarationNode
+						}));
+					}
+
+					// (___, class { ... })
+					else if (ts.isClassLike(identifierNode) || ts.isInterfaceDeclaration(identifierNode)) {
+						return [
+							{
 								tagName,
-								identifierNode,
 								tagNameNode,
-								declarationNode
-							}));
-						}
-
-						// (___, class { ... })
-						else if (ts.isClassLike(identifierNode) || ts.isInterfaceDeclaration(identifierNode)) {
-							return [
-								{
-									tagName,
-									tagNameNode,
-									declarationNode: identifierNode
-								}
-							];
-						}
+								declarationNode: identifierNode
+							}
+						];
 					}
 				}
 			}

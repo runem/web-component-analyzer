@@ -4,6 +4,14 @@ import { ComponentFeature } from "../../types/features/component-feature";
 
 export type RefineFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K]) => void };
 
+/**
+ * Uses flavors to refine a feature
+ * Flavors can also remove a feature
+ * @param featureKind
+ * @param value
+ * @param context
+ * @param emitMap
+ */
 export function refineFeature<FeatureKind extends ComponentFeature, ValueType = FeatureVisitReturnTypeMap[FeatureKind]>(
 	featureKind: FeatureKind,
 	value: ValueType | ValueType[],

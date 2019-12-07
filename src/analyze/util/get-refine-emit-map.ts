@@ -1,6 +1,9 @@
 import { ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { RefineFeatureEmitMap } from "../stages/flavor/refine-feature";
 
+/**
+ * Prepares a map of component features and a callback map that adds to the component feature map.
+ */
 export function prepareRefineEmitMap(): { collection: ComponentFeatureCollection; refineEmitMap: RefineFeatureEmitMap } {
 	const collection: ComponentFeatureCollection = {
 		memberResults: [],

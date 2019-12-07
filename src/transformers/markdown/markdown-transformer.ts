@@ -53,7 +53,7 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 				if (example.description != null) {
 					segmentText += `\n${example.description}\n`;
 				}
-				segmentText += `\n\`\`\`${example.lang}\n${example.code}\n\`\`\`\n`;
+				segmentText += `\n\`\`\`${example.lang || ""}\n${example.code}\n\`\`\`\n`;
 			}
 		}
 

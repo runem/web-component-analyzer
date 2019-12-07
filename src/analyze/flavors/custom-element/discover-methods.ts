@@ -1,10 +1,15 @@
 import { Node } from "typescript";
 import { ComponentMethod } from "../../types/features/component-method";
-import { getMemberVisibilityFromNode, isMemberAndWritable } from "../../util/ast-util";
+import { getMemberVisibilityFromNode, hasModifier } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
 
+/**
+ * Discovers methods
+ * @param node
+ * @param context
+ */
 export function discoverMethods(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMethod[] | undefined {
 	const { ts } = context;
 
@@ -14,7 +19,8 @@ export function discoverMethods(node: Node, context: AnalyzerDeclarationVisitCon
 	}
 
 	// class { myMethod () {} }
-	if ((ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) && isMemberAndWritable(node, ts)) {
+	if ((ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) && !hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+		// Outscope static methods for now
 		const name = node.name.getText();
 
 		if (isHTMLElementMethodName(name)) {

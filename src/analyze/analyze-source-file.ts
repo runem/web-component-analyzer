@@ -13,10 +13,12 @@ import { ComponentFeatures } from "./types/component-declaration";
  * @param options
  */
 export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptions): AnalyzerResult {
+	// Create a new context
 	const context = makeContextFromConfig(options);
 
-	// Parse all components
+	// Analyze all components
 	const componentDefinitions = discoverDefinitions(sourceFile, context, (definition, declarationNodes) =>
+		// The component declaration is analyzed lazily
 		analyzeComponentDeclaration(declarationNodes, {
 			...context,
 			getDeclaration: definition.declaration,
@@ -24,6 +26,7 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 		})
 	);
 
+	// Analyze global features
 	let globalFeatures: ComponentFeatures | undefined = undefined;
 	if (context.config.analyzeGlobalFeatures) {
 		globalFeatures = discoverGlobalFeatures(sourceFile, context);

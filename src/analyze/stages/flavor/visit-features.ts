@@ -7,12 +7,25 @@ import { executeFunctionsUntilMatch } from "../../util/execute-functions-until-m
 
 export type VisitFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K][]) => void };
 
+/**
+ * Uses flavors to find features for a node
+ * @param node
+ * @param context
+ * @param emitMap
+ */
 export function visitFeatures<ReturnType>(node: Node, context: AnalyzerVisitContext, emitMap: Partial<VisitFeatureEmitMap>) {
 	const visitMaps = arrayDefined(context.flavors.map(flavor => flavor.discoverFeatures));
 
 	visitFeaturesWithVisitMaps(node, context, visitMaps, emitMap);
 }
 
+/**
+ * Uses flavors to find features for a node, using a visit map
+ * @param node
+ * @param context
+ * @param visitMaps
+ * @param emitMap
+ */
 export function visitFeaturesWithVisitMaps<ReturnType>(
 	node: Node,
 	context: AnalyzerVisitContext,

@@ -3,6 +3,8 @@ export * from "./analyze-text";
 export * from "./analyze-html-element";
 export * from "./analyzer-visit-context";
 
+export { generateInheritanceTreeText } from "./util/inheritance-tree-util";
+
 export { VERSION } from "./constants";
 
 export * from "./types/analyzer-config";

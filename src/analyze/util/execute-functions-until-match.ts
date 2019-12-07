@@ -1,5 +1,12 @@
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 
+/**
+ * Executes functions in a function map until some function returns a non-undefined value.
+ * @param functionMaps
+ * @param keys
+ * @param arg
+ * @param context
+ */
 export function executeFunctionsUntilMatch<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	T extends Partial<Record<K, any>>,

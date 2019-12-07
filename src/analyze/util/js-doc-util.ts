@@ -6,6 +6,11 @@ import { JsDoc, JsDocTag, JsDocTagParsed } from "../types/js-doc";
 import { getLeadingCommentForNode } from "./ast-util";
 import { lazy } from "./lazy";
 
+/**
+ * Returns typescript jsdoc node for a given node
+ * @param node
+ * @param ts
+ */
 function getJSDocNode(node: Node, ts: typeof tsModule): JSDoc | undefined {
 	const parent = ts.getJSDocTags(node)?.[0]?.parent;
 	if (parent != null && ts.isJSDoc(parent)) {
@@ -45,6 +50,8 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 		return undefined;
 	}
 
+	// Parse all jsdoc tags
+	// Typescript removes some information after parsing jsdoc tags, so unfortunately we will have to parse.
 	return {
 		description: jsDocNode.comment == null ? undefined : String(jsDocNode.comment),
 		node: jsDocNode,
@@ -90,7 +97,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
  * See http://usejsdoc.org/tags-type.html
  * @param str
  */
-export function parseJsDocTypeExpression(str: string): SimpleType {
+export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	// Fail safe if "str" is somehow undefined
 	if (str == null) {
 		return { kind: SimpleTypeKind.ANY };
@@ -120,7 +127,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 	// Match
 	//  {  string  }
 	if (str.startsWith(" ") || str.endsWith(" ")) {
-		return parseJsDocTypeExpression(str.trim());
+		return parseSimpleJsDocTypeExpression(str.trim());
 	}
 
 	// Match:
@@ -129,7 +136,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 		return {
 			kind: SimpleTypeKind.UNION,
 			types: str.split("|").map(str => {
-				const childType = parseJsDocTypeExpression(str);
+				const childType = parseSimpleJsDocTypeExpression(str);
 
 				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
 				if (childType.kind === SimpleTypeKind.ANY) {
@@ -152,7 +159,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 
 	if (prefixMatch != null) {
 		const modifier = prefixMatch[1];
-		const type = parseJsDocTypeExpression(prefixMatch[3]);
+		const type = parseSimpleJsDocTypeExpression(prefixMatch[3]);
 		switch (modifier) {
 			case "?":
 				return {
@@ -178,7 +185,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 	//  {(......)}
 	const parenMatch = str.match(/^\((.+)\)$/);
 	if (parenMatch != null) {
-		return parseJsDocTypeExpression(parenMatch[1]);
+		return parseSimpleJsDocTypeExpression(parenMatch[1]);
 	}
 
 	// Match
@@ -197,7 +204,7 @@ export function parseJsDocTypeExpression(str: string): SimpleType {
 	if (arrayMatch != null) {
 		return {
 			kind: SimpleTypeKind.ARRAY,
-			type: parseJsDocTypeExpression(arrayMatch[1])
+			type: parseSimpleJsDocTypeExpression(arrayMatch[1])
 		};
 	}
 
@@ -217,7 +224,7 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 			const parsedJsDoc = parseJsDocTagString(typeJsDocTag.node?.getText() || "");
 
 			if (parsedJsDoc.type != null) {
-				return parseJsDocTypeExpression(parsedJsDoc.type);
+				return parseSimpleJsDocTypeExpression(parsedJsDoc.type);
 			}
 		}
 	}
@@ -315,17 +322,27 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 	return jsDocTag;
 }
 
+/**
+ * Parses an entire jsdoc string
+ * @param doc
+ */
 function parseJsDocString(doc: string): JsDoc | undefined {
+	// Prepare lines
 	const lines = doc.split("\n").map(line => line.trim());
 	let description = "";
 	let readDescription = true;
 	let currentTag = "";
 	const tags: JsDocTag[] = [];
 
+	/**
+	 * Parsing will add to "currentTag" and commit it when necessary
+	 */
 	const commitCurrentTag = () => {
 		if (currentTag.length > 0) {
 			const tagToCommit = currentTag;
+
 			const tagMatch = tagToCommit.match(/^@(\S+)\s*/);
+
 			if (tagMatch != null) {
 				tags.push({
 					parsed: lazy(() => parseJsDocTagString(tagToCommit)),
@@ -338,27 +355,38 @@ function parseJsDocString(doc: string): JsDoc | undefined {
 		}
 	};
 
+	// Parse all lines one by one
 	for (const line of lines) {
+		// Don't parse the last line ("*/")
 		if (line.match(/\*\//)) {
 			continue;
 		}
 
+		// Match a line like: "* @mytag description"
 		const tagCommentMatch = line.match(/(^\s*\*\s*)@\s*/);
 		if (tagCommentMatch != null) {
+			// Commit current tag (if any has been read). Now "currentTag" will reset.
 			commitCurrentTag();
+			// Add everything on the line from "@"
 			currentTag += line.substr(tagCommentMatch[1].length);
+			// We hit a jsdoc tag, so don't read description anymore
 			readDescription = false;
 		} else if (!readDescription) {
+			// If we are not reading the description, we are currently reading a multiline tag
 			const commentMatch = line.match(/^\s*\*\s*/);
 			if (commentMatch != null) {
 				currentTag += "\n" + line.substr(commentMatch[0].length);
 			}
 		} else {
+			// Read everything after "*" into the description if we are currently reading the description
+
+			// If we are on the first line, add everything after "/*"
 			const startLineMatch = line.match(/^\s*\/\*\*/);
 			if (startLineMatch != null) {
 				description += line.substr(startLineMatch[0].length);
 			}
 
+			// Add everything after "*" into the current description
 			const commentMatch = line.match(/^\s*\*\s*/);
 			if (commentMatch != null) {
 				if (description.length > 0) {
@@ -369,6 +397,7 @@ function parseJsDocString(doc: string): JsDoc | undefined {
 		}
 	}
 
+	// Commit a tag if we were currently parsing one
 	commitCurrentTag();
 
 	if (description.length === 0 && tags.length === 0) {

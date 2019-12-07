@@ -8,6 +8,9 @@ import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
 
+/**
+ * Discovers global feature defined on "HTMLElementEventMap" or "HTMLElement"
+ */
 export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = {
 	event: (node: Node, context: AnalyzerVisitContext): ComponentEvent[] | undefined => {
 		const { ts } = context;

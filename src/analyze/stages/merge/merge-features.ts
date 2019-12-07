@@ -4,6 +4,11 @@ import { ComponentFeatureCollection } from "../../flavors/analyzer-flavor";
 import { mergeCssParts, mergeCssProperties, mergeEvents, mergeMethods, mergeSlots } from "./merge-feature";
 import { mergeMemberResults } from "./merge-member-results";
 
+/**
+ * Merges all features in collections of features
+ * @param collection
+ * @param context
+ */
 export function mergeFeatures(
 	collection: ComponentFeatureCollection | ComponentFeatureCollection[],
 	context: AnalyzerVisitContext

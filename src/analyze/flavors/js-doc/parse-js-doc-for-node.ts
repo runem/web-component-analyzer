@@ -4,6 +4,13 @@ import { JsDocTagParsed } from "../../types/js-doc";
 import { getJsDoc } from "../../util/js-doc-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
+/**
+ * Transforms jsdoc tags to a T array using a "transform"
+ * @param node
+ * @param tagNames
+ * @param transform
+ * @param context
+ */
 export function parseJsDocForNode<T>(
 	node: Node,
 	tagNames: string[],

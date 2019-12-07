@@ -15,9 +15,16 @@ interface MergeMap {
 	attrs: Map<string, ComponentMemberAttribute>;
 }
 
+/**
+ * Merges multiple members based on priority
+ * @param memberResults
+ * @param context
+ */
 export function mergeMemberResults(memberResults: ComponentMemberResult[], context: AnalyzerVisitContext): ComponentMemberResult[] {
 	// Start merging by sorting member results from high to low priority.
 	// If two priorities are the same: prioritize the first found element
+	// From node 11, equal elements keep their order after sort, but not in node 10
+	// Therefore we use "indexOf" to return correct order if two priorities are equal
 	memberResults = [...memberResults].sort((a, b) => {
 		const vA = priorityValueMap[a.priority];
 		const vB = priorityValueMap[b.priority];
@@ -39,7 +46,9 @@ export function mergeMemberResults(memberResults: ComponentMemberResult[], conte
 		attrs: new Map<string, ComponentMemberAttribute>()
 	};
 
+	// Merge all members one by one adding them to the merge map
 	for (const { member } of memberResults) {
+		// Find a member that is similar to this member
 		const mergeableMember = findMemberToMerge(member, mergeMap);
 		let newMember: ComponentMember | undefined = undefined;
 
@@ -47,12 +56,15 @@ export function mergeMemberResults(memberResults: ComponentMemberResult[], conte
 			// No mergeable member was found, so just add this to the map
 			newMember = member;
 		} else {
+			// Remove "member" and "mergeableMember" from the merge map
+			// We are going to merge those and add the result to the merge map again
 			clearMergeMapWithMember(mergeableMember, mergeMap);
 			clearMergeMapWithMember(member, mergeMap);
 
 			newMember = mergeMemberIntoMember(mergeableMember, member, context.checker);
 		}
 
+		// Add to merge map
 		switch (newMember.kind) {
 			case "attribute":
 				mergeMap.attrs.set(newMember.attrName, newMember);
@@ -67,6 +79,11 @@ export function mergeMemberResults(memberResults: ComponentMemberResult[], conte
 	return [...mergeMap.props.values(), ...mergeMap.attrs.values()].map(member => ({ priority: "high", member }));
 }
 
+/**
+ * Removes a member from the merge map
+ * @param member
+ * @param mergeMap
+ */
 function clearMergeMapWithMember(member: ComponentMember, mergeMap: MergeMap) {
 	switch (member.kind) {
 		case "attribute":
@@ -81,6 +98,11 @@ function clearMergeMapWithMember(member: ComponentMember, mergeMap: MergeMap) {
 	}
 }
 
+/**
+ * Finds a mergeable member
+ * @param similar
+ * @param mergeMap
+ */
 function findMemberToMerge(similar: ComponentMember, mergeMap: MergeMap): ComponentMember | undefined {
 	const attrName = similar.attrName; //?.toLowerCase(); // (similar.kind === "attribute" && similar.attrName.toLowerCase()) || undefined;
 	const propName = similar.propName; /*?.toLowerCase()*/ //(similar.kind === "property" && similar.propName.toLowerCase()) || undefined;

@@ -3,6 +3,11 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { InheritanceTreeClause, InheritanceTreeNode } from "../../types/inheritance-tree";
 import { findChild, findChildren, resolveDeclarations } from "../../util/ast-util";
 
+/**
+ * Discovers inheritance from a node by looking at "extends" and "implements"
+ * @param node
+ * @param context
+ */
 export function discoverInheritance(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined {
 	if (node == null) return;
 
@@ -39,9 +44,18 @@ function resolveHeritageClauses(node: InterfaceDeclaration | ClassLikeDeclaratio
 	}
 }
 
+/**
+ * Resolves inheritance clauses from a node
+ * @param heritage
+ * @param node
+ * @param context
+ */
 function resolveHeritageClause(heritage: HeritageClause, node: Node, context: VisitContext): void {
 	const { ts } = context;
 
+	/**
+	 * Parse mixins
+	 */
 	if (ts.isCallExpression(node)) {
 		// Mixins
 		const { expression: identifier, arguments: args } = node;
@@ -61,6 +75,9 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 		// Example: class MyElement extends MyMixin(MyBase) --> MyMixin
 		if (identifier != null && ts.isIdentifier(identifier)) {
 			const resolved: InheritanceTreeNode[] = [];
+
+			// Resolve the mixin class (find out what is being returned from the mixin)
+			// And add the mixins as horizontal inheritance.
 			resolveMixin(heritage, identifier, {
 				...context,
 				emitHeritageNode: heritageNode => {
@@ -113,6 +130,11 @@ function resolveHeritageClause(heritage: HeritageClause, node: Node, context: Vi
 	return undefined;
 }
 
+/**
+ * Resolve a declaration by trying to find the real value
+ * @param node
+ * @param context
+ */
 function resolveDeclarationsDeep(node: Node, context: VisitContext): Node[] {
 	return resolveDeclarations(node, context).map(declaration => {
 		if (context.ts.isVariableDeclaration(declaration) && declaration.initializer != null) {
@@ -123,8 +145,16 @@ function resolveDeclarationsDeep(node: Node, context: VisitContext): Node[] {
 	});
 }
 
+/**
+ * Resolves a mixin by finding the actual thing being extended
+ * @param heritage
+ * @param node
+ * @param context
+ */
 function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContext & { resolvedIdentifiers: Set<unknown> }) {
 	const { ts } = context;
+
+	// First, resolve the node
 	const declarations = resolveDeclarations(node, context);
 
 	for (const declaration of declarations) {

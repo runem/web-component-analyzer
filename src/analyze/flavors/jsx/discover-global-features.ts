@@ -4,6 +4,9 @@ import { getJsDoc } from "../../util/js-doc-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
 
+/**
+ * Discovers members declared on "IntrinsicAttributes"
+ */
 export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = {
 	member: (node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined => {
 		const { ts } = context;

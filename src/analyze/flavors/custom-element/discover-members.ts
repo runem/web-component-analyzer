@@ -1,12 +1,18 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
-import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier, isNamePrivate } from "../../util/ast-util";
+import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
+import { isNamePrivate } from "../../util/text-util";
 import { relaxType } from "../../util/type-util";
 import { AnalyzerDeclarationVisitContext, ComponentMemberResult } from "../analyzer-flavor";
 
+/**
+ * Discovers members based on standard vanilla custom element rules
+ * @param node
+ * @param context
+ */
 export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
 	const { ts, checker } = context;
 
@@ -20,25 +26,27 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 		if (node.name.getText() === "observedAttributes" && node.body != null) {
 			const members: ComponentMemberResult[] = [];
 
-			const returnStatement = node.body.statements.find(statement => ts.isReturnStatement(statement)) as ReturnStatement | undefined;
-			if (returnStatement != null) {
-				if (returnStatement.expression != null && ts.isArrayLiteralExpression(returnStatement.expression)) {
-					// Emit an attribute for each string literal in the array.
-					for (const attrNameNode of returnStatement.expression.elements) {
-						const attrName = ts.isStringLiteralLike(attrNameNode) ? attrNameNode.text : undefined;
-						if (attrName == null) continue;
+			// Find either the first "return" statement or the first "array literal expression"
+			const arrayLiteralExpression =
+				(node.body.statements.find(statement => ts.isReturnStatement(statement)) as ReturnStatement | undefined)?.expression ??
+				node.body.statements.find(statement => ts.isArrayLiteralExpression(statement));
 
-						members.push({
-							priority: "medium",
-							member: {
-								node: attrNameNode,
-								jsDoc: getJsDoc(attrNameNode, ts),
-								kind: "attribute",
-								attrName,
-								type: undefined // () => ({ kind: SimpleTypeKind.ANY } as SimpleType),
-							}
-						});
-					}
+			if (arrayLiteralExpression != null && ts.isArrayLiteralExpression(arrayLiteralExpression)) {
+				// Emit an attribute for each string literal in the array.
+				for (const attrNameNode of arrayLiteralExpression.elements) {
+					const attrName = ts.isStringLiteralLike(attrNameNode) ? attrNameNode.text : undefined;
+					if (attrName == null) continue;
+
+					members.push({
+						priority: "medium",
+						member: {
+							node: attrNameNode,
+							jsDoc: getJsDoc(attrNameNode, ts),
+							kind: "attribute",
+							attrName,
+							type: undefined // () => ({ kind: SimpleTypeKind.ANY } as SimpleType),
+						}
+					});
 				}
 			}
 

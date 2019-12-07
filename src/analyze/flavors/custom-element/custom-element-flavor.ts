@@ -8,6 +8,9 @@ import { discoverMethods } from "./discover-methods";
 import { excludeNode } from "./exclude-node";
 import { refineFeature } from "./refine-feature";
 
+/**
+ * A flavor that discovers using standard custom element rules
+ */
 export class CustomElementFlavor implements AnalyzerFlavor {
 	excludeNode = excludeNode;
 

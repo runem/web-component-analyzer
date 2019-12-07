@@ -16,6 +16,13 @@ const transformerFunctionMap: Record<TransformerKind, TransformerFunction> = {
 	vscode: vscodeTransformer
 };
 
+/**
+ * Transforms the analyzer results into a string representation based on the transformer kind
+ * @param kind
+ * @param results
+ * @param program
+ * @param config
+ */
 export function transformAnalyzerResult(
 	kind: TransformerKind,
 	results: AnalyzerResult | AnalyzerResult[],

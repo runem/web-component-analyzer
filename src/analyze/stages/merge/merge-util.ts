@@ -1,6 +1,11 @@
 import { JsDoc } from "../../types/js-doc";
 import { ModifierKind } from "../../types/modifier-kind";
 
+/**
+ * Merges two jsdocs
+ * @param leftJsDoc
+ * @param rightJsDoc
+ */
 export function mergeJsDoc(leftJsDoc: JsDoc | undefined, rightJsDoc: JsDoc | undefined): JsDoc | undefined {
 	if (leftJsDoc == null) {
 		return rightJsDoc;
@@ -14,6 +19,11 @@ export function mergeJsDoc(leftJsDoc: JsDoc | undefined, rightJsDoc: JsDoc | und
 	};
 }
 
+/**
+ * Merges modifiers
+ * @param leftModifiers
+ * @param rightModifiers
+ */
 export function mergeModifiers(
 	leftModifiers: Set<ModifierKind> | undefined,
 	rightModifiers: Set<ModifierKind> | undefined
@@ -60,6 +70,12 @@ export function mergeNamedEntries<T>(entries: T[], getName: (entry: T) => string
 	return Array.from(merged.values());
 }
 
+/**
+ * Merges entries using a "merge" callback
+ * @param entries
+ * @param isMergeable
+ * @param merge
+ */
 export function mergeEntries<T>(entries: T[], isMergeable: (entry: T, merged: T) => boolean, merge: (left: T, right: T) => T): T[] {
 	let mergedEntries: T[] = [];
 

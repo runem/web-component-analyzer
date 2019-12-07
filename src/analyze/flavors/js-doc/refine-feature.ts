@@ -6,10 +6,13 @@ import { ComponentMethod } from "../../types/features/component-method";
 import { JsDoc } from "../../types/js-doc";
 import { ModifierKind } from "../../types/modifier-kind";
 import { VisibilityKind } from "../../types/visibility-kind";
-import { parseJsDocTypeExpression } from "../../util/js-doc-util";
+import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
 
+/**
+ * Refines features by looking at the jsdoc tags on the feature
+ */
 export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	event: (event: ComponentEvent) => {
 		if (event.jsDoc == null || event.jsDoc.tags == null) return event;
@@ -52,6 +55,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	}
 };
 
+/**
+ * Applies the "@deprecated" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocDeprecated<T extends { deprecated?: boolean | string }>(feature: T, jsDoc: JsDoc): T {
 	const deprecatedTag = jsDoc.tags?.find(tag => tag.tag === "deprecated");
 
@@ -65,6 +73,11 @@ function applyJsDocDeprecated<T extends { deprecated?: boolean | string }>(featu
 	return feature;
 }
 
+/**
+ * Applies the "@access" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocVisibility<T extends { visibility?: VisibilityKind }>(feature: T, jsDoc: JsDoc): T {
 	const visibilityTag = jsDoc.tags?.find(tag => ["public", "protected", "private", "package", "access"].includes(tag.tag)); // member + method
 
@@ -102,6 +115,11 @@ function applyJsDocVisibility<T extends { visibility?: VisibilityKind }>(feature
 	return feature;
 }
 
+/**
+ * Applies the "@attribute" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocAttribute<T extends { attrName?: string; propName?: string }>(feature: T, jsDoc: JsDoc): T {
 	const attributeTag = jsDoc.tags?.find(tag => ["attr", "attribute"].includes(tag.tag));
 
@@ -115,6 +133,11 @@ function applyJsDocAttribute<T extends { attrName?: string; propName?: string }>
 	return feature;
 }
 
+/**
+ * Applies the "@required" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocRequired<T extends { required?: boolean }>(feature: T, jsDoc: JsDoc): T {
 	const requiredTag = jsDoc.tags?.find(tag => ["optional", "required"].includes(tag.tag));
 
@@ -128,6 +151,11 @@ function applyJsDocRequired<T extends { required?: boolean }>(feature: T, jsDoc:
 	return feature;
 }
 
+/**
+ * Applies the "@readonly" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(feature: T, jsDoc: JsDoc): T {
 	const readonlyTag = jsDoc.tags?.find(tag => tag.tag === "readonly");
 
@@ -141,6 +169,11 @@ function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(featur
 	return feature;
 }
 
+/**
+ * Applies the "@default" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocDefault<T extends { default?: unknown }>(feature: T, jsDoc: JsDoc): T {
 	const defaultTag = jsDoc.tags?.find(tag => tag.tag === "default");
 
@@ -154,6 +187,11 @@ function applyJsDocDefault<T extends { default?: unknown }>(feature: T, jsDoc: J
 	return feature;
 }
 
+/**
+ * Applies the "@reflect" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocReflect<T extends { reflect?: ComponentMemberReflectKind }>(feature: T, jsDoc: JsDoc): T {
 	const reflectTag = jsDoc.tags?.find(tag => tag.tag === "reflect");
 
@@ -178,6 +216,11 @@ function applyJsDocReflect<T extends { reflect?: ComponentMemberReflectKind }>(f
 	return feature;
 }
 
+/**
+ * Applies the "@type" jsdoc tag
+ * @param feature
+ * @param jsDoc
+ */
 function applyJsDocType<T extends { typeHint?: unknown; type?: () => SimpleType | Type }>(feature: T, jsDoc: JsDoc): T {
 	const typeTag = jsDoc.tags?.find(tag => tag.tag === "type");
 
@@ -188,7 +231,7 @@ function applyJsDocType<T extends { typeHint?: unknown; type?: () => SimpleType 
 			return {
 				...feature,
 				typeHint: parsed.type,
-				type: feature.type ?? lazy(() => parseJsDocTypeExpression(parsed.type || ""))
+				type: feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || ""))
 			};
 		}
 	}

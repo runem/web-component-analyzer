@@ -36,6 +36,7 @@ export function analyzeText(
 	inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 	config: Partial<AnalyzerOptions> = {}
 ): { results: AnalyzerResult[]; checker: TypeChecker; program: Program } {
+	// Convert arguments into virtual source files
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
 			typeof file === "string"
@@ -52,6 +53,7 @@ export function analyzeText(
 		const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
 		return matchedFile == null ? undefined : matchedFile.text;
 	};
+
 	const fileExists = (fileName: string): boolean => {
 		return files.some(currentFile => currentFile.fileName === fileName);
 	};
@@ -105,9 +107,8 @@ export function analyzeText(
 
 	const checker = program.getTypeChecker();
 
+	// Analyze source files
 	const sourceFilesToAnalyze = arrayDefined(files.filter(file => file.analyze !== false).map(file => program.getSourceFile(file.fileName)));
-
-	// Analyze the entry file
 	const results = sourceFilesToAnalyze.map(sf => analyzeSourceFile(sf, { program, ...config }));
 
 	return { checker, program, results };

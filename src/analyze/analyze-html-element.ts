@@ -7,7 +7,7 @@ import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
 import { ComponentDeclaration } from "./types/component-declaration";
 
 /**
- * This function analyzes only the HTMLElement declaration found in "lib.dom.d.ts" source file provided by Typescript.
+ * This function only analyzes the HTMLElement declaration found in "lib.dom.d.ts" source file provided by Typescript.
  * @param program
  * @param ts
  */
