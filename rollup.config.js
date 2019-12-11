@@ -5,7 +5,7 @@ import replace from "rollup-plugin-replace";
 const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };
-const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type"];
+const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type", "yargs"];
 const plugins = [
 	replace({
 		VERSION: pkg.version,

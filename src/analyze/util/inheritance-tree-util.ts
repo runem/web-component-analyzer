@@ -45,21 +45,32 @@ function flattenInheritsClauseChain(inheritsClause: InheritanceTreeClause): Inhe
  * @param context
  */
 function visitInheritanceTreeClauseEmitText(inheritsClauses: InheritanceTreeClause[], { line, start }: Position, context: EmitTextContext): number {
-	const flattenedInheritsClauses = arrayFlat(inheritsClauses.map(inheritsClause => flattenInheritsClauseChain(inheritsClause))).filter(
-		clause => clause.resolved?.[0]?.node?.kind !== 155
+	const flattenedInheritsClauses = arrayFlat(inheritsClauses.map(inheritsClause => flattenInheritsClauseChain(inheritsClause))).filter(clause =>
+		clause.resolved?.some(n => n.node?.kind !== 155)
 	);
 
 	let i = 0;
 	for (const flatInheritsClause of flattenedInheritsClauses) {
 		let nextStart: number | undefined;
 
-		// Emit text for the resolved extends node recursively on next line
-		if (flatInheritsClause.resolved != null) {
-			// This function returns the maximum width of the line
-			nextStart = visitInheritanceTreeNodeEmitText(flatInheritsClause.resolved, { line: line + 1, start }, context);
-		}
-
 		const name = getNameFromInheritanceClause(flatInheritsClause);
+
+		console.log("NAME", { name, kind: flatInheritsClause.kind, idd: flatInheritsClause.resolved?.[0]?.node.kind });
+
+		if (name !== "{ HTMLElement }") {
+			// Emit text for the resolved extends node recursively on next line
+			if (flatInheritsClause.resolved != null) {
+				// This function returns the maximum width of the line
+				nextStart = visitInheritanceTreeNodeEmitText(
+					flatInheritsClause.resolved,
+					{
+						line: line + 1,
+						start
+					},
+					context
+				);
+			}
+		}
 
 		// Calculate padding
 		const isLast = i >= flattenedInheritsClauses.length - 1;

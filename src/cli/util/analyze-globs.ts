@@ -3,11 +3,11 @@ import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
 import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
-import { analyzeSourceFile } from "../analyze/analyze-source-file";
-import { AnalyzerResult } from "../analyze/types/analyzer-result";
-import { arrayFlat } from "../util/array-util";
-import { stripTypescriptValues } from "../util/strip-typescript-values";
-import { AnalyzerCliConfig } from "./analyzer-cli-config";
+import { analyzeSourceFile } from "../../analyze/analyze-source-file";
+import { AnalyzerResult } from "../../analyze/types/analyzer-result";
+import { arrayFlat } from "../../util/array-util";
+import { stripTypescriptValues } from "../../util/strip-typescript-values";
+import { AnalyzerCliConfig } from "../analyzer-cli-config";
 import { CompileResult, compileTypescript } from "./compile";
 
 const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
@@ -48,8 +48,8 @@ export async function analyzeGlobs(
 	}
 
 	// Callbacks
-	if (context.didExpandGlobs != null) context.didExpandGlobs(filePaths);
-	if (context.willAnalyzeFiles != null) context.willAnalyzeFiles(filePaths);
+	context.didExpandGlobs?.(filePaths);
+	context.willAnalyzeFiles?.(filePaths);
 
 	// Parse all the files with typescript
 	const { program, files, diagnostics } = compileTypescript(filePaths);
@@ -59,39 +59,31 @@ export async function analyzeGlobs(
 			console.dir(diagnostics.map(d => `${(d.file && d.file.fileName) || "unknown"}: ${flattenDiagnosticMessageText(d.messageText, "\n")}`));
 		}
 
-		if (context.didFindTypescriptDiagnostics != null) context.didFindTypescriptDiagnostics(diagnostics, { program });
+		context.didFindTypescriptDiagnostics?.(diagnostics, { program });
 	}
 
 	// Analyze each file with web component analyzer
 	const results: AnalyzerResult[] = [];
 	for (const file of files) {
 		// Analyze
-		const result = analyzeComponentsInFile(file, program, config);
+		const result = analyzeSourceFile(file, {
+			program,
+			debug: config.debug || false,
+			ts: config.ts,
+			config: config.analyze
+		});
 
 		if (config.debug) {
 			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 20 });
 		}
 
 		// Callback
-		if (context.emitAnalyzedFile != null) await context.emitAnalyzedFile(file, result, { program });
+		await context.emitAnalyzedFile?.(file, result, { program });
 
 		results.push(result);
 	}
 
 	return { program, diagnostics, files, results };
-}
-
-/**
- * Analyze all components in the typescript sourcefile using web component analyzer.
- * @param file
- * @param program
- * @param config
- */
-function analyzeComponentsInFile(file: SourceFile, program: Program, config: AnalyzerCliConfig): AnalyzerResult {
-	return analyzeSourceFile(file, {
-		program,
-		config: config.analyze
-	});
 }
 
 /**
@@ -110,17 +102,20 @@ async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig):
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
 					if (dirExists) {
-						return fastGlob([...(config.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
-							absolute: true,
-							followSymbolicLinks: false
-						});
+						return fastGlob(
+							[...(config.analyze?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)],
+							{
+								absolute: true,
+								followSymbolicLinks: false
+							}
+						);
 					}
 				} catch (e) {
 					// the glob wasn't a directory
 				}
 
 				// Return the result of globbing
-				return fastGlob([...(config.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
+				return fastGlob([...(config.analyze?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
 					absolute: true,
 					followSymbolicLinks: false
 				});

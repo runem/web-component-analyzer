@@ -39,7 +39,7 @@ export const jsonTransformer: TransformerFunction = (results: AnalyzerResult[], 
 	const tags = definitions.map(d => definitionToHtmlDataTag(d, checker, config));
 
 	const htmlData: HtmlData = {
-		version: 2,
+		version: "experiment",
 		tags
 	};
 

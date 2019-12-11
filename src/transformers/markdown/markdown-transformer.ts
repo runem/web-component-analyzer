@@ -37,11 +37,11 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 		// Add component jsdoc comment to the output
 		if (declaration.jsDoc?.description != null) segmentText += `\n${declaration.jsDoc?.description}\n`;
 
-		// Add mixins
-		const mixins = getMixinsForInheritanceTree(declaration.inheritanceTree);
+		// Add mixins (don't include mixins prefixed with _)
+		const mixins = Array.from(getMixinsForInheritanceTree(declaration.inheritanceTree).values()).filter(mixin => !mixin.startsWith("_"));
 
-		if (mixins.size > 0) {
-			segmentText += `\n**Mixins:** ${Array.from(mixins).join(", ")}\n`;
+		if (mixins.length > 0) {
+			segmentText += `\n**Mixins:** ${mixins.join(", ")}\n`;
 		}
 
 		// Add examples

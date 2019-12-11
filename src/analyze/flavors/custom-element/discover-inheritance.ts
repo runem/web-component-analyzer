@@ -192,7 +192,13 @@ function resolveMixin(heritage: HeritageClause, node: Node, context: VisitContex
 
 				context.resolvedIdentifiers.add(identifier.text);
 
-				resolveMixin(heritage, identifier, context);
+				//resolveMixin(heritage, identifier, context);
+				resolveMixin(heritage, identifier, {
+					...context,
+					emitHeritageNode: n => {
+						resolveHeritageClause(heritage, n.identifier || n.node, context);
+					}
+				});
 			});
 		}
 	}

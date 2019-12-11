@@ -58,7 +58,7 @@ export interface HtmlDataTag {
 }
 
 export interface HtmlDataV2 {
-	version: 2;
+	version: string;
 	tags?: HtmlDataTag[];
 	valueSets?: HtmlDataValueSet[];
 

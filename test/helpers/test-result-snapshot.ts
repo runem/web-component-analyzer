@@ -2,7 +2,7 @@ import test, { ExecutionContext, ImplementationResult } from "ava";
 import { Program } from "typescript";
 import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
 import { getExtendsForInheritanceTree, getMixinsForInheritanceTree } from "../../src/analyze/util/inheritance-tree-util";
-import { analyzeGlobs } from "../../src/cli/analyze-globs";
+import { analyzeGlobs } from "../../src/cli/util/analyze-globs";
 import { arrayFlat } from "../../src/util/array-util";
 import { stripTypescriptValues } from "../../src/util/strip-typescript-values";
 

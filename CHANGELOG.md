@@ -31,6 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 - Getter are now also analyzed, making it possible to emit `readonly` properties.
 - Support for the `@readonly` jsdoc tag
 - Support `@param` and `@returns` jsdoc tags
+- Add new flag to the CLI called `--outFiles`. This flag can take special values such as {dir}, {tagname} and {filename}. Read `--help` to learn more.
+- Add new flag to the CLI called `--dry` to test the analyzer without writing files.
 
 ### Removed
 
