@@ -55,8 +55,6 @@ function visitInheritanceTreeClauseEmitText(inheritsClauses: InheritanceTreeClau
 
 		const name = getNameFromInheritanceClause(flatInheritsClause);
 
-		console.log("NAME", { name, kind: flatInheritsClause.kind, idd: flatInheritsClause.resolved?.[0]?.node.kind });
-
 		if (name !== "{ HTMLElement }") {
 			// Emit text for the resolved extends node recursively on next line
 			if (flatInheritsClause.resolved != null) {
