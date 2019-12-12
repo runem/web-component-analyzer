@@ -10,7 +10,7 @@ import { arrayFlat } from "../../util/array-util";
 import { AnalyzerCliConfig } from "../analyzer-cli-config";
 import { CliCommand } from "../cli-command";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../util/analyze-globs";
-import { CommandError } from "../util/command-error";
+import { makeCliError } from "../util/cli-error";
 import { ensureDirSync } from "../util/file-util";
 
 /**
@@ -37,7 +37,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 	const context: AnalyzeGlobsContext = {
 		didExpandGlobs(filePaths: string[]): void {
 			if (filePaths.length === 0) {
-				throw new CommandError(`Couldn't find any files to analyze.`);
+				throw makeCliError(`Couldn't find any files to analyze.`);
 			}
 		},
 		willAnalyzeFiles(filePaths: string[]): void {

@@ -2,6 +2,7 @@
 import * as yargs from "yargs";
 import { analyzeCliCommand } from "./analyze/analyze-cli-command";
 import { AnalyzerCliConfig } from "./analyzer-cli-config";
+import { isCliError } from "./util/cli-error";
 
 /**
  * The main function of the cli.
@@ -13,7 +14,15 @@ export async function cli() {
 			command: ["analyze [glob..]", "$0"],
 			describe: "Analyses components and emits results in a specified format.",
 			handler: async argv => {
-				await analyzeCliCommand(argv);
+				try {
+					await analyzeCliCommand(argv);
+				} catch (e) {
+					if (isCliError(e)) {
+						console.log(e.message);
+					} else {
+						throw e;
+					}
+				}
 			}
 		})
 		.example(`$ $0 analyze`, "")
