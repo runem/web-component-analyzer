@@ -68,7 +68,9 @@ function parsePropertyDecorator(
 		const attrName = getLitAttributeName(propName, litConfig, context);
 
 		// Find the default value for this property
-		const def = "initializer" in node && node.initializer != null ? resolveNodeValue(node.initializer, context)?.value : undefined;
+		const initializer = "initializer" in node ? node.initializer : undefined;
+		const resolvedDefaultValue = initializer != null ? resolveNodeValue(initializer, context) : undefined;
+		const def = resolvedDefaultValue != null ? resolvedDefaultValue.value : initializer?.getText();
 
 		// Find our if the property/attribute is required
 		//const required = ("initializer" in node && isPropertyRequired(node, context.checker)) || undefined;
@@ -90,7 +92,7 @@ function parsePropertyDecorator(
 						return inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
 					}),
 					node,
-					default: def !== undefined ? def : litConfig.default,
+					default: def,
 					required,
 					jsDoc,
 					meta: litConfig,

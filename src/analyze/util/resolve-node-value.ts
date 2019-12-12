@@ -115,5 +115,13 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 		}
 	}
 
+	// [1, 2]
+	else if (ts.isArrayLiteralExpression(node)) {
+		return {
+			node,
+			value: node.elements.map(el => resolveNodeValue(el, { ...context, depth })?.value)
+		};
+	}
+
 	return undefined;
 }

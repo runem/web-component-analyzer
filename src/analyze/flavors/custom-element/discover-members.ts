@@ -60,7 +60,8 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
 			// Find default value based on initializer
-			const def = "initializer" in node && node.initializer != null ? resolveNodeValue(initializer, context)?.value : undefined;
+			const resolvedDefaultValue = initializer != null ? resolveNodeValue(initializer, context) : undefined;
+			const def = resolvedDefaultValue != null ? resolvedDefaultValue.value : initializer?.getText();
 
 			return [
 				{
@@ -121,13 +122,16 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 					if (left.expression.kind === ts.SyntaxKind.ThisKeyword) {
 						const propName = left.name.getText();
 
+						const resolvedInitializer = resolveNodeValue(right, context);
+						const def = resolvedInitializer != null ? resolvedInitializer.value : undefined; //right.getText();
+
 						members.push({
 							priority: "low",
 							member: {
 								node,
 								kind: "property",
 								propName,
-								default: resolveNodeValue(right, context)?.value,
+								default: def,
 								type: () => relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
 								jsDoc: getJsDoc(assignment.parent, ts),
 								visibility: isNamePrivate(propName) ? "private" : undefined

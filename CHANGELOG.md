@@ -48,3 +48,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 - Improved support for `@type` jsdoc ([#67](https://github.com/runem/web-component-analyzer/issues/67))
 - Improved jsdoc tag parsing. Default notation like `@attr {string} [my-attr=123]` is now supported
 - Using an object literal as `default` value no longer truncates to the first letter ([#102](https://github.com/runem/web-component-analyzer/issues/102))
+- Fixed problems with some default values ([#130](https://github.com/runem/web-component-analyzer/issues/130))
