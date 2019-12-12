@@ -43,7 +43,7 @@ export async function analyzeGlobs(
 	// Expand the globs
 	const filePaths = await expandGlobs(globs, config);
 
-	if (config.debug) {
+	if (config.verbose) {
 		console.log(filePaths);
 	}
 
@@ -55,7 +55,7 @@ export async function analyzeGlobs(
 	const { program, files, diagnostics } = compileTypescript(filePaths);
 
 	if (diagnostics.length > 0) {
-		if (config.debug) {
+		if (config.verbose) {
 			console.dir(diagnostics.map(d => `${(d.file && d.file.fileName) || "unknown"}: ${flattenDiagnosticMessageText(d.messageText, "\n")}`));
 		}
 
@@ -68,12 +68,12 @@ export async function analyzeGlobs(
 		// Analyze
 		const result = analyzeSourceFile(file, {
 			program,
-			debug: config.debug || false,
+			verbose: config.verbose || false,
 			ts: config.ts,
 			config: config.analyze
 		});
 
-		if (config.debug) {
+		if (config.verbose) {
 			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 20 });
 		}
 

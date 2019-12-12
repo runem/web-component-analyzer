@@ -63,7 +63,7 @@ o {tagname}: The element's tag name.`,
 			boolean: true,
 			alias: "d"
 		})
-		.option("debug", {
+		.option("verbose", {
 			boolean: true,
 			hidden: true
 		})

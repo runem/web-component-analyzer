@@ -7,7 +7,7 @@ export interface AnalyzerCliConfig {
 	glob?: string[];
 
 	dry?: boolean;
-	debug?: boolean;
+	verbose?: boolean;
 	outFile?: string;
 	outFiles?: string;
 	outDir?: string;
