@@ -28,10 +28,10 @@ export function makeContextFromConfig(options: AnalyzerOptions): AnalyzerVisitCo
 			general: new Map()
 		},
 		config: {
-			analyzeLibDom: false,
-			excludedDeclarationNames: [],
-			features: ALL_COMPONENT_FEATURES,
-			...(options.config || {})
+			...options.config,
+			analyzeLibDom: options.config?.analyzeLibDom ?? false,
+			excludedDeclarationNames: options.config?.excludedDeclarationNames ?? [],
+			features: options.config?.features ?? ALL_COMPONENT_FEATURES
 		}
 	};
 }

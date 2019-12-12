@@ -71,7 +71,8 @@ export async function analyzeGlobs(
 			verbose: config.verbose || false,
 			ts: config.ts,
 			config: {
-				features: config.features
+				features: config.features,
+				analyzeGlobalFeatures: config.analyzeGlobalFeatures
 			}
 		});
 

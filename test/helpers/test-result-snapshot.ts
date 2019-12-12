@@ -14,9 +14,7 @@ function testResult(
 	test(testName, async t => {
 		const { results, program } = await analyzeGlobs(globs, {
 			discoverLibraryFiles: true,
-			analyze: {
-				analyzeGlobalFeatures: true
-			}
+			analyzeGlobalFeatures: true
 		});
 
 		const nonEmptyResults = results.filter(result => result.componentDefinitions.length > 0);
