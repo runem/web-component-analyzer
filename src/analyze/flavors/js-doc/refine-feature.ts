@@ -17,6 +17,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	event: (event: ComponentEvent) => {
 		if (event.jsDoc == null || event.jsDoc.tags == null) return event;
 
+		// Check if the feature has "@ignore" jsdoc tag
+		if (hasIgnoreJsDocTag(event.jsDoc)) {
+			return undefined;
+		}
+
 		return [applyJsDocDeprecated, applyJsDocVisibility, applyJsDocType].reduce(
 			(event, applyFunc) => (applyFunc as Function)(event, event.jsDoc),
 			event
@@ -24,6 +29,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	},
 	method: (method: ComponentMethod) => {
 		if (method.jsDoc == null || method.jsDoc.tags == null) return method;
+
+		// Check if the feature has "@ignore" jsdoc tag
+		if (hasIgnoreJsDocTag(method.jsDoc)) {
+			return undefined;
+		}
 
 		method = [applyJsDocDeprecated, applyJsDocVisibility].reduce((method, applyFunc) => (applyFunc as Function)(method, method.jsDoc), method);
 
@@ -34,7 +44,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 
 		// Return right away if the member doesn't have jsdoc
 		if (member.jsDoc == null || member.jsDoc.tags == null) return memberResult;
-		const jsDoc = member.jsDoc;
+
+		// Check if the feature has "@ignore" jsdoc tag
+		if (hasIgnoreJsDocTag(member.jsDoc)) {
+			return undefined;
+		}
 
 		const newMember = [
 			applyJsDocDeprecated,
@@ -45,7 +59,7 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 			applyJsDocReflect,
 			applyJsDocType,
 			applyJsDocModifiers
-		].reduce((member, applyFunc) => (applyFunc as Function)(member, jsDoc), member);
+		].reduce((member, applyFunc) => (applyFunc as Function)(member, member.jsDoc), member);
 
 		// only member
 		return {
@@ -237,4 +251,12 @@ function applyJsDocType<T extends { typeHint?: unknown; type?: () => SimpleType 
 	}
 
 	return feature;
+}
+
+/**
+ * Returns if jsdoc contains an ignore node
+ * @param jsDoc
+ */
+function hasIgnoreJsDocTag(jsDoc: JsDoc): boolean {
+	return jsDoc?.tags?.find(tag => tag.tag === "ignore") != null;
 }
