@@ -15,10 +15,8 @@ export interface AnalyzerCliConfig {
 	format?: TransformerKind;
 	visibility?: VisibilityKind;
 
-	analyze?: {
-		features?: ComponentFeature[];
-		discoverLibraryFiles?: boolean;
-	};
+	features?: ComponentFeature[];
+	discoverLibraryFiles?: boolean;
 
 	markdown?: {
 		titleLevel?: number;

@@ -41,10 +41,10 @@ export async function cli() {
 			string: true
 		})
 		.option("outFiles", {
-			describe: `Emit output to multiple files. Available substitutions:
-o {dir}: The directory of the component.
-o {filename}: The filename (without ext) of the component.
-o {tagname}: The element's tag name.`,
+			describe: `Emit output to multiple files using a pattern. Available substitutions:
+o {dir}: The directory of the component
+o {filename}: The filename (without ext) of the component
+o {tagname}: The element's tag name`,
 			nargs: 1,
 			string: true
 		})
@@ -54,12 +54,12 @@ o {tagname}: The element's tag name.`,
 			nargs: 1,
 			alias: "f"
 		})
-		.option("analyze.features", {
+		.option("features", {
 			describe: `Features to enable`,
 			array: true,
 			choices: ["member", "method", "cssproperty", "csspart", "event", "slot"]
 		})
-		.option("analyze.discoverLibraryFiles", {
+		.option("discoverLibraryFiles", {
 			boolean: true,
 			hidden: true
 		})

@@ -27,7 +27,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 		console.log(`  Please follow and contribute to the discussion at:`);
 		console.log(`  - https://github.com/webcomponents/custom-elements-json`);
 		console.log(`  - https://github.com/w3c/webcomponents/issues/776`);
-		console.log(`\n!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!`);
+		console.log(`!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!\n`);
 	}
 
 	// If no "out" is specified, output to console

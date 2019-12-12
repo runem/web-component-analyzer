@@ -70,7 +70,9 @@ export async function analyzeGlobs(
 			program,
 			verbose: config.verbose || false,
 			ts: config.ts,
-			config: config.analyze
+			config: {
+				features: config.features
+			}
 		});
 
 		if (config.verbose) {
@@ -102,20 +104,17 @@ async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig):
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
 					if (dirExists) {
-						return fastGlob(
-							[...(config.analyze?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)],
-							{
-								absolute: true,
-								followSymbolicLinks: false
-							}
-						);
+						return fastGlob([...(config?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
+							absolute: true,
+							followSymbolicLinks: false
+						});
 					}
 				} catch (e) {
 					// the glob wasn't a directory
 				}
 
 				// Return the result of globbing
-				return fastGlob([...(config.analyze?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
+				return fastGlob([...(config?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
 					absolute: true,
 					followSymbolicLinks: false
 				});

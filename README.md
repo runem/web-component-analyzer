@@ -31,13 +31,16 @@ In addition to [vanilla web components](https://developer.mozilla.org/en-US/docs
 $ npm install -g web-component-analyzer
 ```
 
+**or**
+
+<!-- prettier-ignore -->
+```bash
+$ npx web-component-analyzer src
+```
+
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#usage)
 
-## Analyze
-
-The analyze command analyses an optional `<input glob>` and emits the output to the console as default. When the `<input glob>` is omitted it will find all components excluding `node_modules`. The default format is `markdown`.
-
-<img src="https://user-images.githubusercontent.com/5372940/54445420-02fd9700-4745-11e9-9305-47d6ec3c6307.gif" />
+## ➤ Usage
 
 <!-- prettier-ignore -->
 ```bash
@@ -45,23 +48,33 @@ $ wca analyze
 $ wca analyze src --format markdown
 $ wca analyze "src/**/*.{js,ts}" --outDir components
 $ wca analyze my-element.js --outFile custom-elements.json
+$ wca analyze --outFiles {dir}/custom-element.json
 ```
+
+<img src="https://user-images.githubusercontent.com/5372940/54445420-02fd9700-4745-11e9-9305-47d6ec3c6307.gif" />
+
+The analyze command analyses an optional `<input glob>` and emits the output to the console as default. When the `<input glob>` is omitted it will find all components excluding `node_modules`. The default format is `markdown`.
 
 ### Options
 
+<!-- prettier-ignore -->
 | Option                      | Type                             | Description                                                                  |
 | --------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
 | `--format <format>`         | `markdown` \| `json` \| `vscode` | Specify output format. Default is `markdown`.                                |
-| `--outFile <path>`          | `file path`                      | Concatenate and emit output to a single file.                                |
 | `--outDir <path>`           | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
+| `--outFile <path>`          | `file path`                      | Concatenate and emit output to a single file.                                |
+| `--outFiles <path>`         | `file path with pattern`         | Emit output to multiple files using a pattern. Available substitutions:<br>**{dir}**: The directory of the component<br>**{filename}**: The filename (without ext) of the component<br>**{tagname}**: The element's tag name |
 | `--visibility <visibility>` | `public | protected | private`   | The mininmum member visibility to output. Default is `public`.               |
+| `--features <features>` | `member | method | cssproperty | csspart | event | slot`   | Choose specific features to output. Multiple features are given seperated by a space. All features are enabled as default.<br>**Example**: `--features member slot event`               |
+| `--dry`                     | `boolean`                        | Don't write any files  |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#api)
 
-## Output Formats
+## ➤ Output Formats
 
 ### json
 
+<!-- prettier-ignore -->
 ```bash
 wca analyze src --format json --outFile custom-elements.json
 ```
@@ -75,6 +88,7 @@ This json format is for experimental and demo purposes, and is still being activ
 
 ### markdown
 
+<!-- prettier-ignore -->
 ```bash
 wca analyze src --format markdown --outDir readme
 ```
@@ -85,6 +99,7 @@ Web Component Analyzer can output markdown documentation of your web components.
 
 ### vscode
 
+<!-- prettier-ignore -->
 ```bash
 wca analyze src --format vscode --outFile vscode-html-custom-data.json
 ```
@@ -92,14 +107,6 @@ wca analyze src --format vscode --outFile vscode-html-custom-data.json
 VSCode supports a JSON format called [vscode custom data](https://github.com/microsoft/vscode-custom-data) for the built in html editor which is set using `html.customData` vscode setting. Web Component Analyzer can output this format.
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
-
-## ➤ How does this tool analyze my components?
-
-This tool extract information about your components by looking at your code directly and by looking at your JSDoc comments.
-
-**Code**: Web Component Analyzer supports multiple libraries. [Click here](https://github.com/runem/web-component-analyzer/blob/master/ANALYZE.md) for an overview of how each library is analyzed.
-
-**JSDoc**: Read next section to learn more about how JSDoc is analyzed.
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-to-document-your-components-using-jsdoc)
 
@@ -166,6 +173,7 @@ class MyElement extends HTMLElement {
 
 ### Overview of supported JSDoc tags
 
+<!-- prettier-ignore -->
 | JSDoc Tag                    | Description                                                                                                                                  |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
 | `@element`                   | Gives your component a tag name. This JSDoc tag is useful if your 'customElements.define` is called dynamically eg. using a custom function. |
@@ -178,9 +186,17 @@ class MyElement extends HTMLElement {
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#contributors)
 
+## ➤ How does this tool analyze my components?
+
+This tool extract information about your components by looking at your code directly and by looking at your JSDoc comments.
+
+**Code**: Web Component Analyzer supports multiple libraries. [Click here](https://github.com/runem/web-component-analyzer/blob/master/ANALYZE.md) for an overview of how each library is analyzed.
+
+**JSDoc**: Read next section to learn more about how JSDoc is analyzed.
+
 ## ➤ API
 
-You can also use the underlying functionality of this tool if you don't want to use the CLI. Web Component Analyzer analyzes Typescript source files, so you will have to include the Typescript parser. Here are some examples of how to use the API.
+You can also directly use the underlying functionality of this tool if you don't want to use the CLI. Web Component Analyzer analyzes Typescript source files, so you will have to include the Typescript parser. Here are some examples of how to use the API.
 
 ### Analyze Typescript source file
 
@@ -217,6 +233,7 @@ const { results, program } = analyzeText([
 
 ### Transform the result
 
+<!-- prettier-ignore -->
 ```javascript
 import { transformAnalyzerResult } from "web-component-analyzer";
 
