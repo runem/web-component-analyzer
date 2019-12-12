@@ -1,13 +1,6 @@
 {
 	"include": ["./src/**/*"],
 	"compilerOptions": {
-		"plugins": [
-			{
-				"name": "tslint-language-service",
-				"ignoreDefinitionFiles": true,
-				"alwaysShowRuleFailuresAsWarnings": false
-			}
-		],
 		"target": "es5",
 		"importHelpers": false,
 		"module": "commonjs",

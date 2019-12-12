@@ -2,17 +2,21 @@ import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
 import {
 	Declaration,
+	Identifier,
 	InterfaceDeclaration,
 	Node,
 	PropertyDeclaration,
 	PropertySignature,
 	SetAccessorDeclaration,
-	SourceFile,
-	StringLiteral,
 	Symbol,
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
+import { AnalyzerVisitContext } from "../analyzer-visit-context";
+import { ModifierKind } from "../types/modifier-kind";
+import { VisibilityKind } from "../types/visibility-kind";
+import { resolveNodeValue } from "./resolve-node-value";
+import { isNamePrivate } from "./text-util";
 
 export interface AstContext {
 	ts: typeof tsModule;
@@ -20,7 +24,7 @@ export interface AstContext {
 }
 
 /**
- * Resolves all relevant declarations of a specific node. Defaults to "interfaces and classes".
+ * Resolves all relevant declarations of a specific node.
  * @param node
  * @param context
  */
@@ -50,31 +54,36 @@ export function resolveDeclarations(node: Node, context: { checker: TypeChecker;
 	}
 }
 
-function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
-	return (symbol.flags & ts.SymbolFlags.Alias) !== 0;
-}
-
 /**
- * Returns if a name is public (doesn't start with "_");
- * @param name
+ * Returns if the symbol has "alias" flag
+ * @param symbol
+ * @param ts
  */
-export function isPropNamePublic(name: string): boolean {
-	return !name.startsWith("_") && !name.startsWith("#");
+export function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
+	return hasFlag(symbol.flags, ts.SymbolFlags.Alias);
 }
 
 /**
- * Returns if a node is public looking at its modifiers.
+ * Returns a set of modifiers on a node
  * @param node
  * @param ts
  */
-export function hasPublicSetter(node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration, ts: typeof tsModule): boolean {
-	return (
-		!hasModifier(node, ts.SyntaxKind.ProtectedKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.PrivateKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.ReadonlyKeyword) &&
-		!hasModifier(node, ts.SyntaxKind.StaticKeyword) &&
-		(ts.isIdentifier(node.name) ? isPropNamePublic(node.name.text) : true)
-	);
+export function getModifiersFromNode(node: Node, ts: typeof tsModule): Set<ModifierKind> | undefined {
+	const modifiers: Set<ModifierKind> = new Set();
+
+	if (hasModifier(node, ts.SyntaxKind.ReadonlyKeyword)) {
+		modifiers.add("readonly");
+	}
+
+	if (hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+		modifiers.add("static");
+	}
+
+	if (ts.isGetAccessor(node)) {
+		modifiers.add("readonly");
+	}
+
+	return modifiers.size > 0 ? modifiers : undefined;
 }
 
 /**
@@ -97,25 +106,59 @@ export function hasModifier(node: Node, modifierKind: SyntaxKind): boolean {
 }
 
 /**
+ * Returns the visibility of a node
+ */
+export function getMemberVisibilityFromNode(
+	node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration | Node,
+	ts: typeof tsModule
+): VisibilityKind | undefined {
+	if (hasModifier(node, ts.SyntaxKind.PrivateKeyword) || ("name" in node && ts.isIdentifier(node.name) && isNamePrivate(node.name.text))) {
+		return "private";
+	} else if (hasModifier(node, ts.SyntaxKind.ProtectedKeyword)) {
+		return "protected";
+	} else if (getNodeSourceFileLang(node) === "ts") {
+		// Only return "public" in typescript land
+		return "public";
+	}
+
+	return undefined;
+}
+
+/**
  * Returns all keys and corresponding interface/class declarations for keys in an interface.
  * @param interfaceDeclaration
- * @param ts
- * @param checker
+ * @param context
  */
-export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { ts, checker }: AstContext): [string, Declaration, StringLiteral][] {
-	const extensions: [string, Declaration, StringLiteral][] = [];
+export function getInterfaceKeys(
+	interfaceDeclaration: InterfaceDeclaration,
+	context: AstContext
+): { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] {
+	const extensions: { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] = [];
+
+	const { ts, checker } = context;
 
 	for (const member of interfaceDeclaration.members) {
 		// { "my-button": MyButton; }
-		if (ts.isPropertySignature(member) && ts.isStringLiteral(member.name) && member.type != null && ts.isTypeReferenceNode(member.type)) {
-			const key = member.name.text;
-			const typeName = member.type.typeName;
+		if (ts.isPropertySignature(member) && member.type != null) {
+			const resolvedKey = resolveNodeValue(member.name, context);
+			if (resolvedKey == null) {
+				continue;
+			}
 
-			// { ____: MyButton; }
-			const declaration = resolveDeclarations(typeName, { checker, ts })[0];
+			let declaration, identifier: Node | undefined;
+			if (ts.isTypeReferenceNode(member.type)) {
+				// { ____: MyButton; } or { ____: namespace.MyButton; }
+				identifier = member.type.typeName;
+				declaration = resolveDeclarations(identifier, { checker, ts })[0];
+			} else if (ts.isTypeLiteralNode(member.type)) {
+				identifier = undefined;
+				declaration = member.type;
+			} else {
+				continue;
+			}
 
 			if (declaration != null) {
-				extensions.push([key, declaration, member.name]);
+				extensions.push({ key: String(resolvedKey.value), keyNode: resolvedKey.node, declaration, identifier });
 			}
 		}
 	}
@@ -123,10 +166,7 @@ export function getInterfaceKeys(interfaceDeclaration: InterfaceDeclaration, { t
 	return extensions;
 }
 
-export function isNodeInLibDom(node: Node | SourceFile): boolean {
-	return ("fileName" in node ? node.fileName : node.getSourceFile().fileName).endsWith("/lib/lib.dom.d.ts");
-}
-
+// noinspection JSUnusedGlobalSymbols
 export function isPropertyRequired(property: PropertySignature | PropertyDeclaration, checker: TypeChecker): boolean {
 	const type = checker.getTypeAtLocation(property);
 
@@ -159,18 +199,14 @@ export function isPropertyRequired(property: PropertySignature | PropertyDeclara
 	return !isAssignableToSimpleTypeKind(type, [SimpleTypeKind.UNDEFINED, SimpleTypeKind.NULL], checker, { op: "or" });
 }
 
-export function isNodeInDeclarationFile(node: Node): boolean {
-	return node.getSourceFile().isDeclarationFile;
-}
-
 /**
  * Find a node recursively walking up the tree using parent nodes.
  * @param node
  * @param test
  */
-export function findParent<T = Node>(node: Node | undefined, test: (node: Node) => boolean): T | undefined {
+export function findParent<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T): T | undefined {
 	if (node == null) return;
-	return test(node) ? ((node as unknown) as T) : findParent(node.parent, test);
+	return test(node) ? node : findParent(node.parent, test);
 }
 
 /**
@@ -178,8 +214,89 @@ export function findParent<T = Node>(node: Node | undefined, test: (node: Node) 
  * @param node
  * @param test
  */
-export function findChild<T = Node>(node: Node | undefined, test: (node: Node) => node is T & Node): T | undefined {
+export function findChild<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T): T | undefined {
 	if (!node) return;
-	if (test(node)) return (node as unknown) as T;
+	if (test(node)) return node;
 	return node.forEachChild(child => findChild(child, test));
+}
+
+/**
+ * Find multiple children by walking down the children of the tree. Depth first search.
+ * @param node
+ * @param test
+ * @param emit
+ */
+export function findChildren<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T, emit: (node: T) => void) {
+	if (!node) return;
+	if (test(node)) {
+		emit(node);
+	}
+	node.forEachChild(child => findChildren(child, test, emit));
+}
+
+/**
+ * Returns the language of the node's source file
+ * @param node
+ */
+export function getNodeSourceFileLang(node: Node): "js" | "ts" {
+	return node.getSourceFile().fileName.endsWith("ts") ? "ts" : "js";
+}
+
+/**
+ * Returns if a node is in a declaration file
+ * @param node
+ */
+export function isNodeInDeclarationFile(node: Node): boolean {
+	return node.getSourceFile().isDeclarationFile;
+}
+
+/**
+ * Returns the leading comment for a given node
+ * @param node
+ * @param ts
+ */
+export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): string | undefined {
+	const sourceFileText = node.getSourceFile().text;
+
+	const leadingComments = ts.getLeadingCommentRanges(sourceFileText, node.pos);
+
+	if (leadingComments != null && leadingComments.length > 0) {
+		return sourceFileText.substring(leadingComments[0].pos, leadingComments[0].end);
+	}
+
+	return undefined;
+}
+
+/**
+ * Returns if the node is in a module declaration context and has a specific name.
+ * @param node
+ * @param context
+ * @param name
+ */
+export function isExtensionInterface(node: Node, context: AnalyzerVisitContext, name: string): node is InterfaceDeclaration {
+	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === name;
+}
+
+/**
+ * Returns the declaration name of a given node if possible.
+ * @param node
+ * @param context
+ */
+export function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
+	return getDeclarationIdentifier(node, context)?.text;
+}
+
+/**
+ * Returns the declaration name of a given node if possible.
+ * @param node
+ * @param context
+ */
+export function getDeclarationIdentifier(node: Node, context: AnalyzerVisitContext): Identifier | undefined {
+	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
+		return node.name;
+	} else if (context.ts.isVariableDeclaration(node) && context.ts.isIdentifier(node.name)) {
+		return node.name;
+	}
+
+	return undefined;
 }

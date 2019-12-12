@@ -1,35 +1,30 @@
-import { Node } from "typescript";
-import { ComponentMember } from "../../types/component-member";
-import { EventDeclaration } from "../../types/event-types";
-import {
-	ParseComponentFlavor,
-	ParseComponentMembersContext,
-	ParseVisitContextGlobalEvents,
-	VisitComponentDefinitionContext
-} from "../parse-component-flavor";
-import { parseDeclarationEvents } from "./parse-declaration-events";
-import { parseDeclarationMembers } from "./parse-declaration-members";
-import { visitComponentDefinitions } from "./visit-component-definitions";
-import { visitGlobalEvents } from "./visit-global-events";
+import { AnalyzerFlavor } from "../analyzer-flavor";
+import { discoverDefinitions } from "./discover-definitions";
+import { discoverEvents } from "./discover-events";
+import { discoverGlobalFeatures } from "./discover-global-features";
+import { discoverInheritance } from "./discover-inheritance";
+import { discoverMembers } from "./discover-members";
+import { discoverMethods } from "./discover-methods";
+import { excludeNode } from "./exclude-node";
+import { refineFeature } from "./refine-feature";
 
 /**
- * Custom element flavor.
- * This is the base flavor and affects many other flavors because it finds properties and definitions.
+ * A flavor that discovers using standard custom element rules
  */
-export class CustomElementFlavor implements ParseComponentFlavor {
-	visitComponentDefinitions(node: Node, context: VisitComponentDefinitionContext): void {
-		visitComponentDefinitions(node, context);
-	}
+export class CustomElementFlavor implements AnalyzerFlavor {
+	excludeNode = excludeNode;
 
-	parseDeclarationMembers(node: Node, context: ParseComponentMembersContext): ComponentMember[] | undefined {
-		return parseDeclarationMembers(node, context);
-	}
+	discoverDefinitions = discoverDefinitions;
 
-	parseDeclarationEvents(node: Node, context: ParseComponentMembersContext): EventDeclaration[] | undefined {
-		return parseDeclarationEvents(node, context);
-	}
+	discoverFeatures = {
+		member: discoverMembers,
+		event: discoverEvents,
+		method: discoverMethods
+	};
 
-	visitGlobalEvents(node: Node, context: ParseVisitContextGlobalEvents): void {
-		visitGlobalEvents(node, context);
-	}
+	discoverGlobalFeatures = discoverGlobalFeatures;
+
+	refineFeature = refineFeature;
+
+	discoverInheritance = discoverInheritance;
 }

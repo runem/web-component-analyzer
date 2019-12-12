@@ -6,6 +6,7 @@ export interface Context {
 	ts: typeof tsModule;
 	checker?: TypeChecker;
 	depth?: number;
+	strict?: boolean;
 }
 
 /**
@@ -14,7 +15,7 @@ export interface Context {
  * @param node
  * @param context
  */
-export function resolveNodeValue(node: Node | undefined, context: Context): string | number | boolean | undefined | null {
+export function resolveNodeValue(node: Node | undefined, context: Context): { value: unknown; node: Node } | undefined {
 	if (node == null) return undefined;
 
 	const { ts, checker } = context;
@@ -25,27 +26,37 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 	if (depth > 10) return undefined;
 
 	if (ts.isStringLiteralLike(node)) {
-		return node.text;
+		return { value: node.text, node };
 	} else if (ts.isNumericLiteral(node)) {
-		return Number(node.text);
+		return { value: Number(node.text), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
-		try {
-			// Try to parse object literal expressions as JSON by converting it to something parsable
-			const regex = /([a-zA-Z1-9]*?):/gm;
-			const json = node.getText().replace(regex, (fullGroup, groupMatch) => `"${groupMatch}":`);
-			return JSON.parse(json);
-		} catch {
-			// If something crashes it probably means that the object is more complex.
-			// Therefore do nothing
+		const object: Record<string, unknown> = {};
+
+		for (const prop of node.properties) {
+			if (ts.isPropertyAssignment(prop)) {
+				// Resolve the "key"
+				const name = resolveNodeValue(prop.name, { ...context, depth })?.value || prop.name.getText();
+
+				// Resolve the "value
+				const resolvedValue = resolveNodeValue(prop.initializer, { ...context, depth });
+				if (resolvedValue != null && typeof name === "string") {
+					object[name] = resolvedValue.value;
+				}
+			}
 		}
+
+		return {
+			value: object,
+			node
+		};
 	} else if (node.kind === ts.SyntaxKind.TrueKeyword) {
-		return true;
+		return { value: true, node };
 	} else if (node.kind === ts.SyntaxKind.FalseKeyword) {
-		return false;
+		return { value: false, node };
 	} else if (node.kind === ts.SyntaxKind.NullKeyword) {
-		return null;
+		return { value: null, node };
 	} else if (node.kind === ts.SyntaxKind.UndefinedKeyword) {
-		return undefined;
+		return { value: undefined, node };
 	}
 
 	// Resolve initializers for variable declarations
@@ -58,19 +69,31 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 		return resolveNodeValue(node.name, { ...context, depth });
 	}
 
+	// Resolve [expression] parts of {[expression]: "value"}
+	else if (ts.isComputedPropertyName(node)) {
+		return resolveNodeValue(node.expression, { ...context, depth });
+	}
+
 	// Resolve initializer value of enum members.
 	else if (ts.isEnumMember(node)) {
 		if (node.initializer != null) {
 			return resolveNodeValue(node.initializer, { ...context, depth });
 		} else {
-			return `${node.parent.name.text}.${node.name.getText()}`;
+			return { value: `${node.parent.name.text}.${node.name.getText()}`, node };
 		}
 	}
 
 	// Resolve values of variables.
 	else if (ts.isIdentifier(node) && checker != null) {
-		const declaration = resolveDeclarations(node, { checker, ts }).filter(decl => ts.isVariableDeclaration(decl));
-		return resolveNodeValue(declaration[0], { ...context, depth });
+		const declarations = resolveDeclarations(node, { checker, ts });
+		if (declarations.length > 0) {
+			const resolved = resolveNodeValue(declarations[0], { ...context, depth });
+			if (context.strict || resolved != null) {
+				return resolved;
+			}
+		}
+
+		return { value: node.getText(), node };
 	}
 
 	// Fallthrough
@@ -84,12 +107,20 @@ export function resolveNodeValue(node: Node | undefined, context: Context): stri
 	// static get is() {
 	//    return "my-element";
 	// }
-	else if (ts.isGetAccessor(node) && node.body != null) {
+	else if ((ts.isGetAccessor(node) || ts.isMethodDeclaration(node) || ts.isFunctionDeclaration(node)) && node.body != null) {
 		for (const stm of node.body.statements) {
 			if (ts.isReturnStatement(stm)) {
 				return resolveNodeValue(stm.expression, { ...context, depth });
 			}
 		}
+	}
+
+	// [1, 2]
+	else if (ts.isArrayLiteralExpression(node)) {
+		return {
+			node,
+			value: node.elements.map(el => resolveNodeValue(el, { ...context, depth })?.value)
+		};
 	}
 
 	return undefined;

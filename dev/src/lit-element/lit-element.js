@@ -22,4 +22,13 @@ export class MyElement extends LitElement {
 			}
 		};
 	}
+
+	update(changedProperties: Map<PropertyKey, unknown>): void {
+		super.update();
+	}
+
+	/**
+	 * @param {number} aaa - Beskrivelse
+	 */
+	superduper(aaa) {}
 }

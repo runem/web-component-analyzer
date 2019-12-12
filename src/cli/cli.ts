@@ -1,90 +1,88 @@
-import { VERSION } from "../analyze/constants";
-import { AnalyzeCliCommand } from "./cli-command/analyze/analyze-cli-command";
-import { CliCommand, CommandError } from "./cli-command/cli-command";
-import { DiagnoseCliCommand } from "./cli-command/diagnose/diagnose-cli-command";
-import { parseCliArguments } from "./parse-cli-arguments";
-import { WcaCliConfig } from "./wca-cli-arguments";
+/* eslint-disable no-console */
+import * as yargs from "yargs";
+import { analyzeCliCommand } from "./analyze/analyze-cli-command";
+import { AnalyzerCliConfig } from "./analyzer-cli-config";
+import { isCliError } from "./util/cli-error";
 
 /**
  * The main function of the cli.
  */
 export async function cli() {
-	// Available commands
-	const commands: CliCommand[] = [new AnalyzeCliCommand(), new DiagnoseCliCommand()];
-
-	// Parse arguments
-	const args = parseCliArguments(process.argv.slice(2));
-
-	if ("debug" in args && args.debug) {
-		console.dir(args);
-	}
-
-	// Find the chosen command
-	const commandId = args._[0];
-	let command = commands.find(c => c.id === commandId);
-
-	// Print "version"
-	if ("version" in args) {
-		console.log(VERSION);
-		process.exit();
-	}
-
-	// Print "invalid command"
-	if (command == null) {
-		if (commandId != null) {
-			console.log(`Invalid command '${commandId}'\n`);
-		}
-
-		await printGlobalHelp();
-	}
-
-	// Print "help"
-	else if ("help" in args && command.printHelp != null) {
-		await command.printHelp();
-	}
-
-	// Execute the command
-	else {
-		try {
-			// Run the command
-			const exitCode = await command.run(args as WcaCliConfig, ...args._.slice(1));
-			process.exit(exitCode || 0);
-		} catch (error) {
-			if (error instanceof CommandError) {
-				console.log("Error: ", error.message, "\n");
-				return process.exit(1);
-			} else {
-				console.log(`Fatal error: `, error.message);
-				throw error;
+	const argv = yargs
+		.usage("Usage: $0 <command> [glob..] [options]")
+		.command<AnalyzerCliConfig>({
+			command: ["analyze [glob..]", "$0"],
+			describe: "Analyses components and emits results in a specified format.",
+			handler: async argv => {
+				try {
+					await analyzeCliCommand(argv);
+				} catch (e) {
+					if (isCliError(e)) {
+						console.log(e.message);
+					} else {
+						throw e;
+					}
+				}
 			}
-		}
+		})
+		.example(`$ $0 analyze`, "")
+		.example(`$ $0 analyze src --format markdown`, "")
+		.example(`$ $0 analyze "src/**/*.{js,ts}" --outDir output`, "")
+		.example(`$ $0 analyze my-element.js --outFile custom-elements.json`, "")
+		.example(`$ $0 analyze --outFiles {dir}/custom-element.json`, "")
+		.option("outDir", {
+			describe: `Output to a directory where each file corresponds to a web component`,
+			nargs: 1,
+			string: true
+		})
+		.option("outFile", {
+			describe: `Concatenate and emit output to a single file`,
+			nargs: 1,
+			string: true
+		})
+		.option("outFiles", {
+			describe: `Emit output to multiple files using a pattern. Available substitutions:
+o {dir}: The directory of the component
+o {filename}: The filename (without ext) of the component
+o {tagname}: The element's tag name`,
+			nargs: 1,
+			string: true
+		})
+		.option("format", {
+			describe: `Specify output format`,
+			choices: ["md", "markdown", "json", "vscode"],
+			nargs: 1,
+			alias: "f"
+		})
+		.option("features", {
+			describe: `Features to enable`,
+			array: true,
+			choices: ["member", "method", "cssproperty", "csspart", "event", "slot"]
+		})
+		.option("discoverLibraryFiles", {
+			boolean: true,
+			hidden: true
+		})
+		.option("visibility", {
+			describe: `Minimum visibility`,
+			choices: ["private", "protected", "public"]
+		})
+		.option("dry", {
+			describe: `Don't write files`,
+			boolean: true,
+			alias: "d"
+		})
+		.option("verbose", {
+			boolean: true,
+			hidden: true
+		})
+		.alias("v", "version")
+		.help("h")
+		.wrap(110)
+		.strict()
+		.alias("h", "help").argv;
+
+	if (argv.debug) {
+		console.log("CLI options:", argv);
 	}
-}
-
-/**
- * Prints the global help text.
- */
-function printGlobalHelp() {
-	console.log(`Usage:
-  \$ wca <command> [<input-glob>] [options]
-
-Available Commands:
-  analyze\tAnalyses components and emits results in a specified format.
-  diagnose\tAnalyses components and emits diagnostics to the console.
-  
-For more info, run any command with the \`--help\` flag
-  $ wca analyze --help
-  $ wca diagnose --help
-  
-Examples:
-  $ wca analyze
-  $ wca analyze src --format markdown
-  $ wca analyze "src/**/*.{js,ts}" --outDir output
-  $ wca analyze my-element.js --outFile output.json
-  
-  $ wca diagnose
-  $ wca diagnose src
-  $ wca diagnose "./src/**/*.{js,ts}"
-  $ wca diagnose my-element.js
-`);
 }

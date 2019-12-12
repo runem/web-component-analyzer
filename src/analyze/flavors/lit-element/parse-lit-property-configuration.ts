@@ -1,25 +1,15 @@
-import { SimpleType, SimpleTypeKind } from "ts-simple-type";
+import { SimpleTypeKind } from "ts-simple-type";
 import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
+import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { FlavorVisitContext } from "../parse-component-flavor";
-
-export interface LitPropertyConfiguration {
-	type?: SimpleType | string;
-	attribute?: string | boolean;
-	node?: {
-		type?: Node;
-		attribute?: Node;
-	};
-	hasConverter?: boolean;
-	default?: object | string | number | boolean | null;
-}
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
 /**
  * Returns a potential lit element property decorator.
  * @param node
  * @param context
  */
-export function getLitElementPropertyDecorator(node: Node, context: FlavorVisitContext): undefined | CallExpression {
+export function getLitElementPropertyDecorator(node: Node, context: AnalyzerVisitContext): undefined | CallExpression {
 	if (node.decorators == null) return undefined;
 	const { ts } = context;
 
@@ -37,7 +27,7 @@ export function getLitElementPropertyDecorator(node: Node, context: FlavorVisitC
  * @param node
  * @param context
  */
-export function getLitElementPropertyDecoratorConfig(node: Node, context: FlavorVisitContext): undefined | LitPropertyConfiguration {
+export function getLitElementPropertyDecoratorConfig(node: Node, context: AnalyzerVisitContext): undefined | LitElementPropertyConfig {
 	const { ts } = context;
 
 	// Get reference to a possible "@property" decorator.
@@ -57,27 +47,24 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Flavor
  * @param node
  * @param context
  */
-export function getLitPropertyOptions(node: ObjectLiteralExpression, context: FlavorVisitContext): LitPropertyConfiguration {
+export function getLitPropertyOptions(node: ObjectLiteralExpression, context: AnalyzerVisitContext): LitElementPropertyConfig {
 	const { ts } = context;
 
 	// Build up the property configuration by looking at properties in the object literal expression
-	return node.properties.reduce(
-		(config, property) => {
-			if (!ts.isPropertyAssignment(property)) return config;
+	return node.properties.reduce((config, property) => {
+		if (!ts.isPropertyAssignment(property)) return config;
 
-			const initializer = property.initializer;
-			const kind = ts.isIdentifier(property.name) ? property.name.text : undefined;
+		const initializer = property.initializer;
+		const kind = ts.isIdentifier(property.name) ? property.name.text : undefined;
 
-			return parseLitPropertyOption({ kind, initializer, config }, context);
-		},
-		{} as LitPropertyConfiguration
-	);
+		return parseLitPropertyOption({ kind, initializer, config }, context);
+	}, {} as LitElementPropertyConfig);
 }
 
 export function parseLitPropertyOption(
-	{ kind, initializer, config }: { kind: string | undefined; initializer: Expression; config: LitPropertyConfiguration },
-	context: FlavorVisitContext
-): LitPropertyConfiguration {
+	{ kind, initializer, config }: { kind: string | undefined; initializer: Expression; config: LitElementPropertyConfig },
+	context: AnalyzerVisitContext
+): LitElementPropertyConfig {
 	const { ts, checker } = context;
 
 	// noinspection DuplicateCaseLabelJS
@@ -86,8 +73,12 @@ export function parseLitPropertyOption(
 			return { ...config, hasConverter: true };
 		}
 
+		case "reflect": {
+			return { ...config, reflect: resolveNodeValue(initializer, context)?.value === true };
+		}
+
 		case "attribute": {
-			let attribute: LitPropertyConfiguration["attribute"] | undefined;
+			let attribute: LitElementPropertyConfig["attribute"] | undefined;
 
 			if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
 				attribute = true;
@@ -108,7 +99,7 @@ export function parseLitPropertyOption(
 		}
 
 		case "type": {
-			let type: LitPropertyConfiguration["type"] | undefined;
+			let type: LitElementPropertyConfig["type"] | undefined;
 			const value = ts.isIdentifier(initializer) ? initializer.text : undefined;
 
 			switch (value) {
@@ -150,7 +141,7 @@ export function parseLitPropertyOption(
 
 		// Polymer specific field
 		case "value": {
-			return { ...config, default: resolveNodeValue(initializer, { ts, checker }) };
+			return { ...config, default: resolveNodeValue(initializer, { ts, checker })?.value };
 		}
 	}
 

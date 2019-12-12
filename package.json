@@ -1,20 +1,25 @@
 {
 	"name": "web-component-analyzer",
-	"version": "0.1.21",
+	"version": "1.0.0-next.18",
 	"description": "CLI that analyzes web components",
-	"main": "lib/index.cjs.js",
-	"typings": "lib/index.cjs.d.ts",
+	"main": "lib/cjs/api.js",
+	"module": "lib/esm/api.js",
+	"typings": "lib/cjs/api.d.ts",
+	"exports": {
+		".": "lbi/esm/index.js"
+	},
 	"files": [
 		"/lib/",
 		"cli.js"
 	],
 	"scripts": {
+		"clean": "rimraf lib",
 		"prepare": "npm run build",
-		"build": "rollup -c",
+		"build": "npm run clean & rollup -c",
 		"watch": "rollup -c --watch",
 		"pretest": "cd dev && npm install",
 		"test": "ava",
-		"lint": "",
+		"lint": "eslint '{test,src}/**/*.{ts,js}'",
 		"test:update": "ava --update-snapshots",
 		"test:watch": "ava --watch",
 		"prettier:check": "prettier --list-different \"src/**/*.{ts,tsx}\"",
@@ -45,19 +50,26 @@
 	"dependencies": {
 		"fast-glob": "^3.1.0",
 		"ts-simple-type": "~0.3.6",
-		"typescript": "^3.6.4"
+		"typescript": "^3.5.3",
+		"yargs": "^15.0.2"
 	},
 	"devDependencies": {
-		"@types/node": "^12.11.1",
-		"@wessberg/rollup-plugin-ts": "^1.1.72",
+		"@types/node": "^12.12.14",
+		"@types/yargs": "^13.0.3",
+		"@typescript-eslint/eslint-plugin": "^2.10.0",
+		"@typescript-eslint/parser": "^2.10.0",
+		"@wessberg/rollup-plugin-ts": "^1.1.83",
 		"ava": "^2.4.0",
-		"husky": "^3.0.9",
-		"prettier": "^1.18.2",
-		"pretty-quick": "^2.0.0",
-		"rollup": "^1.24.0",
+		"eslint": "^6.7.2",
+		"eslint-config-prettier": "^6.7.0",
+		"husky": "^3.1.0",
+		"prettier": "^1.19.1",
+		"pretty-quick": "^2.0.1",
+		"rimraf": "^3.0.0",
+		"rollup": "^1.27.5",
 		"rollup-plugin-node-resolve": "^5.2.0",
 		"rollup-plugin-replace": "^2.2.0",
-		"ts-node": "^8.4.1",
+		"ts-node": "^8.5.3",
 		"tslib": "^1.10.0"
 	},
 	"ava": {
@@ -66,12 +78,9 @@
 			"ts"
 		],
 		"require": [
-			"ts-node/register"
+			"ts-node/register/transpile-only"
 		],
 		"snapshotDir": "test/snapshots/results",
-		"files": [
-			"test/**/*.ts"
-		],
 		"helpers": [
 			"test/helpers/**/*"
 		],
@@ -85,6 +94,7 @@
 		}
 	},
 	"bin": {
-		"wca": "cli.js"
+		"wca": "cli.js",
+		"web-component-analyzer": "cli.js"
 	}
 }

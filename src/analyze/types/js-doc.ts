@@ -1,13 +1,23 @@
-import { JSDocTag, JSDoc } from "typescript";
+import { JSDoc, JSDocTag } from "typescript";
+
+export interface JsDocTagParsed {
+	tag: string;
+	name?: string;
+	type?: string;
+	optional?: boolean;
+	default?: string;
+	description?: string;
+}
 
 export interface JsDocTag {
-	node: JSDocTag;
-	tag: string;
+	node?: JSDocTag;
 	comment?: string;
+	tag: string;
+	parsed: () => JsDocTagParsed;
 }
 
 export interface JsDoc {
 	node?: JSDoc;
-	comment?: string;
+	description?: string;
 	tags?: JsDocTag[];
 }

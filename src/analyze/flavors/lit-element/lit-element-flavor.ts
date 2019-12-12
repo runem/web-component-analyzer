@@ -1,15 +1,20 @@
-import { Node } from "typescript";
-import { ComponentMember } from "../../types/component-member";
-import { ParseComponentFlavor, ParseComponentMembersContext, VisitComponentDefinitionContext } from "../parse-component-flavor";
-import { parseDeclarationMembers } from "./parse-declaration-members";
-import { visitComponentDefinitions } from "./visit-component-definitions";
+import { AnalyzerFlavor } from "../analyzer-flavor";
+import { discoverDefinitions } from "./discover-definitions";
+import { discoverMembers } from "./discover-members";
+import { excludeNode } from "./exclude-node";
+import { refineFeature } from "./refine-feature";
 
-export class LitElementFlavor implements ParseComponentFlavor {
-	visitComponentDefinitions(node: Node, context: VisitComponentDefinitionContext): void {
-		visitComponentDefinitions(node, context);
-	}
+/**
+ * Flavors for analyzing LitElement related features: https://lit-element.polymer-project.org/
+ */
+export class LitElementFlavor implements AnalyzerFlavor {
+	excludeNode = excludeNode;
 
-	parseDeclarationMembers(node: Node, context: ParseComponentMembersContext): ComponentMember[] | undefined {
-		return parseDeclarationMembers(node, context);
-	}
+	discoverDefinitions = discoverDefinitions;
+
+	discoverFeatures = {
+		member: discoverMembers
+	};
+
+	refineFeature = refineFeature;
 }

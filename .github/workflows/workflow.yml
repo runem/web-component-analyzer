@@ -18,7 +18,7 @@ jobs:
           node-version: 10.x
 
       - name: Cache
-        uses: actions/cache@preview
+        uses: actions/cache@v1
         id: cache
         with:
           path: node_modules
@@ -34,7 +34,7 @@ jobs:
         run: npm run lint
 
       - name: Cache Dev
-        uses: actions/cache@preview
+        uses: actions/cache@v1
         id: cache-dev
         with:
           path: ./dev/node_modules

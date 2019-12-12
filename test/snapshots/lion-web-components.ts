@@ -1,3 +1,3 @@
-import { testResultSnapshot } from "../helpers/source-file-test";
+import { testResultSnapshot } from "../helpers/test-result-snapshot";
 
 testResultSnapshot(["./dev/node_modules/@lion"]);

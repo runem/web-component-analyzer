@@ -1,9 +1,122 @@
 import test from "ava";
-import { analyzeComponentsInCode } from "../../helpers/analyze-text";
-import { getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
+import { analyzeText } from "../../../src/analyze/analyze-text";
+import { assertHasMembers, getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
+
+test("Handles circular inheritance", t => {
+	const {
+		results: [result]
+	} = analyzeText(`
+		class MyElement extends MyElement {
+		}
+		
+		/**
+		 * @element
+		 */
+		class MyElement extends MyBase {
+			static get observedAttributes() {
+				return ["a", "b"];
+			}
+		}
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b"]);
+});
+
+test("Handles circular inheritance using mixins", t => {
+	const {
+		results: [result]
+	} = analyzeText(`
+		const Mixin1 = (Base) => {
+			return class Mixin1 extends Mixin2(Base) {}
+		}
+		
+		const Mixin2 = (Base) => {
+			return class Mixin2 extends Mixin1(Base) {}
+		}
+		
+		/**
+		 * @element
+		 */
+		class MyElement extends Mixin1(Mixin2(HTMLElement)) {
+			static get observedAttributes() {
+				return ["a", "b"];
+			}
+		}
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b"]);
+});
+
+test("Handles mixin with variable declaration in TS declaration file", t => {
+	const {
+		results: [result]
+	} = analyzeText([
+		{
+			fileName: "main.js",
+			text: `
+		import { Mixin1 } from "./mixins";
+		/**
+		 * @element
+		 */
+		class MyElement extends Mixin1(HTMLElement) {
+			c: number;
+		}	
+		`
+		},
+		{
+			fileName: "mixins.d.ts",
+			text: `
+	declare type Constructor<T = object> = new (...args: any[]) => T;
+	export interface MyInterface {
+		a: number;
+	}
+
+	export declare abstract class MyClass {
+		b: number;
+	}
+	
+	export declare const Mixin1: <T extends Constructor<MyInterface & MyClass>>(base: T) => Constructor<MyClass & MyInterface> & T;
+
+		
+		`,
+			analyze: false
+		}
+	]);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "a"
+			},
+			{
+				kind: "property",
+				propName: "b"
+			},
+			{
+				kind: "property",
+				propName: "c"
+			}
+		],
+		t
+	);
+});
 
 test("Handles simple mixin", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -21,16 +134,55 @@ test("Handles simple mixin", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
+
 	const attributeNames = getAttributeNames(members);
 
-	t.deepEqual(attributeNames, ["c", "d", "a", "b"]);
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
+});
+
+test("Handles mixin with local variable subclass", t => {
+	const {
+		results: [result]
+	} = analyzeText(`
+		const ExtraMixin = (Base) => {
+			return class ExtraMixinClass extends Base {
+				static get observedAttributes() {
+					return ["d", ...super.observedAttributes];
+				}
+			}
+		}
+		
+		const MyMixin = (base) => {
+            const Base = ExtraMixin(base);
+
+            class MixinClass extends Base {
+				static get observedAttributes() {
+					return ["c", ...super.observedAttributes];
+				}
+            }
+        }
+
+		class MyElement extends MyMixin(HTMLElement) {
+			static get observedAttributes() {
+				return ["a", "b", ...super.observedAttributes];
+			}
+		}
+		
+		customElements.define("my-element", MyElement);
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const attributeNames = getAttributeNames(members);
+
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
 test("Handles 2 levels of mixins", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -56,16 +208,17 @@ test("Handles 2 levels of mixins", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
+
 	const attributeNames = getAttributeNames(members);
 
-	t.deepEqual(attributeNames, ["d", "c", "a"]);
+	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
 test("Handles mixins with properties", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		type Constructor<T = {}> = new (...args: any[]) => T;
 		const SomeMixin = <C extends Constructor<HTMLElement>>(Base: C) => {
 			class Mixin extends Base {
@@ -80,9 +233,7 @@ test("Handles mixins with properties", t => {
 		}
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
 	t.is(members.length, 2);
 	t.truthy(getComponentProp(members, "elementProperty"));
@@ -90,7 +241,9 @@ test("Handles mixins with properties", t => {
 });
 
 test("Handles mixins generated with factory functions", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		export const FieldCustomMixin = dedupeMixin(
 		superclass =>
 			class FieldCustomMixin extends superclass {
@@ -109,15 +262,15 @@ test("Handles mixins generated with factory functions", t => {
 		customElements.define("my-element", SomeElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
-	t.deepEqual(attributeNames, ["c", "d", "a", "b"]);
+	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
 test("Handles nested mixin extends", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -143,15 +296,15 @@ test("Handles nested mixin extends", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
-	t.deepEqual(attributeNames, ["d", "c", "a"]);
+	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
 test("Handles nested mixin wrapper functions", t => {
-	const { result } = analyzeComponentsInCode(`
+	const {
+		results: [result]
+	} = analyzeText(`
 
 	/* =============== Mixin 1 ===================== */
 	export function AtFormItemMixin<A>(base: A) {
@@ -218,10 +371,8 @@ test("Handles nested mixin wrapper functions", t => {
 	customElements.define("at-text-field", AtTextField);
 	 `);
 
-	const {
-		declaration: { members }
-	} = result.componentDefinitions[0];
+	const { members } = result.componentDefinitions[0]?.declaration();
 
 	const propertyNames = getPropertyNames(members);
-	t.deepEqual(propertyNames, ["f", "a", "b", "c", "d", "e", "g"]);
+	t.deepEqual(propertyNames, ["g", "f", "e", "d", "c", "b", "a"]);
 });

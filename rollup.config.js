@@ -1,10 +1,11 @@
 import ts from "@wessberg/rollup-plugin-ts";
-import replace from "rollup-plugin-replace";
 import resolve from "rollup-plugin-node-resolve";
+import replace from "rollup-plugin-replace";
 
+const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };
-const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type"];
+const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type", "yargs"];
 const plugins = [
 	replace({
 		VERSION: pkg.version,
@@ -16,11 +17,20 @@ const plugins = [
 
 export default [
 	{
-		input: "src/index.ts",
+		input: {
+			api: "src/api.ts",
+			cli: "src/cli.ts"
+		},
 		output: [
 			{
-				file: pkg.main,
-				format: "cjs"
+				dir: dirname(pkg.main),
+				format: "cjs",
+				chunkFileNames: "chunk-[hash].js"
+			},
+			{
+				dir: dirname(pkg.module),
+				format: "esm",
+				chunkFileNames: "chunk-[hash].js"
 			}
 		],
 		plugins,

@@ -4,7 +4,7 @@ import { customElement, LitElement, property } from "lit-element";
  * This is my element
  * @fires {string} change - This is a change event
  * @fires my-event - This event is awesome
- * @cssprop --main-bg-color - This css property is nice!
+ * @cssprop {Color} --main-bg-color - This css property is nice!
  * @cssprop --main-color - This css property is also nice!
  * @attr {on|off} switch - This is a great attribute
  * @attr {String} my-attr - This is an attribute defined from jsdoc
@@ -36,6 +36,7 @@ export class MyElement extends LitElement {
 			/**
 			 * This is a comment
 			 * @type {red|green}
+			 * @private
 			 */
 			myProp1: {
 				type: Object
@@ -46,6 +47,8 @@ export class MyElement extends LitElement {
 	static get observedAttributes() {
 		return ["attr1", "attr2"];
 	}
+
+	render() {}
 
 	@property({ type: String }) set value(str: string) {}
 }

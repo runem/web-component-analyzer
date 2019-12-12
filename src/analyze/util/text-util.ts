@@ -1,19 +1,9 @@
 /**
- * Joins an array with a custom final splitter
- * @param items
- * @param splitter
- * @param finalSplitter
- */
-export function joinArray(items: string[], splitter: string = ", ", finalSplitter: string = "or"): string {
-	return items.join(splitter).replace(/, ([^,]*)$/, ` ${finalSplitter} $1`);
-}
-
-/**
  * Converts from snake case to camel case
  * @param str
  */
 export function dashToCamelCase(str: string): string {
-	return str.replace(/(\-\w)/g, m => m[1].toUpperCase());
+	return str.replace(/(-\w)/g, m => m[1].toUpperCase());
 }
 
 /**
@@ -22,4 +12,12 @@ export function dashToCamelCase(str: string): string {
  */
 export function camelToDashCase(str: string): string {
 	return str.replace(/[A-Z]/g, m => `-${m.toLowerCase()}`);
+}
+
+/**
+ * Returns if a name is private (starts with "_" or "#");
+ * @param name	 * @param name
+ */
+export function isNamePrivate(name: string): boolean {
+	return name.startsWith("_") || name.startsWith("#");
 }
