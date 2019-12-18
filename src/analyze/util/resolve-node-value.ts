@@ -1,5 +1,5 @@
 import * as tsModule from "typescript";
-import { Node, TypeChecker } from "typescript";
+import { Node, SyntaxKind, TypeChecker } from "typescript";
 import { resolveDeclarations } from "./ast-util";
 
 export interface Context {
@@ -29,6 +29,10 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 		return { value: node.text, node };
 	} else if (ts.isNumericLiteral(node)) {
 		return { value: Number(node.text), node };
+	} else if (ts.isPrefixUnaryExpression(node)) {
+		const value = resolveNodeValue(node.operand, { ...context, depth })?.value as any;
+
+		return { value: applyPrefixUnaryOperatorToValue(value, node.operator, ts), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
 		const object: Record<string, unknown> = {};
 
@@ -124,4 +128,23 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	}
 
 	return undefined;
+}
+
+function applyPrefixUnaryOperatorToValue(value: any, operator: SyntaxKind, ts: typeof tsModule): any {
+	if (value == null) {
+		return undefined;
+	}
+
+	if (typeof value === "object") {
+		return value;
+	}
+
+	switch (operator) {
+		case ts.SyntaxKind.MinusToken:
+			return -value;
+		case ts.SyntaxKind.ExclamationToken:
+			return !value;
+		case ts.SyntaxKind.PlusToken:
+			return +value;
+	}
 }

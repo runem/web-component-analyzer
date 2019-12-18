@@ -24,6 +24,13 @@ export interface IVirtualSourceFile {
 
 export type VirtualSourceFile = IVirtualSourceFile | string;
 
+export interface AnalyzeTextResult {
+	results: AnalyzerResult[];
+	checker: TypeChecker;
+	program: Program;
+	analyzedSourceFiles: SourceFile[];
+}
+
 // "sys" can be undefined when running in the browser
 const system: typeof sys | undefined = sys;
 
@@ -32,10 +39,7 @@ const system: typeof sys | undefined = sys;
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
  * @param config
  */
-export function analyzeText(
-	inputFiles: VirtualSourceFile[] | VirtualSourceFile,
-	config: Partial<AnalyzerOptions> = {}
-): { results: AnalyzerResult[]; checker: TypeChecker; program: Program } {
+export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile, config: Partial<AnalyzerOptions> = {}): AnalyzeTextResult {
 	// Convert arguments into virtual source files
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
@@ -111,5 +115,5 @@ export function analyzeText(
 	const sourceFilesToAnalyze = arrayDefined(files.filter(file => file.analyze !== false).map(file => program.getSourceFile(file.fileName)));
 	const results = sourceFilesToAnalyze.map(sf => analyzeSourceFile(sf, { program, ...config }));
 
-	return { checker, program, results };
+	return { checker, program, results, analyzedSourceFiles: sourceFilesToAnalyze };
 }
