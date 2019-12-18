@@ -18,7 +18,7 @@ const f = {foo: "foo", bar: true};
 const g = a;
 	`);
 
-	const expectedResults: Record<string, any> = {
+	const expectedResults: Record<string, unknown> = {
 		a: [1, 2, 3, -1, -2, -3],
 		b: -1,
 		c: 1,

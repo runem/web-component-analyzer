@@ -30,8 +30,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	} else if (ts.isNumericLiteral(node)) {
 		return { value: Number(node.text), node };
 	} else if (ts.isPrefixUnaryExpression(node)) {
-		const value = resolveNodeValue(node.operand, { ...context, depth })?.value as any;
-
+		const value = resolveNodeValue(node.operand, { ...context, depth })?.value;
 		return { value: applyPrefixUnaryOperatorToValue(value, node.operator, ts), node };
 	} else if (ts.isObjectLiteralExpression(node)) {
 		const object: Record<string, unknown> = {};
@@ -130,12 +129,9 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	return undefined;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyPrefixUnaryOperatorToValue(value: any, operator: SyntaxKind, ts: typeof tsModule): any {
-	if (value == null) {
-		return undefined;
-	}
-
-	if (typeof value === "object") {
+	if (typeof value === "object" && value != null) {
 		return value;
 	}
 
@@ -147,4 +143,6 @@ function applyPrefixUnaryOperatorToValue(value: any, operator: SyntaxKind, ts: t
 		case ts.SyntaxKind.PlusToken:
 			return +value;
 	}
+
+	return value;
 }
