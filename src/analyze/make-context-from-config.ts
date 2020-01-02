@@ -30,6 +30,7 @@ export function makeContextFromConfig(options: AnalyzerOptions): AnalyzerVisitCo
 		config: {
 			...options.config,
 			analyzeLibDom: options.config?.analyzeLibDom ?? false,
+			analyzeLib: options.config?.analyzeLib ?? false,
 			excludedDeclarationNames: options.config?.excludedDeclarationNames ?? [],
 			features: options.config?.features ?? ALL_COMPONENT_FEATURES
 		}

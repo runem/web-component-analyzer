@@ -3,8 +3,10 @@ import { Node, Program } from "typescript";
 import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
 import { AnalyzerDeclarationVisitContext } from "./flavors/analyzer-flavor";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
+import { makeContextFromConfig } from "./make-context-from-config";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
 import { ComponentDeclaration } from "./types/component-declaration";
+import { ALL_COMPONENT_FEATURES } from "./types/features/component-feature";
 
 /**
  * This function only analyzes the HTMLElement declaration found in "lib.dom.d.ts" source file provided by Typescript.
@@ -12,8 +14,6 @@ import { ComponentDeclaration } from "./types/component-declaration";
  * @param ts
  */
 export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsModule): ComponentDeclaration | undefined {
-	const checker = program.getTypeChecker();
-
 	const endsWithLibDom = "lib.dom.d.ts";
 
 	const domLibSourceFile = program.getSourceFiles().find(sf => sf.fileName.endsWith(endsWithLibDom));
@@ -23,12 +23,15 @@ export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsMod
 	}
 
 	return visit(domLibSourceFile, {
-		checker,
-		ts,
-		flavors: [new CustomElementFlavor()],
-		config: {
-			analyzeLibDom: true
-		},
+		...makeContextFromConfig({
+			program,
+			ts,
+			flavors: [new CustomElementFlavor()],
+			config: {
+				analyzeLibDom: true,
+				features: ALL_COMPONENT_FEATURES
+			}
+		}),
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
 			general: new Map()
