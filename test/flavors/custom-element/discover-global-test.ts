@@ -14,7 +14,7 @@ test("Discovers global members on HTMLElement", t => {
 	declare global {
 	  interface HTMLElement {
 		"mdc-dialog-action": string;
-		"mdc-dialog-initial-focus": boolean;
+		myProp: boolean;
 	  }
 	}
 	 `
@@ -34,7 +34,7 @@ test("Discovers global members on HTMLElement", t => {
 			},
 			{
 				kind: "property",
-				propName: "mdc-dialog-initial-focus",
+				propName: "myProp",
 				type: () => ({ kind: SimpleTypeKind.BOOLEAN })
 			}
 		],
@@ -58,7 +58,7 @@ test("Discovers global events on HTMLElementEventMap and HTMLElement", t => {
 	  }
 	  interface HTMLElementEventMap {
         'change': CustomEvent;
-        }
+       }
 	}
 	 `
 		},

@@ -274,7 +274,7 @@ export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): strin
  * @param name
  */
 export function isExtensionInterface(node: Node, context: AnalyzerVisitContext, name: string): node is InterfaceDeclaration {
-	return context.ts.isInterfaceDeclaration(node) && context.ts.isModuleBlock(node.parent) && node.name.text === name;
+	return context.ts.isInterfaceDeclaration(node) /*&& context.ts.isModuleBlock(node.parent)*/ && node.name.text === name;
 }
 
 /**
