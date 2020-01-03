@@ -3,7 +3,6 @@ import { arrayDefined } from "../../../util/array-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { AnalyzerFlavor, FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
 import { ComponentFeature } from "../../types/features/component-feature";
-import { executeFunctionsUntilMatch } from "../../util/execute-functions-until-match";
 
 export type VisitFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K][]) => void };
 
@@ -33,13 +32,16 @@ export function visitFeaturesWithVisitMaps<ReturnType>(
 	emitMap: Partial<VisitFeatureEmitMap>
 ) {
 	for (const feature of context.config.features || []) {
-		const result = executeFunctionsUntilMatch(visitMaps, feature, node, context);
-
-		if (result != null) {
+		// Visit all features: always "continue"
+		for (const functionMap of visitMaps) {
+			const func = functionMap?.[feature];
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			emitMap[feature]?.(result.value as any);
+			const value = func?.(node, context as any);
 
-			if (!result.shouldContinue) return;
+			if (value != null) {
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				emitMap[feature]?.(value as any);
+			}
 		}
 	}
 

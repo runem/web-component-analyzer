@@ -12,6 +12,10 @@ test("Discovers global members on HTMLElement", t => {
 			fileName: "test.d.ts",
 			text: `
 	declare global {
+	  /**
+	   * @attr anAttr
+	   * @prop aProp
+	   */
 	  interface HTMLElement {
 		"mdc-dialog-action": string;
 		myProp: boolean;
@@ -36,6 +40,14 @@ test("Discovers global members on HTMLElement", t => {
 				kind: "property",
 				propName: "myProp",
 				type: () => ({ kind: SimpleTypeKind.BOOLEAN })
+			},
+			{
+				kind: "property",
+				propName: "aProp"
+			},
+			{
+				kind: "attribute",
+				attrName: "anAttr"
 			}
 		],
 		t,
