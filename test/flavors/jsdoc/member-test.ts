@@ -1,13 +1,13 @@
-import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("jsdoc: Discovers properties with @prop", t => {
+tsTest("jsdoc: Discovers properties with @prop", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @prop {String} [prop1=def] - This is a comment

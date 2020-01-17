@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("Correctly finds method declarations on a class", t => {
+tsTest("Correctly finds method declarations on a class", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 */
@@ -20,10 +20,10 @@ test("Correctly finds method declarations on a class", t => {
 	t.is(methods[0].name, "myMethod");
 });
 
-test("Doesn't pick up method declarations not on class declaration", t => {
+tsTest("Doesn't pick up method declarations not on class declaration", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 */

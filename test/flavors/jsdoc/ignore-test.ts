@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsDoc: Handles @ignore jsdoc tag", t => {
+tsTest("jsDoc: Handles @ignore jsdoc tag", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		/**
 		 * @element
 	     */

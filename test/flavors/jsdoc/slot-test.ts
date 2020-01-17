@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers slots with @slots", t => {
+tsTest("jsdoc: Discovers slots with @slots", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @slot myslot - This is a comment
@@ -20,10 +20,10 @@ test("jsdoc: Discovers slots with @slots", t => {
 	t.is(slots[0].jsDoc?.description, "This is a comment");
 });
 
-test("jsdoc: Discovers unnamed slots with @slots", t => {
+tsTest("jsdoc: Discovers unnamed slots with @slots", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @slot - This is a comment
@@ -40,10 +40,10 @@ test("jsdoc: Discovers unnamed slots with @slots", t => {
 	t.is(slots[0].jsDoc?.description, "This is a comment");
 });
 
-test("jsdoc: Discovers permitted tag names on @slot", t => {
+tsTest("jsdoc: Discovers permitted tag names on @slot", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @slot {"div"|"span"} myslot1

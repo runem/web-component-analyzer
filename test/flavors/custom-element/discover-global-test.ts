@@ -1,13 +1,13 @@
-import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Discovers global members on HTMLElement", t => {
+tsTest("Discovers global members on HTMLElement", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText(
+	} = analyzeTextWithCurrentTsModule(
 		{
 			fileName: "test.d.ts",
 			text: `
@@ -55,10 +55,10 @@ test("Discovers global members on HTMLElement", t => {
 	);
 });
 
-test("Discovers global events on HTMLElementEventMap and HTMLElement", t => {
+tsTest("Discovers global events on HTMLElementEventMap and HTMLElement", t => {
 	const {
 		results: [result]
-	} = analyzeText(
+	} = analyzeTextWithCurrentTsModule(
 		{
 			fileName: "test.d.ts",
 			text: `

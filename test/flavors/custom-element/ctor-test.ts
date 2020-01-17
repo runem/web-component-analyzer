@@ -1,13 +1,13 @@
-import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Property assignments in the constructor are picked up", t => {
+tsTest("Property assignments in the constructor are picked up", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		class MyElement extends HTMLElement {
@@ -116,11 +116,11 @@ test("Property assignments in the constructor are picked up", t => {
 	);
 });
 
-test("Property assignments in the constructor are correctly merged", t => {
+tsTest("Property assignments in the constructor are correctly merged", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 	    /**
@@ -170,11 +170,11 @@ test("Property assignments in the constructor are correctly merged", t => {
 	);
 });
 
-test("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
+tsTest("Property assignments in the constructor don't overwrite Typescript modifiers", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		class MyElement extends HTMLElement {

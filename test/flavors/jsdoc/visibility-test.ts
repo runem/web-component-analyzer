@@ -1,11 +1,11 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { getComponentProp } from "../../helpers/util";
 
-test("jsDoc: Handles visibility modifier on internal event", t => {
+tsTest("jsDoc: Handles visibility modifier on internal event", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		/**
 		 * @element
 	     */
@@ -27,10 +27,10 @@ test("jsDoc: Handles visibility modifier on internal event", t => {
 	t.is(event.visibility, "private");
 });
 
-test("jsDoc: Handles visibility modifier on constructor assignment", t => {
+tsTest("jsDoc: Handles visibility modifier on constructor assignment", t => {
 	const {
 		results: [result]
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		/**

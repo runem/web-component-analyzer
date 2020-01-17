@@ -1,13 +1,13 @@
-import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Readonly modifier is found", t => {
+tsTest("Readonly modifier is found", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		/**
@@ -35,11 +35,11 @@ test("Readonly modifier is found", t => {
 	);
 });
 
-test("Getter have readonly modifier", t => {
+tsTest("Getter have readonly modifier", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		/**
@@ -69,11 +69,11 @@ test("Getter have readonly modifier", t => {
 	);
 });
 
-test("Getter and setter become one property without readonly modifier", t => {
+tsTest("Getter and setter become one property without readonly modifier", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.js",
 		text: `
 		/**

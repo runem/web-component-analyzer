@@ -1,16 +1,6 @@
-import {
-	CompilerOptions,
-	createProgram,
-	createSourceFile,
-	getDefaultLibFileName,
-	ModuleKind,
-	Program,
-	ScriptKind,
-	ScriptTarget,
-	SourceFile,
-	sys,
-	TypeChecker
-} from "typescript";
+import * as tsModule from "typescript";
+import { CompilerOptions, Program, ScriptKind, ScriptTarget, SourceFile, System, TypeChecker } from "typescript";
+//import * as ts from "typescript";
 import { arrayDefined } from "../util/array-util";
 import { analyzeSourceFile } from "./analyze-source-file";
 import { AnalyzerOptions } from "./types/analyzer-options";
@@ -31,15 +21,17 @@ export interface AnalyzeTextResult {
 	analyzedSourceFiles: SourceFile[];
 }
 
-// "sys" can be undefined when running in the browser
-const system: typeof sys | undefined = sys;
-
 /**
  * Analyzes components in code
  * @param {IVirtualSourceFile[]|VirtualSourceFile} inputFiles
  * @param config
  */
 export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile, config: Partial<AnalyzerOptions> = {}): AnalyzeTextResult {
+	const ts = config.ts || tsModule;
+
+	// "sys" can be undefined when running in the browser
+	const system: System | undefined = ts.sys;
+
 	// Convert arguments into virtual source files
 	const files: IVirtualSourceFile[] = (Array.isArray(inputFiles) ? inputFiles : [inputFiles])
 		.map(file =>
@@ -63,13 +55,13 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 	};
 
 	const compilerOptions: CompilerOptions = {
-		module: ModuleKind.ESNext,
-		target: ScriptTarget.ESNext,
+		module: ts.ModuleKind.ESNext,
+		target: ts.ScriptTarget.ESNext,
 		allowJs: true,
 		sourceMap: false
 	};
 
-	const program = createProgram({
+	const program = ts.createProgram({
 		rootNames: files.map(file => file.fileName),
 		options: compilerOptions,
 		host: {
@@ -80,7 +72,7 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 				const sourceText = this.readFile(fileName);
 				if (sourceText == null) return undefined;
 
-				return createSourceFile(fileName, sourceText, languageVersion, true, fileName.endsWith(".js") ? ScriptKind.JS : ScriptKind.TS);
+				return ts.createSourceFile(fileName, sourceText, languageVersion, true, fileName.endsWith(".js") ? ScriptKind.JS : ScriptKind.TS);
 			},
 
 			getCurrentDirectory() {
@@ -92,7 +84,7 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 			},
 
 			getDefaultLibFileName(options: CompilerOptions): string {
-				return getDefaultLibFileName(options);
+				return ts.getDefaultLibFileName(options);
 			},
 
 			getCanonicalFileName(fileName: string): string {

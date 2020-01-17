@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers css parts with @csspart", t => {
+tsTest("jsdoc: Discovers css parts with @csspart", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @csspart thumb - This is a comment

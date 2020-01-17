@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers global features on HTMLElement", t => {
+tsTest("jsdoc: Discovers global features on HTMLElement", t => {
 	const {
 		results: [result]
-	} = analyzeText(
+	} = analyzeTextWithCurrentTsModule(
 		{
 			fileName: "test.d.ts",
 			text: `

@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers custom elements with @element", t => {
+tsTest("jsdoc: Discovers custom elements with @element", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element my-element
 	 */
@@ -16,10 +16,10 @@ test("jsdoc: Discovers custom elements with @element", t => {
 	t.is(result.componentDefinitions[0].tagName, "my-element");
 });
 
-test("jsdoc: Discovers custom elements with @element but without tag name", t => {
+tsTest("jsdoc: Discovers custom elements with @element but without tag name", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 */
@@ -31,10 +31,10 @@ test("jsdoc: Discovers custom elements with @element but without tag name", t =>
 	t.is(result.componentDefinitions[0].tagName, "");
 });
 
-test("jsdoc: Discovers custom elements with multiline @element", t => {
+tsTest("jsdoc: Discovers custom elements with multiline @element", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element my-element
 	 * \`This is a multiline element\`

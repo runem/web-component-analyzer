@@ -1,12 +1,12 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Handle Typescript visibility modifiers", t => {
+tsTest("Handle Typescript visibility modifiers", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 */
@@ -37,11 +37,11 @@ test("Handle Typescript visibility modifiers", t => {
 	);
 });
 
-test("Handle visibility for private '_' prefixed names", t => {
+tsTest("Handle visibility for private '_' prefixed names", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 */

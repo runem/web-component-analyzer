@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers css properties with @cssprop", t => {
+tsTest("jsdoc: Discovers css properties with @cssprop", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @cssprop --this-is-a-css-prop  - This is a comment
@@ -20,10 +20,10 @@ test("jsdoc: Discovers css properties with @cssprop", t => {
 	t.is(cssProperties[0].jsDoc!.description, "This is a comment");
 });
 
-test("jsdoc: Discovers css properties with @cssproperty", t => {
+tsTest("jsdoc: Discovers css properties with @cssproperty", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @cssproperty --this-is-a-css-prop  - This is a comment
@@ -39,10 +39,10 @@ test("jsdoc: Discovers css properties with @cssproperty", t => {
 	t.is(cssProperties[0].jsDoc?.description, "This is a comment");
 });
 
-test("jsdoc: Discovers css properties with @cssproperty and default", t => {
+tsTest("jsdoc: Discovers css properties with @cssproperty and default", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @cssproperty [--element-color=red] - This is a comment

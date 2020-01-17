@@ -1,10 +1,10 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("Discovers elements defined using customElements.define", t => {
+tsTest("Discovers elements defined using customElements.define", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -17,10 +17,10 @@ test("Discovers elements defined using customElements.define", t => {
 	t.is(componentDefinitions[0].tagName, "my-element");
 });
 
-test("Discovers elements defined using window.customElements.define", t => {
+tsTest("Discovers elements defined using window.customElements.define", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -33,10 +33,10 @@ test("Discovers elements defined using window.customElements.define", t => {
 	t.is(componentDefinitions[0].tagName, "my-element");
 });
 
-test("Discovers only one element defined using multiple customElements.define", t => {
+tsTest("Discovers only one element defined using multiple customElements.define", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
 		
@@ -58,10 +58,10 @@ test("Discovers only one element defined using multiple customElements.define", 
 	t.is(componentDefinitions[0].tagName, "my-element");
 });
 
-test("Does not discover elements defined using custom define function", t => {
+tsTest("Does not discover elements defined using custom define function", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		function define (tagName: string, elem: any) {}
 		
 		class MyElement extends HTMLElement {
@@ -75,10 +75,10 @@ test("Does not discover elements defined using custom define function", t => {
 	t.is(componentDefinitions.length, 0);
 });
 
-test("Discovers elements defined using customElements.define without string literal", t => {
+tsTest("Discovers elements defined using customElements.define without string literal", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 			static get tag() {
 				return "my-element";

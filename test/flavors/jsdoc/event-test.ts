@@ -1,11 +1,11 @@
-import test from "ava";
 import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 
-test("jsdoc: Discovers custom events with @fires", t => {
+tsTest("jsdoc: Discovers custom events with @fires", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @fires my-event - This is a comment
@@ -22,10 +22,10 @@ test("jsdoc: Discovers custom events with @fires", t => {
 	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, SimpleTypeKind.ANY));
 });
 
-test("jsdoc: Discovers the detail type of custom events with @fires", t => {
+tsTest("jsdoc: Discovers the detail type of custom events with @fires", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @fires {string} my-event

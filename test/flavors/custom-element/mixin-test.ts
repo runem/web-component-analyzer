@@ -1,11 +1,11 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers, getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
-test("Handles circular inheritance", t => {
+tsTest("Handles circular inheritance", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends MyElement {
 		}
 		
@@ -26,10 +26,10 @@ test("Handles circular inheritance", t => {
 	t.deepEqual(attributeNames, ["a", "b"]);
 });
 
-test("Handles circular inheritance using mixins", t => {
+tsTest("Handles circular inheritance using mixins", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		const Mixin1 = (Base) => {
 			return class Mixin1 extends Mixin2(Base) {}
 		}
@@ -55,10 +55,10 @@ test("Handles circular inheritance using mixins", t => {
 	t.deepEqual(attributeNames, ["a", "b"]);
 });
 
-test("Handles mixin with variable declaration in TS declaration file", t => {
+tsTest("Handles mixin with variable declaration in TS declaration file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "main.js",
 			text: `
@@ -113,10 +113,10 @@ test("Handles mixin with variable declaration in TS declaration file", t => {
 	);
 });
 
-test("Handles simple mixin", t => {
+tsTest("Handles simple mixin", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		const MyMixin = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -141,10 +141,10 @@ test("Handles simple mixin", t => {
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
-test("Handles mixin with local variable subclass", t => {
+tsTest("Handles mixin with local variable subclass", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		const ExtraMixin = (Base) => {
 			return class ExtraMixinClass extends Base {
 				static get observedAttributes() {
@@ -179,10 +179,10 @@ test("Handles mixin with local variable subclass", t => {
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
-test("Handles 2 levels of mixins", t => {
+tsTest("Handles 2 levels of mixins", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -215,10 +215,10 @@ test("Handles 2 levels of mixins", t => {
 	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
-test("Handles mixins with properties", t => {
+tsTest("Handles mixins with properties", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		type Constructor<T = {}> = new (...args: any[]) => T;
 		const SomeMixin = <C extends Constructor<HTMLElement>>(Base: C) => {
 			class Mixin extends Base {
@@ -240,10 +240,10 @@ test("Handles mixins with properties", t => {
 	t.truthy(getComponentProp(members, "mixinProperty"));
 });
 
-test("Handles mixins generated with factory functions", t => {
+tsTest("Handles mixins generated with factory functions", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		export const FieldCustomMixin = dedupeMixin(
 		superclass =>
 			class FieldCustomMixin extends superclass {
@@ -267,10 +267,10 @@ test("Handles mixins generated with factory functions", t => {
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
-test("Handles nested mixin extends", t => {
+tsTest("Handles nested mixin extends", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		const MyMixin1 = (Base) => {
 			return class Mixin extends Base {
 				static get observedAttributes() {
@@ -301,10 +301,10 @@ test("Handles nested mixin extends", t => {
 	t.deepEqual(attributeNames, ["a", "c", "d"]);
 });
 
-test("Handles nested mixin wrapper functions", t => {
+tsTest("Handles nested mixin wrapper functions", t => {
 	const {
 		results: [result]
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 
 	/* =============== Mixin 1 ===================== */
 	export function AtFormItemMixin<A>(base: A) {

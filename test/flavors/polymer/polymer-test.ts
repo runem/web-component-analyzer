@@ -1,13 +1,13 @@
-import test from "ava";
 import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { getComponentProp } from "../../helpers/util";
 
-test("Polymer components are correctly picked up", t => {
+tsTest("Polymer components are correctly picked up", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText(`
+	} = analyzeTextWithCurrentTsModule(`
 		class XCustom extends PolymerElement {
 			static get properties() {
 				return {

@@ -1,13 +1,12 @@
-import test from "ava";
-import { createProgram } from "typescript";
 import { analyzeHTMLElement } from "../../../src/analyze/analyze-html-element";
 import { getExtendsForInheritanceTree } from "../../../src/analyze/util/inheritance-tree-util";
+import { getCurrentTsModule, getCurrentTsModuleDirectory, tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
 
-test("analyzeHTMLElement returns correct result", t => {
-	//const {program} = compileTypescript([])
-	const program = createProgram(["../../node_modules/typescript/lib/lib.dom.d.ts"], {});
-	const result = analyzeHTMLElement(program);
+tsTest("analyzeHTMLElement returns correct result", t => {
+	const tsModule = getCurrentTsModule();
+	const program = tsModule.createProgram([`${getCurrentTsModuleDirectory()}/lib.dom.d.ts`], {});
+	const result = analyzeHTMLElement(program, tsModule);
 
 	t.truthy(result);
 

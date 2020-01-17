@@ -46,7 +46,7 @@ export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsMod
 }
 
 function visit(node: Node, context: AnalyzerDeclarationVisitContext): ComponentDeclaration | undefined {
-	if (context.ts.isInterfaceDeclaration(node) && node.name.text === "HTMLElement") {
+	if (context.ts.isInterfaceDeclaration(node) && node.name != null && node.name.text === "HTMLElement") {
 		return analyzeComponentDeclaration([node], context);
 	}
 

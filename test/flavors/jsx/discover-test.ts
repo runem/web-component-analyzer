@@ -1,13 +1,13 @@
-import test from "ava";
 import { SimpleTypeKind } from "ts-simple-type";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { assertHasMembers } from "../../helpers/util";
 
-test("Discovers elements defined JSX.IntrinsicElements", t => {
+tsTest("Discovers elements defined JSX.IntrinsicElements", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeText({
+	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.d.ts",
 		text: `
 	declare namespace JSX {

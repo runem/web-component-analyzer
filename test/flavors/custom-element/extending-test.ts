@@ -1,11 +1,11 @@
-import test from "ava";
-import { analyzeText } from "../../../src/analyze/analyze-text";
+import { tsTest } from "../../helpers/ts-test";
+import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { getComponentProp } from "../../helpers/util";
 
-test("Correctly extends interface with interface from different file", t => {
+tsTest("Correctly extends interface with interface from different file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "base.ts",
 			analyze: false,
@@ -36,10 +36,10 @@ declare global {
 	t.truthy(getComponentProp(members, "checked"));
 });
 
-test("Correctly extends interface with interface+value from different file", t => {
+tsTest("Correctly extends interface with interface+value from different file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "base.ts",
 			analyze: false,
@@ -73,10 +73,10 @@ declare global {
 	t.truthy(getComponentProp(members, "checked"));
 });
 
-test("Correctly extends class with class from different file", t => {
+tsTest("Correctly extends class with class from different file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "base.ts",
 			analyze: false,
@@ -107,10 +107,10 @@ declare global {
 	t.truthy(getComponentProp(members, "checked"));
 });
 
-test("Correctly extends interface with interface from same file", t => {
+tsTest("Correctly extends interface with interface from same file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "main.ts",
 			text: `
@@ -135,10 +135,10 @@ declare global {
 	t.truthy(getComponentProp(members, "checked"));
 });
 
-test("Correctly extends class with class from same file", t => {
+tsTest("Correctly extends class with class from same file", t => {
 	const {
 		results: [result]
-	} = analyzeText([
+	} = analyzeTextWithCurrentTsModule([
 		{
 			fileName: "main.ts",
 			text: `
