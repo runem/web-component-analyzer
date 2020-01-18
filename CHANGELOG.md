@@ -10,6 +10,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.0.2] - 2020-01-18
+
+### Fixed
+
+- Fixed various problems when analyzing globs using the CLI on Windows
+- Fixed problem where discovering global features would not detect all feature
+- Fixed problems with the `analyzeHtmlElement` function
+- Fixed problem with resolving the value of `PrefixUnaryExpression` nodes. ([#132](https://github.com/runem/web-component-analyzer/issues/132))
+
+### Added
+
+- The CLI now supports `--silent` flag that prevents it from outputting progress to the console
+- The CLI now supports `--markdown.headerLevel` flag that sets the starting header level for the markdown format
+
 ## [1.0.0] - 2019-12-01
 
 ### Added
