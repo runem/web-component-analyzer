@@ -8,6 +8,7 @@ export interface AnalyzerCliConfig {
 
 	dry?: boolean;
 	verbose?: boolean;
+	silent?: boolean;
 	outFile?: string;
 	outFiles?: string;
 	outDir?: string;
@@ -20,7 +21,7 @@ export interface AnalyzerCliConfig {
 	analyzeGlobalFeatures?: boolean;
 
 	markdown?: {
-		titleLevel?: number;
+		headerLevel?: number;
 	};
 
 	ts?: typeof tsModule;

@@ -7,7 +7,7 @@ import { TransformerConfig } from "../transformer-config";
  * @param config
  */
 export function markdownHeader(title: string, level: number, config: TransformerConfig): string {
-	level = level - 1 + (config.markdown?.titleLevel || 1);
+	level = level - 1 + (config.markdown?.headerLevel || config.markdown?.titleLevel || 1);
 	return `${"#".repeat(level)} ${title}`;
 }
 

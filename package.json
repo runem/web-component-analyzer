@@ -5,9 +5,6 @@
 	"main": "lib/cjs/api.js",
 	"module": "lib/esm/api.js",
 	"typings": "lib/cjs/api.d.ts",
-	"exports": {
-		".": "lbi/esm/index.js"
-	},
 	"files": [
 		"/lib/",
 		"cli.js"

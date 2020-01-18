@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import * as yargs from "yargs";
 import { analyzeCliCommand } from "./analyze/analyze-cli-command";
 import { AnalyzerCliConfig } from "./analyzer-cli-config";
 import { isCliError } from "./util/cli-error";
+import { log } from "./util/log";
 
 /**
  * The main function of the cli.
@@ -13,12 +13,12 @@ export async function cli() {
 		.command<AnalyzerCliConfig>({
 			command: ["analyze [glob..]", "$0"],
 			describe: "Analyses components and emits results in a specified format.",
-			handler: async argv => {
+			handler: async config => {
 				try {
-					await analyzeCliCommand(argv);
+					await analyzeCliCommand(config);
 				} catch (e) {
 					if (isCliError(e)) {
-						console.log(e.message);
+						log(e.message, config);
 					} else {
 						throw e;
 					}
@@ -76,13 +76,24 @@ o {tagname}: The element's tag name`,
 			boolean: true,
 			hidden: true
 		})
+		.option("silent", {
+			boolean: true,
+			hidden: true
+		})
+
+		// This options makes it possible to use "markdown.<sub-option>" in "strict mode"
+		.option("markdown", {
+			hidden: true
+		})
+
 		.alias("v", "version")
 		.help("h")
 		.wrap(110)
 		.strict()
 		.alias("h", "help").argv;
 
-	if (argv.debug) {
+	if (argv.verbose) {
+		/* eslint-disable-next-line no-console */
 		console.log("CLI options:", argv);
 	}
 }

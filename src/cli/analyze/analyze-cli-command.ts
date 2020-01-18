@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { writeFileSync } from "fs";
 import { basename, dirname, extname, relative, resolve } from "path";
 import { Program } from "typescript";
@@ -12,6 +11,7 @@ import { CliCommand } from "../cli-command";
 import { analyzeGlobs, AnalyzeGlobsContext } from "../util/analyze-globs";
 import { makeCliError } from "../util/cli-error";
 import { ensureDirSync } from "../util/file-util";
+import { log } from "../util/log";
 
 /**
  * Runs the analyze cli command.
@@ -22,12 +22,17 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 
 	// Log warning for experimental json format
 	if (config.format === "json" || config.outFile?.endsWith(".json")) {
-		console.log(`\n!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!`);
-		console.log(`  The custom-elements.json format is for experimental purposes. You can expect changes to this format.`);
-		console.log(`  Please follow and contribute to the discussion at:`);
-		console.log(`  - https://github.com/webcomponents/custom-elements-json`);
-		console.log(`  - https://github.com/w3c/webcomponents/issues/776`);
-		console.log(`!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!\n`);
+		log(
+			`
+!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
+The custom-elements.json format is for experimental purposes. You can expect changes to this format.
+Please follow and contribute to the discussion at:		
+  - https://github.com/webcomponents/custom-elements-json
+  - https://github.com/w3c/webcomponents/issues/776
+!!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
+`,
+			config
+		);
 	}
 
 	// If no "out" is specified, output to console
@@ -41,12 +46,14 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 			}
 		},
 		willAnalyzeFiles(filePaths: string[]): void {
-			console.log(`Web Component Analyzer analyzing ${filePaths.length} file${filePaths.length === 1 ? "" : "s"}...`);
+			log(`Web Component Analyzer analyzing ${filePaths.length} file${filePaths.length === 1 ? "" : "s"}...`, config);
 		},
 		emitAnalyzedFile(file, result, { program }): Promise<void> | void {
 			// Emit the transformed results as soon as possible if "outConsole" is on
 			if (outConsole) {
 				if (result.componentDefinitions.length > 0) {
+					// Always use "console.log" when outputting the results
+					/* eslint-disable-next-line no-console */
 					console.log(transformResults(result, program, config));
 				}
 			}
@@ -68,7 +75,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 			if (outputPath != null) {
 				if (config.dry) {
 					const tagNames = arrayFlat(results.map(result => result.componentDefinitions.map(d => d.tagName)));
-					console.log("[dry] Intending to write", tagNames, "to", `./${relative(process.cwd(), outputPath)}`);
+					log(`[dry] Intending to write ${tagNames} to ./${relative(process.cwd(), outputPath)}`, config);
 				} else {
 					const content = transformResults(results, program, config);
 					ensureDirSync(dirname(outputPath));

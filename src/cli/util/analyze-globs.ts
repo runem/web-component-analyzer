@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
@@ -8,6 +7,7 @@ import { arrayFlat } from "../../util/array-util";
 import { stripTypescriptValues } from "../../util/strip-typescript-values";
 import { AnalyzerCliConfig } from "../analyzer-cli-config";
 import { CompileResult, compileTypescript } from "./compile";
+import { logVerbose } from "./log";
 
 const IGNORE_GLOBS = ["**/node_modules/**", "**/web_modules/**"];
 const DEFAULT_DIR_GLOB = "**/*.{js,jsx,ts,tsx}";
@@ -39,9 +39,7 @@ export async function analyzeGlobs(
 	// Expand the globs
 	const filePaths = await expandGlobs(globs, config);
 
-	if (config.verbose) {
-		console.log(filePaths);
-	}
+	logVerbose(() => filePaths, config);
 
 	// Callbacks
 	context.didExpandGlobs?.(filePaths);
@@ -51,9 +49,10 @@ export async function analyzeGlobs(
 	const { program, files, diagnostics } = compileTypescript(filePaths);
 
 	if (diagnostics.length > 0) {
-		if (config.verbose) {
-			console.dir(diagnostics.map(d => `${(d.file && d.file.fileName) || "unknown"}: ${flattenDiagnosticMessageText(d.messageText, "\n")}`));
-		}
+		logVerbose(
+			() => diagnostics.map(d => `${(d.file && d.file.fileName) || "unknown"}: ${flattenDiagnosticMessageText(d.messageText, "\n")}`),
+			config
+		);
 
 		context.didFindTypescriptDiagnostics?.(diagnostics, { program });
 	}
@@ -72,9 +71,7 @@ export async function analyzeGlobs(
 			}
 		});
 
-		if (config.verbose) {
-			console.dir(stripTypescriptValues(result, program.getTypeChecker()), { depth: 20 });
-		}
+		logVerbose(() => stripTypescriptValues(result, program.getTypeChecker()), config);
 
 		// Callback
 		await context.emitAnalyzedFile?.(file, result, { program });
