@@ -6,25 +6,30 @@ jobs:
   run:
     name: Run
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node: [10, 12]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@master
 
-      - name: Set Node.js 10.x
+      - name: Setup Node
         uses: actions/setup-node@master
         with:
-          node-version: 10.x
+          node-version: ${{ matrix.node }}
 
       - name: Cache
         uses: actions/cache@v1
         id: cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node }}
 
       - name: Install
         if: steps.cache.outputs.cache-hit != 'true'
@@ -38,13 +43,13 @@ jobs:
         id: cache-dev
         with:
           path: ./dev/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/dev/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node }}-${{ hashFiles('**/dev/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-node-${{ matrix.node }}
 
       - name: Install Dev
         if: steps.cache-dev.outputs.cache-hit != 'true'
-        run: cd dev && npm ci
+        run: npm ci --cwd './dev' --prefix './dev'
 
       - name: Test
         run: npm run test:all

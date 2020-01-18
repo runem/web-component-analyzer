@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
-import { join } from "path";
 import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
 import { analyzeSourceFile } from "../../analyze/analyze-source-file";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
@@ -10,12 +9,9 @@ import { stripTypescriptValues } from "../../util/strip-typescript-values";
 import { AnalyzerCliConfig } from "../analyzer-cli-config";
 import { CompileResult, compileTypescript } from "./compile";
 
-const IGNORE_GLOBS = ["!**/node_modules/**", "!**/web_modules/**"];
-//const DEFAULT_DIR_GLOB = "{,!(node_modules|web_modules)/}**/*.{js,jsx,ts,tsx}";
+const IGNORE_GLOBS = ["**/node_modules/**", "**/web_modules/**"];
 const DEFAULT_DIR_GLOB = "**/*.{js,jsx,ts,tsx}";
-//const DEFAULT_FILE_GLOB = "**/*.{js,jsx,ts,tsx}";
-
-const DEFAULT_GLOBS = [DEFAULT_DIR_GLOB]; //, DEFAULT_FILE_GLOB];
+const DEFAULT_GLOBS = [DEFAULT_DIR_GLOB];
 
 export interface AnalyzeGlobsContext {
 	didExpandGlobs?(filePaths: string[]): void;
@@ -97,6 +93,8 @@ export async function analyzeGlobs(
 async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig): Promise<string[]> {
 	globs = Array.isArray(globs) ? globs : [globs];
 
+	const ignoreGlobs = config?.discoverLibraryFiles ? [] : IGNORE_GLOBS;
+
 	return arrayFlat(
 		await Promise.all(
 			globs.map(g => {
@@ -104,8 +102,10 @@ async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig):
 					// Test if the glob points to a directory.
 					// If so, return the result of a new glob that searches for files in the directory excluding node_modules..
 					const dirExists = existsSync(g) && lstatSync(g).isDirectory();
+
 					if (dirExists) {
-						return fastGlob([...(config?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), join(g, DEFAULT_DIR_GLOB)], {
+						return fastGlob([fastGlobNormalize(`${g}/${DEFAULT_DIR_GLOB}`)], {
+							ignore: ignoreGlobs,
 							absolute: true,
 							followSymbolicLinks: false
 						});
@@ -115,11 +115,21 @@ async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig):
 				}
 
 				// Return the result of globbing
-				return fastGlob([...(config?.discoverLibraryFiles || g.includes("node_modules") ? [] : IGNORE_GLOBS), g], {
+				return fastGlob([fastGlobNormalize(g)], {
+					ignore: ignoreGlobs,
 					absolute: true,
 					followSymbolicLinks: false
 				});
 			})
 		)
 	);
+}
+
+/**
+ * Fast glob recommends normalizing paths for windows, because fast glob expects a Unix-style path.
+ * Read more here: https://github.com/mrmlnc/fast-glob#how-to-write-patterns-on-windows
+ * @param glob
+ */
+function fastGlobNormalize(glob: string): string {
+	return glob.replace(/\\/g, "/");
 }

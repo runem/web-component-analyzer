@@ -1,3 +1,4 @@
+import { join } from "path";
 import { analyzeHTMLElement } from "../../../src/analyze/analyze-html-element";
 import { getExtendsForInheritanceTree } from "../../../src/analyze/util/inheritance-tree-util";
 import { getCurrentTsModule, getCurrentTsModuleDirectory, tsTest } from "../../helpers/ts-test";
@@ -5,7 +6,7 @@ import { getComponentProp } from "../../helpers/util";
 
 tsTest("analyzeHTMLElement returns correct result", t => {
 	const tsModule = getCurrentTsModule();
-	const program = tsModule.createProgram([`${getCurrentTsModuleDirectory()}/lib.dom.d.ts`], {});
+	const program = tsModule.createProgram([join(getCurrentTsModuleDirectory(), "lib.dom.d.ts")], {});
 	const result = analyzeHTMLElement(program, tsModule);
 
 	t.truthy(result);
