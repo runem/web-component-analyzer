@@ -1,5 +1,5 @@
 import { SimpleType } from "ts-simple-type";
-import { Node } from "typescript";
+import { CallExpression, Node } from "typescript";
 
 export interface LitElementPropertyConfig {
 	type?: SimpleType | string;
@@ -7,6 +7,7 @@ export interface LitElementPropertyConfig {
 	node?: {
 		type?: Node;
 		attribute?: Node;
+		decorator?: CallExpression;
 	};
 	hasConverter?: boolean;
 	default?: unknown;

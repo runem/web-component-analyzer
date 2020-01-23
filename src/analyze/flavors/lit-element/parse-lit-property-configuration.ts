@@ -1,25 +1,38 @@
 import { SimpleTypeKind } from "ts-simple-type";
 import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+
+export type LitElementPropertyDecoratorKind = "property" | "internalProperty";
+
+export const LIT_ELEMENT_PROPERTY_DECORATOR_KINDS: LitElementPropertyDecoratorKind[] = ["property", "internalProperty"];
 
 /**
  * Returns a potential lit element property decorator.
  * @param node
  * @param context
  */
-export function getLitElementPropertyDecorator(node: Node, context: AnalyzerVisitContext): undefined | CallExpression {
+export function getLitElementPropertyDecorator(
+	node: Node,
+	context: AnalyzerVisitContext
+): { expression: CallExpression; kind: LitElementPropertyDecoratorKind } | undefined {
 	if (node.decorators == null) return undefined;
 	const { ts } = context;
 
 	// Find a decorator with "property" name.
-	const decorator = node.decorators.find(decorator => {
+	for (const decorator of node.decorators) {
 		const expression = decorator.expression;
-		return ts.isCallExpression(expression) && ts.isIdentifier(expression.expression) && expression.expression.text === "property";
-	});
 
-	return decorator != null && ts.isCallExpression(decorator.expression) ? decorator.expression : undefined;
+		// We find the first decorator calling specific identifier name (found in LIT_ELEMENT_PROPERTY_DECORATOR_KINDS)
+		if (ts.isCallExpression(expression) && ts.isIdentifier(expression.expression)) {
+			const identifier = expression.expression;
+			const kind = identifier.text as LitElementPropertyDecoratorKind;
+			if (LIT_ELEMENT_PROPERTY_DECORATOR_KINDS.includes(kind)) {
+				return { expression, kind };
+			}
+		}
+	}
 }
 
 /**
@@ -35,8 +48,20 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 
 	if (decorator != null) {
 		// Parse the first argument to the decorator which is the lit-property configuration.
-		const configNode = decorator.arguments[0];
-		return configNode != null && ts.isObjectLiteralExpression(configNode) ? getLitPropertyOptions(configNode, context) : {};
+		const configNode = decorator.expression.arguments[0];
+
+		// Add decorator to "nodes"
+		const config: LitElementPropertyConfig = { node: { decorator: decorator.expression } };
+
+		// Apply specific config based on the decorator kind
+		switch (decorator.kind) {
+			case "internalProperty":
+				config.attribute = false;
+				break;
+		}
+
+		// Get lit options from the object literal expression
+		return configNode != null && ts.isObjectLiteralExpression(configNode) ? getLitPropertyOptions(configNode, context, config) : config;
 	}
 
 	return undefined;
@@ -45,9 +70,14 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 /**
  * Parses an object literal expression and returns a lit property configuration.
  * @param node
+ * @param existingConfig
  * @param context
  */
-export function getLitPropertyOptions(node: ObjectLiteralExpression, context: AnalyzerVisitContext): LitElementPropertyConfig {
+export function getLitPropertyOptions(
+	node: ObjectLiteralExpression,
+	context: AnalyzerVisitContext,
+	existingConfig: LitElementPropertyConfig = {}
+): LitElementPropertyConfig {
 	const { ts } = context;
 
 	// Build up the property configuration by looking at properties in the object literal expression
@@ -58,7 +88,7 @@ export function getLitPropertyOptions(node: ObjectLiteralExpression, context: An
 		const kind = ts.isIdentifier(property.name) ? property.name.text : undefined;
 
 		return parseLitPropertyOption({ kind, initializer, config }, context);
-	}, {} as LitElementPropertyConfig);
+	}, existingConfig);
 }
 
 export function parseLitPropertyOption(

@@ -58,12 +58,6 @@ function parsePropertyDecorator(
 	if (litConfig != null) {
 		const propName = node.name.getText();
 
-		// Don't emit anything if "attribute" is false.
-		// "Custom Element Flavor" takes care of parsing the property then.
-		if (litConfig.attribute === false) {
-			return;
-		}
-
 		// Get the attribute based on the configuration
 		const attrName = getLitAttributeName(propName, litConfig, context);
 
@@ -97,7 +91,7 @@ function parsePropertyDecorator(
 					jsDoc,
 					meta: litConfig,
 					visibility: getMemberVisibilityFromNode(node, ts),
-					reflect: litConfig.reflect ? "both" : "to-property",
+					reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined,
 					modifiers: getModifiersFromNode(node, ts)
 				}
 			}
@@ -143,7 +137,12 @@ function inPolymerFlavorContext(context: AnalyzerDeclarationVisitContext): boole
  * @param litConfig
  * @param context
  */
-function getLitAttributeName(propName: string, litConfig: LitElementPropertyConfig, context: AnalyzerDeclarationVisitContext): string {
+function getLitAttributeName(propName: string, litConfig: LitElementPropertyConfig, context: AnalyzerDeclarationVisitContext): string | undefined {
+	// Don't emit attribute if the value is specifically "false"
+	if (litConfig.attribute === false) {
+		return undefined;
+	}
+
 	// Get the attribute name either by looking at "{attribute: ...}" or just taking the property name.
 	let attrName = typeof litConfig.attribute === "string" ? litConfig.attribute : propName;
 
@@ -216,7 +215,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 					node: propNode,
 					meta: litConfig,
 					default: litConfig.default,
-					reflect: litConfig.reflect ? "both" : "to-property"
+					reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined
 				}
 			});
 		}

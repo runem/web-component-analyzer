@@ -38,6 +38,11 @@ export function assertHasMembers(
 		"deprecated" in expectedMember && t.is(actualMember.deprecated, expectedMember.deprecated, `Deprecated for ${name} doesn't match`);
 		"typeHint" in expectedMember && t.is(actualMember.typeHint, expectedMember.typeHint, `TypeHint for ${name} doesn't match`);
 		"jsDoc" in expectedMember && t.is(actualMember?.jsDoc?.description, expectedMember?.jsDoc?.description, `JSDoc for ${name} doesn't match`);
+		if ("meta" in expectedMember) {
+			const metaWithoutNode = { ...(actualMember?.meta || {}) };
+			delete metaWithoutNode.node;
+			t.deepEqual(metaWithoutNode, expectedMember?.meta, `Meta for ${name} doesn't match`);
+		}
 
 		if ("type" in expectedMember) {
 			t.is(typeof actualMember.type, typeof expectedMember.type);
