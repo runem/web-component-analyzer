@@ -58,7 +58,8 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 		module: ts.ModuleKind.ESNext,
 		target: ts.ScriptTarget.ESNext,
 		allowJs: true,
-		sourceMap: false
+		sourceMap: false,
+		strictNullChecks: true
 	};
 
 	const program = ts.createProgram({
