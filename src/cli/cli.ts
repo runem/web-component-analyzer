@@ -86,6 +86,12 @@ o {tagname}: The element's tag name`,
 			hidden: true
 		})
 
+		// This option makes it possible to specify a base cwd to use when emitting paths
+		.option("cwd", {
+			string: true,
+			hidden: true
+		})
+
 		.alias("v", "version")
 		.help("h")
 		.wrap(110)

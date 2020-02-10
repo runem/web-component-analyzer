@@ -1,3 +1,4 @@
+import { relative } from "path";
 import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDefinition } from "../../analyze/types/component-definition";
@@ -10,6 +11,7 @@ import { JsDoc } from "../../analyze/types/js-doc";
 import { arrayDefined, arrayFlat } from "../../util/array-util";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { filterVisibility } from "../../util/model-util";
+import { getFirst } from "../../util/set-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
 import {
@@ -49,6 +51,11 @@ export const jsonTransformer: TransformerFunction = (results: AnalyzerResult[], 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker, config: TransformerConfig): HtmlDataTag {
 	const declaration = definition.declaration();
 
+	// Grab path to the definition file if possible
+	const node = getFirst(definition.tagNameNodes) || getFirst(definition.identifierNodes);
+	const fileName = node?.getSourceFile().fileName;
+	const path = fileName != null && config.cwd != null ? `./${relative(config.cwd, fileName)}` : undefined;
+
 	const attributes = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataAttribute(d, checker)));
 
 	const properties = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataProperty(d, checker)));
@@ -63,6 +70,7 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 
 	return {
 		name: definition.tagName,
+		path,
 		description: getDescriptionFromJsDoc(declaration.jsDoc),
 		attributes: attributes.length === 0 ? undefined : attributes,
 		properties: properties.length === 0 ? undefined : properties,

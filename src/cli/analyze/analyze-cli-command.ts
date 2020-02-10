@@ -54,7 +54,7 @@ Please follow and contribute to the discussion at:
 				if (result.componentDefinitions.length > 0) {
 					// Always use "console.log" when outputting the results
 					/* eslint-disable-next-line no-console */
-					console.log(transformResults(result, program, config));
+					console.log(transformResults(result, program, { ...config, cwd: config.cwd || process.cwd() }));
 				}
 			}
 		}
@@ -77,7 +77,7 @@ Please follow and contribute to the discussion at:
 					const tagNames = arrayFlat(results.map(result => result.componentDefinitions.map(d => d.tagName)));
 					log(`[dry] Intending to write ${tagNames} to ./${relative(process.cwd(), outputPath)}`, config);
 				} else {
-					const content = transformResults(results, program, config);
+					const content = transformResults(results, program, { ...config, cwd: config.cwd || dirname(outputPath) });
 					ensureDirSync(dirname(outputPath));
 					writeFileSync(outputPath, content);
 				}
@@ -100,7 +100,8 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 
 	const transformerConfig: TransformerConfig = {
 		visibility: config.visibility ?? "public",
-		markdown: config.markdown
+		markdown: config.markdown,
+		cwd: config.cwd
 	};
 
 	return transformAnalyzerResult(format, results, program, transformerConfig);

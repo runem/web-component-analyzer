@@ -46,6 +46,7 @@ export interface HtmlDataTag {
 	name: string;
 	description?: string;
 	attributes?: HtmlDataAttribute[];
+	path?: string;
 
 	// Suggested fields:
 	properties?: HtmlDataProperty[];
