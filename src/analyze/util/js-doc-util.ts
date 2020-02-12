@@ -319,6 +319,21 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 		jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
 	}
 
+	// Expand the name based on namespace and classname
+	if (jsDocTag.name != null) {
+		/**
+		 * The name could look like this, so we need to parse and the remove the class name and namespace from the name
+		 *   InputSwitch#[CustomEvent]input-switch-check-changed
+		 *   InputSwitch#input-switch-check-changed
+		 */
+		const match = jsDocTag.name.match(/(.*)#(\[.*\])?(.*)/);
+		if (match != null) {
+			jsDocTag.className = match[1];
+			jsDocTag.namespace = match[2];
+			jsDocTag.name = match[3];
+		}
+	}
+
 	return jsDocTag;
 }
 

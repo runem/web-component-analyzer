@@ -7,6 +7,8 @@ export interface JsDocTagParsed {
 	optional?: boolean;
 	default?: string;
 	description?: string;
+	className?: string;
+	namespace?: string;
 }
 
 export interface JsDocTag {
