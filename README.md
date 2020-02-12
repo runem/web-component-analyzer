@@ -64,8 +64,8 @@ The analyze command analyses an optional `<input glob>` and emits the output to 
 | `--outDir <path>`           | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
 | `--outFile <path>`          | `file path`                      | Concatenate and emit output to a single file.                                |
 | `--outFiles <path>`         | `file path with pattern`         | Emit output to multiple files using a pattern. Available substitutions:<br>**{dir}**: The directory of the component<br>**{filename}**: The filename (without ext) of the component<br>**{tagname}**: The element's tag name |
-| `--visibility <visibility>` | `public | protected | private`   | The mininmum member visibility to output. Default is `public`.               |
-| `--features <features>` | `member | method | cssproperty | csspart | event | slot`   | Choose specific features to output. Multiple features are given seperated by a space. All features are enabled as default.<br>**Example**: `--features member slot event`               |
+| `--visibility <visibility>` | `public` \| `protected` \| `private`   | The mininmum member visibility to output. Default is `public`.               |
+| `--features <features>` | `member` \| `method` \| `cssproperty` \| `csspart` \| `event` \| `slot`   | Choose specific features to output. Multiple features are given seperated by a space. All features are enabled as default.<br>**Example**: `--features member slot event`               |
 | `--dry`                     | `boolean`                        | Don't write any files  |
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#api)
