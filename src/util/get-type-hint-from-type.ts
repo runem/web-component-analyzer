@@ -1,11 +1,8 @@
-import { SimpleType, isSimpleType, toSimpleType, SimpleTypeKind, simpleTypeToString, SimpleTypeAlias } from "ts-simple-type";
-import { Type, TypeChecker } from "typescript";
+import { SimpleType, isSimpleType, SimpleTypeKind, simpleTypeToString, SimpleTypeAlias } from "ts-simple-type";
+import { Type, TypeChecker, TypeFormatFlags } from "typescript";
 
-function isStringLiteralsUnionAlias(simpleType: SimpleType): simpleType is SimpleTypeAlias {
-	if (simpleType.kind === SimpleTypeKind.ALIAS && simpleType.target.kind === SimpleTypeKind.UNION) {
-		return simpleType.target.types.every(unionType => unionType.kind === SimpleTypeKind.STRING_LITERAL);
-	}
-	return false;
+function isUnionTypeAlias(simpleType: SimpleType): simpleType is SimpleTypeAlias {
+	return simpleType.kind === SimpleTypeKind.ALIAS && simpleType.target.kind === SimpleTypeKind.UNION;
 }
 
 /**
@@ -18,11 +15,15 @@ export function getTypeHintFromType(type: string | Type | SimpleType | undefined
 	if (type == null) return undefined;
 	if (typeof type === "string") return type;
 
-	let simpleType: SimpleType = isSimpleType(type) ? type : toSimpleType(type, checker);
-	if (isStringLiteralsUnionAlias(simpleType)) {
-		simpleType = simpleType.target;
+	let typeHint = "";
+	if (isSimpleType(type)) {
+		if (isUnionTypeAlias(type)) {
+			type = type.target;
+		}
+		typeHint = simpleTypeToString(type);
+	} else {
+		typeHint = checker.typeToString(type, undefined, TypeFormatFlags.InTypeAlias);
 	}
-	const typeHint = simpleTypeToString(simpleType);
 
 	// Replace "anys" and "{}" with more human friendly representations
 	if (typeHint === "any") return undefined;
