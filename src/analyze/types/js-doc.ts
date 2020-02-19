@@ -5,7 +5,7 @@ export interface JsDocTagParsed {
 	name?: string;
 	type?: string;
 	optional?: boolean;
-	default?: string;
+	default?: unknown;
 	description?: string;
 	className?: string;
 	namespace?: string;

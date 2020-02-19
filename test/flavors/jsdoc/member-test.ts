@@ -58,7 +58,7 @@ tsTest("jsdoc: Discovers properties with @prop", t => {
 				propName: "size",
 				attrName: "size",
 				jsDoc: undefined,
-				default: "123",
+				default: 123,
 				typeHint: "number",
 				type: () => ({ kind: SimpleTypeKind.NUMBER }),
 				visibility: undefined,
@@ -103,7 +103,7 @@ tsTest("jsdoc: Discovers attributes defined on getters with @attr", t => {
 				jsDoc: {
 					description: "This is a comment"
 				},
-				default: "false",
+				default: false,
 				typeHint: "boolean",
 				type: () => ({ kind: SimpleTypeKind.BOOLEAN }),
 				visibility: "public",

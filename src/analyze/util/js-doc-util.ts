@@ -233,6 +233,41 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 const JSDOC_TAGS_WITH_REQUIRED_NAME: string[] = ["param", "fires", "@element", "@customElement"];
 
 /**
+ * Takes a string that represents a value in jsdoc and transforms it to a javascript value
+ * @param value
+ */
+function parseJsDocValue(value: string | undefined): unknown {
+	if (value == null) {
+		return value;
+	}
+
+	// Parse quoted strings
+	const quotedMatch = value.match(/^["'`](.*)["'`]$/);
+	if (quotedMatch != null) {
+		return quotedMatch[1];
+	}
+
+	// Parse keywords
+	switch (value) {
+		case "false":
+			return false;
+		case "true":
+			return true;
+		case "undefined":
+			return undefined;
+		case "null":
+			return null;
+	}
+
+	// Parse number
+	if (!isNaN(Number(value))) {
+		return Number(value);
+	}
+
+	return value;
+}
+
+/**
  * Parses "@tag {type} name description"
  * @param str
  */
@@ -292,7 +327,7 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 		if (parts.length === 2) {
 			// Both name and default were given
 			jsDocTag.name = unqouteStr(parts[0]);
-			jsDocTag.default = parts[1];
+			jsDocTag.default = parseJsDocValue(parts[1]);
 		} else if (parts.length !== 0) {
 			// No default was given
 			jsDocTag.name = unqouteStr(parts[0]);
