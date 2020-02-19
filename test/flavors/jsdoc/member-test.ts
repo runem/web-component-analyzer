@@ -1,6 +1,6 @@
 import { SimpleTypeKind } from "ts-simple-type";
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 tsTest("jsdoc: Discovers properties with @prop", t => {
@@ -62,6 +62,51 @@ tsTest("jsdoc: Discovers properties with @prop", t => {
 				typeHint: "number",
 				type: () => ({ kind: SimpleTypeKind.NUMBER }),
 				visibility: undefined,
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined
+			}
+		],
+		t,
+		checker
+	);
+});
+
+tsTest("jsdoc: Discovers attributes defined on getters with @attr", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule(`
+	/**
+	 * @element
+	 */
+	 class MyElement extends HTMLElement { 
+		/**
+		 * This is a comment
+		 * @attr {boolean} [auto-reload=false]
+		 */
+		get autoReload() {
+			return this.hasAttribute('auto-reload');
+		}
+	 }
+	 `);
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "autoReload",
+				attrName: "auto-reload",
+				jsDoc: {
+					description: "This is a comment"
+				},
+				default: "false",
+				typeHint: "boolean",
+				type: () => ({ kind: SimpleTypeKind.BOOLEAN }),
+				visibility: "public",
 				reflect: undefined,
 				deprecated: undefined,
 				required: undefined

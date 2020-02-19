@@ -1,10 +1,7 @@
-import { SimpleType } from "ts-simple-type";
-import { Type } from "typescript";
 import { ComponentEvent } from "../../types/features/component-event";
-import { ComponentMemberReflectKind } from "../../types/features/component-member";
+import { ComponentMember, ComponentMemberReflectKind } from "../../types/features/component-member";
 import { ComponentMethod } from "../../types/features/component-method";
 import { JsDoc } from "../../types/js-doc";
-import { ModifierKind } from "../../types/modifier-kind";
 import { VisibilityKind } from "../../types/visibility-kind";
 import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
@@ -53,11 +50,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 		const newMember = [
 			applyJsDocDeprecated,
 			applyJsDocVisibility,
-			applyJsDocAttribute,
 			applyJsDocRequired,
 			applyJsDocDefault,
 			applyJsDocReflect,
 			applyJsDocType,
+			applyJsDocAttribute,
 			applyJsDocModifiers
 		].reduce((member, applyFunc) => (applyFunc as Function)(member, member.jsDoc), member);
 
@@ -74,7 +71,7 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
  * @param feature
  * @param jsDoc
  */
-function applyJsDocDeprecated<T extends { deprecated?: boolean | string }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocDeprecated<T extends Partial<Pick<ComponentMember, "deprecated">>>(feature: T, jsDoc: JsDoc): T {
 	const deprecatedTag = jsDoc.tags?.find(tag => tag.tag === "deprecated");
 
 	if (deprecatedTag != null) {
@@ -92,7 +89,7 @@ function applyJsDocDeprecated<T extends { deprecated?: boolean | string }>(featu
  * @param feature
  * @param jsDoc
  */
-function applyJsDocVisibility<T extends { visibility?: VisibilityKind }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocVisibility<T extends Partial<Pick<ComponentMember, "visibility">>>(feature: T, jsDoc: JsDoc): T {
 	const visibilityTag = jsDoc.tags?.find(tag => ["public", "protected", "private", "package", "access"].includes(tag.tag)); // member + method
 
 	if (visibilityTag != null) {
@@ -134,14 +131,28 @@ function applyJsDocVisibility<T extends { visibility?: VisibilityKind }>(feature
  * @param feature
  * @param jsDoc
  */
-function applyJsDocAttribute<T extends { attrName?: string; propName?: string }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocAttribute<T extends Partial<Pick<ComponentMember, "propName" | "attrName" | "default" | "type" | "typeHint">>>(
+	feature: T,
+	jsDoc: JsDoc
+): T {
 	const attributeTag = jsDoc.tags?.find(tag => ["attr", "attribute"].includes(tag.tag));
 
 	if (attributeTag != null && feature.attrName == null) {
-		return {
+		const parsed = attributeTag.parsed();
+
+		const result: T = {
 			...feature,
-			attrName: attributeTag.parsed().name || feature.propName
+			attrName: attributeTag.parsed().name || feature.propName,
+			default: feature.default ?? parsed.default
 		};
+
+		// @attr jsdoc tag can also include the type of attribute
+		if (parsed.type != null && result.typeHint == null) {
+			result.typeHint = parsed.type;
+			result.type = feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || ""));
+		}
+
+		return result;
 	}
 
 	return feature;
@@ -152,7 +163,7 @@ function applyJsDocAttribute<T extends { attrName?: string; propName?: string }>
  * @param feature
  * @param jsDoc
  */
-function applyJsDocRequired<T extends { required?: boolean }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocRequired<T extends Partial<Pick<ComponentMember, "required">>>(feature: T, jsDoc: JsDoc): T {
 	const requiredTag = jsDoc.tags?.find(tag => ["optional", "required"].includes(tag.tag));
 
 	if (requiredTag != null) {
@@ -170,7 +181,7 @@ function applyJsDocRequired<T extends { required?: boolean }>(feature: T, jsDoc:
  * @param feature
  * @param jsDoc
  */
-function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocModifiers<T extends Partial<Pick<ComponentMember, "modifiers">>>(feature: T, jsDoc: JsDoc): T {
 	const readonlyTag = jsDoc.tags?.find(tag => tag.tag === "readonly");
 
 	if (readonlyTag != null) {
@@ -188,7 +199,7 @@ function applyJsDocModifiers<T extends { modifiers?: Set<ModifierKind> }>(featur
  * @param feature
  * @param jsDoc
  */
-function applyJsDocDefault<T extends { default?: unknown }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocDefault<T extends Partial<Pick<ComponentMember, "default">>>(feature: T, jsDoc: JsDoc): T {
 	const defaultTag = jsDoc.tags?.find(tag => tag.tag === "default");
 
 	if (defaultTag != null) {
@@ -206,7 +217,7 @@ function applyJsDocDefault<T extends { default?: unknown }>(feature: T, jsDoc: J
  * @param feature
  * @param jsDoc
  */
-function applyJsDocReflect<T extends { reflect?: ComponentMemberReflectKind }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocReflect<T extends Partial<Pick<ComponentMember, "reflect">>>(feature: T, jsDoc: JsDoc): T {
 	const reflectTag = jsDoc.tags?.find(tag => tag.tag === "reflect");
 
 	if (reflectTag != null && feature.reflect == null) {
@@ -235,7 +246,7 @@ function applyJsDocReflect<T extends { reflect?: ComponentMemberReflectKind }>(f
  * @param feature
  * @param jsDoc
  */
-function applyJsDocType<T extends { typeHint?: unknown; type?: () => SimpleType | Type }>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocType<T extends Partial<Pick<ComponentMember, "type" | "typeHint">>>(feature: T, jsDoc: JsDoc): T {
 	const typeTag = jsDoc.tags?.find(tag => tag.tag === "type");
 
 	if (typeTag != null && feature.typeHint == null) {
