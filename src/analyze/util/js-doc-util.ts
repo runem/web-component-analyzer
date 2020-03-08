@@ -53,7 +53,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 	// Parse all jsdoc tags
 	// Typescript removes some information after parsing jsdoc tags, so unfortunately we will have to parse.
 	return {
-		description: jsDocNode.comment == null ? undefined : String(jsDocNode.comment),
+		description: jsDocNode.comment == null ? undefined : unescapeJSDoc(String(jsDocNode.comment)),
 		node: jsDocNode,
 		tags:
 			jsDocNode.tags == null
@@ -455,7 +455,16 @@ function parseJsDocString(doc: string): JsDoc | undefined {
 	}
 
 	return {
-		description,
+		description: unescapeJSDoc(description),
 		tags
 	};
+}
+
+/**
+ * Certain characters as "@" can be escaped in order to prevent Typescript from
+ * parsing it as a jsdoc tag. This function unescapes these characters.
+ * @param str
+ */
+function unescapeJSDoc(str: string): string {
+	return str.replace(/\\@/, "@");
 }

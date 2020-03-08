@@ -1,10 +1,19 @@
 /**
  * Flattens an array.
  * Use this function to keep support for node 10
- * @param array
+ * @param items
  */
-export function arrayFlat<T>(array: T[][]): T[] {
-	return "flat" in array ? array.flat() : (array as T[][]).reduce((acc, a) => [...acc, ...a], []);
+export function arrayFlat<T>(items: (T[] | T)[]): T[] {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	if ("flat" in (items as any)) {
+		return items.flat();
+	}
+
+	const flattenArray: T[] = [];
+	for (const item of items) {
+		flattenArray.push(...item);
+	}
+	return flattenArray;
 }
 
 /**
