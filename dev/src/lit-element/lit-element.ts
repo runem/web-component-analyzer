@@ -1,5 +1,7 @@
 import { customElement, LitElement, property } from "lit-element";
 
+type Color = "blue" | "red";
+
 /**
  * This is my element
  * @fires {string} change - This is a change event
@@ -30,6 +32,8 @@ export class MyElement extends LitElement {
 	@property() myProp1?: { hej: string; rune: string } = { hej: "string", rune: "hello" };
 
 	@property() hello = false;
+
+	@property() myProp5: Color = "red";
 
 	static get properties() {
 		return {

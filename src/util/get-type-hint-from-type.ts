@@ -1,5 +1,9 @@
-import { SimpleType, toTypeString } from "ts-simple-type";
-import { Type, TypeChecker } from "typescript";
+import { SimpleType, isSimpleType, SimpleTypeKind, simpleTypeToString, SimpleTypeAlias } from "ts-simple-type";
+import { Type, TypeChecker, TypeFormatFlags } from "typescript";
+
+function isUnionTypeAlias(simpleType: SimpleType): simpleType is SimpleTypeAlias {
+	return simpleType.kind === SimpleTypeKind.ALIAS && simpleType.target.kind === SimpleTypeKind.UNION;
+}
 
 /**
  * Returns a "type hint" from a type
@@ -11,7 +15,15 @@ export function getTypeHintFromType(type: string | Type | SimpleType | undefined
 	if (type == null) return undefined;
 	if (typeof type === "string") return type;
 
-	const typeHint = toTypeString(type, checker);
+	let typeHint = "";
+	if (isSimpleType(type)) {
+		if (isUnionTypeAlias(type)) {
+			type = type.target;
+		}
+		typeHint = simpleTypeToString(type);
+	} else {
+		typeHint = checker.typeToString(type, undefined, TypeFormatFlags.InTypeAlias);
+	}
 
 	// Replace "anys" and "{}" with more human friendly representations
 	if (typeHint === "any") return undefined;
