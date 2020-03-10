@@ -11,7 +11,7 @@ const VISIBILITY_NUMBER_MAP: Record<VisibilityKind, number> = {
  * @param visibility
  * @param array
  */
-export function filterVisibility<T extends { visibility?: VisibilityKind }>(visibility: VisibilityKind, array: T[]): T[] {
+export function filterVisibility<T extends { visibility?: VisibilityKind }>(visibility: VisibilityKind = "public", array: T[]): T[] {
 	const target = VISIBILITY_NUMBER_MAP[visibility];
 	return array.filter(item => VISIBILITY_NUMBER_MAP[item.visibility || "public"] >= target);
 }

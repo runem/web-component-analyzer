@@ -99,6 +99,7 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 	const format = config.format || "markdown";
 
 	const transformerConfig: TransformerConfig = {
+		inlineTypes: config.inlineTypes ?? false,
 		visibility: config.visibility ?? "public",
 		markdown: config.markdown,
 		cwd: config.cwd

@@ -56,9 +56,13 @@ function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeC
 	const fileName = node?.getSourceFile().fileName;
 	const path = fileName != null && config.cwd != null ? `./${relative(config.cwd, fileName)}` : undefined;
 
-	const attributes = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataAttribute(d, checker)));
+	const attributes = arrayDefined(
+		filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataAttribute(d, checker, config))
+	);
 
-	const properties = arrayDefined(filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataProperty(d, checker)));
+	const properties = arrayDefined(
+		filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataProperty(d, checker, config))
+	);
 
 	const events = arrayDefined(filterVisibility(config.visibility, declaration.events).map(e => componentEventToHtmlDataEvent(e, checker)));
 
@@ -115,7 +119,7 @@ function componentEventToHtmlDataEvent(event: ComponentEvent, checker: TypeCheck
 	};
 }
 
-function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: TypeChecker): HtmlDataAttribute | undefined {
+function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: TypeChecker, config: TransformerConfig): HtmlDataAttribute | undefined {
 	if (member.attrName == null) {
 		return undefined;
 	}
@@ -123,14 +127,14 @@ function componentMemberToHtmlDataAttribute(member: ComponentMember, checker: Ty
 	return {
 		name: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
-		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
+		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config),
 		default: member.default != null ? JSON.stringify(member.default) : undefined,
 		deprecated: member.deprecated === true || undefined,
 		deprecatedMessage: typeof member.deprecated === "string" ? member.deprecated : undefined
 	};
 }
 
-function componentMemberToHtmlDataProperty(member: ComponentMember, checker: TypeChecker): HtmlDataProperty | undefined {
+function componentMemberToHtmlDataProperty(member: ComponentMember, checker: TypeChecker, config: TransformerConfig): HtmlDataProperty | undefined {
 	if (member.propName == null) {
 		return undefined;
 	}
@@ -139,7 +143,7 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 		name: member.propName,
 		attribute: member.attrName,
 		description: getDescriptionFromJsDoc(member.jsDoc),
-		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker),
+		type: getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config),
 		default: member.default != null ? JSON.stringify(member.default) : undefined,
 		deprecated: member.deprecated === true || undefined,
 		deprecatedMessage: typeof member.deprecated === "string" ? member.deprecated : undefined

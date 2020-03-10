@@ -9,7 +9,7 @@ import { getTypeHintFromType } from "./get-type-hint-from-type";
  *   so therefore I had to do some regex-magic in this method.
  */
 export function getTypeHintFromMethod(method: ComponentMethod, checker: TypeChecker): string | undefined {
-	let signature = getTypeHintFromType(method.type?.(), checker) || "";
+	let signature = getTypeHintFromType(method.type?.(), checker, {}) || "";
 
 	// Replace "=>" with ":" and the return type with the returnTypeHint if present
 	signature = signature.replace(

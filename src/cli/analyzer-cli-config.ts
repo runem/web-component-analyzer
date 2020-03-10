@@ -24,6 +24,8 @@ export interface AnalyzerCliConfig {
 		headerLevel?: number;
 	};
 
+	inlineTypes?: boolean;
+
 	ts?: typeof tsModule;
 	cwd?: string;
 }

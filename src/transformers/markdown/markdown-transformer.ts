@@ -184,7 +184,7 @@ function eventSection(events: ComponentEvent[], checker: TypeChecker, config: Tr
 		...events.map(event => [
 			(event.name && markdownHighlight(event.name)) || "",
 			showVisibility ? event.visibility || "public" : "",
-			markdownHighlight(getTypeHintFromType(event.typeHint ?? event.type?.(), checker)),
+			markdownHighlight(getTypeHintFromType(event.typeHint ?? event.type?.(), checker, config)),
 			event.jsDoc?.description || ""
 		])
 	);
@@ -221,7 +221,7 @@ function memberAttributeSection(members: ComponentMemberAttribute[], checker: Ty
 	// Add members as rows one by one
 	for (const member of members) {
 		const attrName = markdownHighlight(member.attrName);
-		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker));
+		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config));
 		const visibility = member.visibility || "public";
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";
 		const comment = member.jsDoc?.description || "";
@@ -247,7 +247,7 @@ function memberPropertySection(members: ComponentMemberProperty[], checker: Type
 		const propName = markdownHighlight(member.propName);
 		const attrName = (member.attrName && markdownHighlight(member.attrName)) || "";
 		const visibility = member.visibility || "public";
-		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker));
+		const type = markdownHighlight(getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config));
 		const mods = member.modifiers != null ? Array.from(member.modifiers).join(", ") : "";
 
 		const def = (member.default !== undefined ? JSON.stringify(member.default) : "") || (member.required && "**required**") || "";

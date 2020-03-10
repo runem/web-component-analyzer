@@ -67,6 +67,10 @@ o {tagname}: The element's tag name`,
 			describe: `Minimum visibility`,
 			choices: ["private", "protected", "public"]
 		})
+		.option("inlineTypes", {
+			describe: `Inline type aliases`,
+			boolean: true
+		})
 		.option("dry", {
 			describe: `Don't write files`,
 			boolean: true,
