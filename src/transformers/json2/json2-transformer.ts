@@ -171,7 +171,8 @@ function getExportsDocFromDeclaration(
 	// Get all superclasses from the inheritance tree
 	const superclass = declaration.inheritanceTree.inherits?.filter(i => i.kind === "class")?.[0];
 	const superclassNode = superclass?.resolved?.[0]?.node;
-	const superclassRef = superclassNode != null ? getReference(superclassNode, config) : undefined;
+	const superclassRef =
+		superclassNode != null ? getReference(superclassNode, config) : superclass != null ? { name: superclass.identifier.getText() } : undefined;
 
 	const classDoc: ClassDoc = {
 		kind: "class",
