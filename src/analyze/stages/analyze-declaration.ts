@@ -14,25 +14,28 @@ import { mergeFeatures } from "./merge/merge-features";
 /**
  * Discovers features on component declaration nodes
  * @param initialDeclarationNodes
- * @param context
+ * @param baseContext
+ * @param expandInheritance
  */
-export function analyzeComponentDeclaration(initialDeclarationNodes: Node[], context: AnalyzerDeclarationVisitContext): ComponentDeclaration {
+export function analyzeComponentDeclaration(
+	initialDeclarationNodes: Node[],
+	baseContext: AnalyzerVisitContext,
+	{ expandInheritance }: { expandInheritance?: boolean } = { expandInheritance: true }
+): ComponentDeclaration {
 	const mainDeclarationNode = initialDeclarationNodes[0];
 	if (mainDeclarationNode == null) {
 		throw new Error("Couldn't find main declaration node");
 	}
 
 	// Discover the inheritance tree
-	const inheritanceTree = discoverInheritance(initialDeclarationNodes, context);
+	const inheritanceTree = discoverInheritance(initialDeclarationNodes, baseContext);
 
 	// Find unique resolved nodes in the inheritance tree
-	const declarationNodes = getUniqueResolvedNodeForInheritanceTree(inheritanceTree);
+	const declarationNodes = expandInheritance ? getUniqueResolvedNodeForInheritanceTree(inheritanceTree) : new Set<Node>();
 
 	// Add initial declaration nodes to the set (nodes that aren't the main declaration node)
 	for (const node of initialDeclarationNodes) {
-		if (node !== mainDeclarationNode) {
-			declarationNodes.add(node);
-		}
+		declarationNodes.add(node);
 	}
 
 	const featureCollections: ComponentFeatureCollection[] = [];
@@ -44,15 +47,17 @@ export function analyzeComponentDeclaration(initialDeclarationNodes: Node[], con
 		members: [],
 		methods: [],
 		slots: [],
-		jsDoc: getJsDoc(mainDeclarationNode, context.ts),
+		jsDoc: getJsDoc(mainDeclarationNode, baseContext.ts),
 		inheritanceTree,
-		declarationNodes
+		declarationNodes,
+		node: mainDeclarationNode
 	};
 
 	// Add the "get declaration" hook to the context
-	context = {
-		...context,
-		getDeclaration: () => baseDeclaration
+	const context: AnalyzerDeclarationVisitContext = {
+		...baseContext,
+		getDeclaration: () => baseDeclaration,
+		sourceFile: mainDeclarationNode.getSourceFile()
 	};
 
 	// Find features on all declaration nodes

@@ -1,7 +1,6 @@
-import { Node } from "typescript";
+import { Node, SourceFile } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
-import { ComponentDefinition } from "../types/component-definition";
 import { ComponentCssPart } from "../types/features/component-css-part";
 import { ComponentCssProperty } from "../types/features/component-css-property";
 import { ComponentEvent } from "../types/features/component-event";
@@ -45,9 +44,10 @@ export interface ComponentFeatureCollection {
 }
 
 export interface AnalyzerDeclarationVisitContext extends AnalyzerVisitContext {
-	getDefinition: () => ComponentDefinition;
+	//getDefinition: () => ComponentDefinition;
 	getDeclaration: () => ComponentDeclaration;
 	declarationNode?: Node;
+	sourceFile: SourceFile;
 }
 
 export type FeatureDiscoverVisitMap<Context extends AnalyzerVisitContext> = {

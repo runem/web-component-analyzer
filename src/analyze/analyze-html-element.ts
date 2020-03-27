@@ -1,7 +1,7 @@
 import * as tsModule from "typescript";
 import { Node, Program } from "typescript";
+import { AnalyzerVisitContext } from "./analyzer-visit-context";
 import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
-import { AnalyzerDeclarationVisitContext } from "./flavors/analyzer-flavor";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
 import { makeContextFromConfig } from "./make-context-from-config";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
@@ -35,17 +35,11 @@ export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsMod
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
 			general: new Map()
-		},
-		getDefinition: () => {
-			throw new Error("Definition not available");
-		},
-		getDeclaration: () => {
-			throw new Error("Declaration not available");
 		}
 	});
 }
 
-function visit(node: Node, context: AnalyzerDeclarationVisitContext): ComponentDeclaration | undefined {
+function visit(node: Node, context: AnalyzerVisitContext): ComponentDeclaration | undefined {
 	if (context.ts.isInterfaceDeclaration(node) && node.name != null && node.name.text === "HTMLElement") {
 		return analyzeComponentDeclaration([node], context);
 	}

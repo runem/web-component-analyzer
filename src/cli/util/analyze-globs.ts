@@ -67,7 +67,8 @@ export async function analyzeGlobs(
 			ts: config.ts,
 			config: {
 				features: config.features,
-				analyzeGlobalFeatures: config.analyzeGlobalFeatures
+				analyzeGlobalFeatures: config.analyzeGlobalFeatures,
+				analyzeAllDeclarations: config.format == "json2" // TODO: find a better way to construct the config
 			}
 		});
 

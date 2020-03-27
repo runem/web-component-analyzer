@@ -18,6 +18,7 @@ export interface ComponentFeatures {
 }
 
 export interface ComponentDeclaration extends ComponentFeatures {
+	node: Node;
 	inheritanceTree: InheritanceTreeNode;
 	declarationNodes: Set<Node>;
 	jsDoc: JsDoc | undefined;

@@ -1,11 +1,12 @@
 import { SourceFile } from "typescript";
 import { makeContextFromConfig } from "./make-context-from-config";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
+import { discoverDeclarations } from "./stages/discover-declarations";
 import { discoverDefinitions } from "./stages/discover-definitions";
 import { discoverGlobalFeatures } from "./stages/discover-global-features";
 import { AnalyzerOptions } from "./types/analyzer-options";
 import { AnalyzerResult } from "./types/analyzer-result";
-import { ComponentFeatures } from "./types/component-declaration";
+import { ComponentDeclaration, ComponentFeatures } from "./types/component-declaration";
 
 /**
  * Analyzes all components in a source file.
@@ -19,11 +20,7 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 	// Analyze all components
 	const componentDefinitions = discoverDefinitions(sourceFile, context, (definition, declarationNodes) =>
 		// The component declaration is analyzed lazily
-		analyzeComponentDeclaration(declarationNodes, {
-			...context,
-			getDeclaration: definition.declaration,
-			getDefinition: () => definition
-		})
+		analyzeComponentDeclaration(declarationNodes, context)
 	);
 
 	// Analyze global features
@@ -32,9 +29,16 @@ export function analyzeSourceFile(sourceFile: SourceFile, options: AnalyzerOptio
 		globalFeatures = discoverGlobalFeatures(sourceFile, context);
 	}
 
+	// Analyze exported declarations
+	let declarations: ComponentDeclaration[] | undefined = undefined;
+	if (context.config.analyzeAllDeclarations) {
+		declarations = discoverDeclarations(sourceFile, context);
+	}
+
 	return {
 		sourceFile,
 		componentDefinitions,
-		globalFeatures
+		globalFeatures,
+		declarations
 	};
 }

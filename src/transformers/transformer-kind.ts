@@ -1,1 +1,1 @@
-export type TransformerKind = "md" | "markdown" | "json" | "vscode" | "debug";
+export type TransformerKind = "md" | "markdown" | "json" | "vscode" | "debug" | "json2";

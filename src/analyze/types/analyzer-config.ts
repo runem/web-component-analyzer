@@ -7,6 +7,7 @@ export interface AnalyzerConfig {
 	analyzeLibDom?: boolean;
 	analyzeLib?: boolean;
 	analyzeGlobalFeatures?: boolean;
+	analyzeAllDeclarations?: boolean;
 	excludedDeclarationNames?: string[];
 	features?: ComponentFeature[];
 }

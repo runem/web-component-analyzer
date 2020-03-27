@@ -2,6 +2,7 @@ import { Program } from "typescript";
 import { AnalyzerResult } from "../analyze/types/analyzer-result";
 import { debugJsonTransformer } from "./debug/debug-json-transformer";
 import { jsonTransformer } from "./json/json-transformer";
+import { json2Transformer } from "./json2/json2-transformer";
 import { markdownTransformer } from "./markdown/markdown-transformer";
 import { TransformerConfig } from "./transformer-config";
 import { TransformerFunction } from "./transformer-function";
@@ -11,6 +12,7 @@ import { vscodeTransformer } from "./vscode/vscode-transformer";
 const transformerFunctionMap: Record<TransformerKind, TransformerFunction> = {
 	debug: debugJsonTransformer,
 	json: jsonTransformer,
+	json2: json2Transformer,
 	markdown: markdownTransformer,
 	md: markdownTransformer,
 	vscode: vscodeTransformer

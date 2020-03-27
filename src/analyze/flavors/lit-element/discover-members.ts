@@ -108,7 +108,8 @@ function parsePropertyDecorator(
 function inPolymerFlavorContext(context: AnalyzerDeclarationVisitContext): boolean {
 	const declaration = context.getDeclaration();
 
-	const cacheKey = `isPolymerFlavorContext:${context.getDefinition().tagName}`;
+	// TODO: find a better way to construct a cache key
+	const cacheKey = `isPolymerFlavorContext:${context.sourceFile?.fileName || "unknown"}`;
 
 	if (context.cache.general.has(cacheKey)) {
 		return context.cache.general.get(cacheKey) as boolean;

@@ -1,5 +1,6 @@
 /**
- * @fires my-custom-event - Im event!
+ * This is a custom element
+ * @fires my-custom-event - I'm an event!
  * @csspart mypart - Hello
  * @example <h1>Hello</h1>
  */

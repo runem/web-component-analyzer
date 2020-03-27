@@ -1,5 +1,5 @@
 import { SourceFile } from "typescript";
-import { ComponentFeatures } from "./component-declaration";
+import { ComponentDeclaration, ComponentFeatures } from "./component-declaration";
 import { ComponentDefinition } from "./component-definition";
 
 /**
@@ -8,5 +8,6 @@ import { ComponentDefinition } from "./component-definition";
 export interface AnalyzerResult {
 	sourceFile: SourceFile;
 	componentDefinitions: ComponentDefinition[];
+	declarations?: ComponentDeclaration[];
 	globalFeatures?: ComponentFeatures;
 }

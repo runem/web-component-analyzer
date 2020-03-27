@@ -13,6 +13,8 @@ import { makeCliError } from "../util/cli-error";
 import { ensureDirSync } from "../util/file-util";
 import { log } from "../util/log";
 
+type OutStrategy = "file" | "console_stream" | "console_bulk";
+
 /**
  * Runs the analyze cli command.
  * @param config
@@ -21,7 +23,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 	const inputGlobs = config.glob || [];
 
 	// Log warning for experimental json format
-	if (config.format === "json" || config.outFile?.endsWith(".json")) {
+	if (config.format === "json" || config.format === "json2" || config.outFile?.endsWith(".json")) {
 		log(
 			`
 !!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
@@ -36,7 +38,19 @@ Please follow and contribute to the discussion at:
 	}
 
 	// If no "out" is specified, output to console
-	const outConsole = config.outDir == null && config.outFile == null && config.outFiles == null;
+	const outStrategy: OutStrategy = (() => {
+		if (config.outDir == null && config.outFile == null && config.outFiles == null) {
+			switch (config.format) {
+				case "json2":
+					// "json2" will need to output everything at once
+					return "console_bulk";
+				default:
+					return "console_stream";
+			}
+		}
+
+		return "file";
+	})();
 
 	// Give this context to the analyzer
 	const context: AnalyzeGlobsContext = {
@@ -50,7 +64,7 @@ Please follow and contribute to the discussion at:
 		},
 		emitAnalyzedFile(file, result, { program }): Promise<void> | void {
 			// Emit the transformed results as soon as possible if "outConsole" is on
-			if (outConsole) {
+			if (outStrategy === "console_stream") {
 				if (result.componentDefinitions.length > 0) {
 					// Always use "console.log" when outputting the results
 					/* eslint-disable-next-line no-console */
@@ -63,10 +77,16 @@ Please follow and contribute to the discussion at:
 	// Analyze, - all the magic happens in here
 	const { results, program } = await analyzeGlobs(inputGlobs, config, context);
 
-	// Write files to the file system
-	if (!outConsole) {
-		const filteredResults = results.filter(result => result.componentDefinitions.length > 0 || result.globalFeatures != null);
+	const filteredResults = results.filter(
+		result => result.componentDefinitions.length > 0 || result.globalFeatures != null || (result.declarations?.length || 0) > 0
+	);
 
+	// Write files to the file system
+	if (outStrategy === "console_bulk") {
+		// Always use "console.log" when outputting the results
+		/* eslint-disable-next-line no-console */
+		console.log(transformResults(filteredResults, program, { ...config, cwd: config.cwd || process.cwd() }));
+	} else if (outStrategy === "file") {
 		// Build up a map of "filePath => result[]"
 		const outputResultMap = await distributeResultsIntoFiles(filteredResults, config);
 
