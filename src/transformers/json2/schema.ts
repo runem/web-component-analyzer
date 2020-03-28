@@ -42,7 +42,7 @@ export type ExportDoc = ClassDoc | FunctionDoc | VariableDoc;
  * A reference to an export of a module.
  *
  * All references are required to be publically accessible, so the canonical
- * representation of a reference is the export it's available from.
+ * representation of a refernce it the export it's available from.
  */
 export interface Reference {
 	name: string;
@@ -64,6 +64,10 @@ export interface CustomElementDoc extends ClassDoc {
 	 * The shadow dom content slots that this element accepts.
 	 */
 	slots?: SlotDoc[];
+
+	cssProperties?: CSSPropertyDoc[];
+
+	cssParts?: CSSPartDoc[];
 
 	demos?: Demo[];
 }
@@ -130,9 +134,25 @@ export interface SlotDoc {
 	description?: string;
 }
 
+export interface CSSPropertyDoc {
+	name: string;
+	description?: string;
+	type?: string;
+	default?: string;
+}
+
+export interface CSSPartDoc {
+	name: string;
+	description?: string;
+}
+
 export interface ClassDoc {
 	kind: "class";
-	name: string;
+
+	/**
+	 * The class name, or `undefined` if the class is anonymous.
+	 */
+	name?: string;
 
 	/**
 	 * A markdown summary suitable for display in a listing.
@@ -168,6 +188,7 @@ export interface FieldDoc {
 	 * A markdown description of the field.
 	 */
 	description?: string;
+	default?: string; // TODO: make this a Type type or a Reference
 	privacy?: Privacy;
 	type?: string;
 }
@@ -207,6 +228,12 @@ export interface FunctionDoc extends FunctionLike {
 	kind: "function";
 }
 
+export interface Parameter {
+	name: string;
+	type?: string;
+	description?: string;
+}
+
 export interface FunctionLike {
 	name: string;
 
@@ -220,11 +247,7 @@ export interface FunctionLike {
 	 */
 	description?: string;
 
-	parameters?: {
-		name: string;
-		type?: string;
-		description?: string;
-	}[];
+	parameters?: Array<Parameter>;
 
 	return?: {
 		type?: string;

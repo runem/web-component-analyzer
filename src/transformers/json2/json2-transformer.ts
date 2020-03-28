@@ -13,6 +13,8 @@ import {
 	AttributeDoc,
 	ClassDoc,
 	ClassMember,
+	CSSPartDoc,
+	CSSPropertyDoc,
 	CustomElementDoc,
 	EventDoc,
 	ExportDoc,
@@ -203,7 +205,9 @@ function getExportsDocFromDeclaration(
 			tagName: definition.tagName,
 			events: getEventDocsFromDeclaration(declaration, checker, config),
 			slots: getSlotDocsFromDeclaration(declaration, checker, config),
-			attributes: getAttributeDocsFromDeclaration(declaration, checker, config)
+			attributes: getAttributeDocsFromDeclaration(declaration, checker, config),
+			cssProperties: getCSSPropertyDocsFromDeclaration(declaration, checker, config),
+			cssParts: getCSSPartDocsFromDeclaration(declaration, checker, config)
 		};
 
 		return customElementDoc;
@@ -238,6 +242,22 @@ function getSlotDocsFromDeclaration(declaration: ComponentDeclaration, checker: 
 	return declaration.slots.map(slot => ({
 		description: slot.jsDoc?.description,
 		name: slot.name || ""
+	}));
+}
+
+function getCSSPropertyDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): CSSPropertyDoc[] {
+	return declaration.cssProperties.map(cssProperty => ({
+		name: cssProperty.name,
+		description: cssProperty.jsDoc?.description,
+		type: cssProperty.typeHint,
+		default: cssProperty.default != null ? JSON.stringify(cssProperty.default) : undefined
+	}));
+}
+
+function getCSSPartDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): CSSPartDoc[] {
+	return declaration.cssParts.map(cssPart => ({
+		name: cssPart.name,
+		description: cssPart.jsDoc?.description
 	}));
 }
 
@@ -313,7 +333,8 @@ function getFieldDocsFromDeclaration(declaration: ComponentDeclaration, checker:
 				name: member.propName,
 				privacy: member.visibility,
 				description: member.jsDoc?.description,
-				type: getTypeHintFromType(member.typeHint || member.type?.(), checker, config)
+				type: getTypeHintFromType(member.typeHint || member.type?.(), checker, config),
+				default: member.default != null ? JSON.stringify(member.default) : undefined
 				// TODO: "static" and "summary"
 			});
 		}
