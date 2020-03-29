@@ -1,12 +1,14 @@
 import { basename, relative } from "path";
 import * as tsModule from "typescript";
-import { Node, Program, SourceFile, TypeChecker } from "typescript";
+import { Node, Program, SourceFile, Type, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDeclaration } from "../../analyze/types/component-declaration";
+import { JsDoc } from "../../analyze/types/js-doc";
 import { findParent } from "../../analyze/util/ast-util";
 import { getJsDoc } from "../../analyze/util/js-doc-util";
 import { getTypeHintFromMethod } from "../../util/get-type-hint-from-method";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
+import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
 import {
@@ -24,6 +26,7 @@ import {
 	MixinDoc,
 	ModuleDoc,
 	PackageDoc,
+	Parameter,
 	Reference,
 	SlotDoc,
 	VariableDoc
@@ -223,7 +226,7 @@ function getExportsDocFromDeclaration(
  * @param config
  */
 function getEventDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): EventDoc[] {
-	return declaration.events.map(event => ({
+	return filterVisibility(config.visibility, declaration.events).map(event => ({
 		description: event.jsDoc?.description,
 		name: event.name,
 		detailType: getTypeHintFromType(event.typeHint || event.type?.(), checker, config),
@@ -245,6 +248,12 @@ function getSlotDocsFromDeclaration(declaration: ComponentDeclaration, checker: 
 	}));
 }
 
+/**
+ * Returns css properties for a declaration
+ * @param declaration
+ * @param checker
+ * @param config
+ */
 function getCSSPropertyDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): CSSPropertyDoc[] {
 	return declaration.cssProperties.map(cssProperty => ({
 		name: cssProperty.name,
@@ -254,6 +263,12 @@ function getCSSPropertyDocsFromDeclaration(declaration: ComponentDeclaration, ch
 	}));
 }
 
+/**
+ * Returns css parts for a declaration
+ * @param declaration
+ * @param checker
+ * @param config
+ */
 function getCSSPartDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): CSSPartDoc[] {
 	return declaration.cssParts.map(cssPart => ({
 		name: cssPart.name,
@@ -270,7 +285,7 @@ function getCSSPartDocsFromDeclaration(declaration: ComponentDeclaration, checke
 function getAttributeDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): AttributeDoc[] {
 	const attributeDocs: AttributeDoc[] = [];
 
-	for (const member of declaration.members) {
+	for (const member of filterVisibility(config.visibility, declaration.members)) {
 		if (member.attrName != null) {
 			attributeDocs.push({
 				name: member.attrName,
@@ -304,13 +319,47 @@ function getClassMemberDocsFromDeclaration(declaration: ComponentDeclaration, ch
 function getMethodDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): MethodDoc[] {
 	const methodDocs: MethodDoc[] = [];
 
-	for (const method of declaration.methods) {
+	for (const method of filterVisibility(config.visibility, declaration.methods)) {
+		const parameters: Parameter[] = [];
+		let returnType: Type | undefined = undefined;
+
+		const node = method.node;
+		if (node !== undefined && tsModule.isMethodDeclaration(node)) {
+			// Build a list of parameters
+			for (const param of node.parameters) {
+				const name = param.name.getText();
+
+				const { description, typeHint } = getParameterFromJsDoc(name, method.jsDoc);
+
+				parameters.push({
+					name: name,
+					type: getTypeHintFromType(typeHint || (param.type != null ? checker.getTypeAtLocation(param.type) : undefined), checker, config),
+					description: description
+				});
+			}
+
+			// Get return type
+			const signature = checker.getSignatureFromDeclaration(node);
+			if (signature != null) {
+				returnType = checker.getReturnTypeOfSignature(signature);
+			}
+		}
+
+		// Get return info from jsdoc
+		const { description: returnDescription, typeHint: returnTypeHint } = getReturnFromJsDoc(method.jsDoc);
+
 		methodDocs.push({
 			kind: "method",
 			name: method.name,
 			privacy: method.visibility,
-			type: getTypeHintFromMethod(method, checker)
-			// TODO: "parameters", "return", "summary" and "static"
+			type: getTypeHintFromMethod(method, checker),
+			description: method.jsDoc?.description,
+			parameters,
+			return: {
+				description: returnDescription,
+				type: getTypeHintFromType(returnTypeHint || returnType, checker, config)
+			}
+			// TODO: "summary" and "static"
 		});
 	}
 
@@ -326,7 +375,7 @@ function getMethodDocsFromDeclaration(declaration: ComponentDeclaration, checker
 function getFieldDocsFromDeclaration(declaration: ComponentDeclaration, checker: TypeChecker, config: TransformerConfig): FieldDoc[] {
 	const fieldDocs: FieldDoc[] = [];
 
-	for (const member of declaration.members) {
+	for (const member of filterVisibility(config.visibility, declaration.members)) {
 		if (member.propName != null) {
 			fieldDocs.push({
 				kind: "field",
@@ -415,4 +464,40 @@ function getNameFromDeclarationNode(node: Node): string | undefined {
 	}
 
 	return undefined;
+}
+
+/**
+ * Returns description and typeHint based on jsdoc for a specific parameter name
+ * @param name
+ * @param jsDoc
+ */
+function getParameterFromJsDoc(name: string, jsDoc: JsDoc | undefined): { description?: string; typeHint?: string } {
+	if (jsDoc?.tags == undefined) {
+		return {};
+	}
+
+	for (const tag of jsDoc.tags) {
+		const parsed = tag.parsed();
+
+		if (parsed.tag === "param" && parsed.name === name) {
+			return { description: parsed.description, typeHint: parsed.type };
+		}
+	}
+
+	return {};
+}
+
+/**
+ * Get return description and return typeHint from jsdoc
+ * @param jsDoc
+ */
+function getReturnFromJsDoc(jsDoc: JsDoc | undefined): { description?: string; typeHint?: string } {
+	const tag = jsDoc?.tags?.find(tag => ["returns", "return"].includes(tag.tag));
+
+	if (tag == null) {
+		return {};
+	}
+
+	const parsed = tag.parsed();
+	return { description: parsed.description, typeHint: parsed.type };
 }
