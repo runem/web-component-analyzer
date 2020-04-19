@@ -1,7 +1,7 @@
 import * as tsModule from "typescript";
 import { Node, Program } from "typescript";
 import { AnalyzerVisitContext } from "./analyzer-visit-context";
-import { DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
+import { DEFAULT_COMPONENT_DECLARATION_CACHE, DEFAULT_FEATURE_COLLECTION_CACHE } from "./constants";
 import { CustomElementFlavor } from "./flavors/custom-element/custom-element-flavor";
 import { makeContextFromConfig } from "./make-context-from-config";
 import { analyzeComponentDeclaration } from "./stages/analyze-declaration";
@@ -28,12 +28,13 @@ export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsMod
 			ts,
 			flavors: [new CustomElementFlavor()],
 			config: {
-				analyzeLibDom: true,
+				analyzeDefaultLib: true,
 				features: ALL_COMPONENT_FEATURES
 			}
 		}),
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
+			componentDeclaration: DEFAULT_COMPONENT_DECLARATION_CACHE,
 			general: new Map()
 		}
 	});

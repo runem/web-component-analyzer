@@ -2,7 +2,6 @@ import { SimpleTypeKind } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLang, hasModifier } from "../../util/ast-util";
-import { getExtendsForInheritanceTree } from "../../util/inheritance-tree-util";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -122,8 +121,8 @@ function inPolymerFlavorContext(context: AnalyzerDeclarationVisitContext): boole
 		result = true;
 	}
 
-	const extnds = getExtendsForInheritanceTree(declaration.inheritanceTree);
-	if (extnds.has("PolymerElement") || extnds.has("Polymer.Element")) {
+	// TODO: This only checks the immediate inheritance. Make it recursive to go throught the entire inheritance chain.
+	if (context.getDeclaration().heritageClauses.some(c => ["PolymerElement", "Polymer.Element"].includes(c.identifier.getText()))) {
 		result = true;
 	}
 
@@ -167,8 +166,6 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 	const memberResults: ComponentMemberResult[] = [];
 
 	if (returnStatement.expression != null && ts.isObjectLiteralExpression(returnStatement.expression)) {
-		const isPolymerFlavor = inPolymerFlavorContext(context);
-
 		// Each property in the object literal expression corresponds to a class field.
 		for (const propNode of returnStatement.expression.properties) {
 			// Get propName
@@ -182,7 +179,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 			const litConfig = ts.isPropertyAssignment(propNode)
 				? ts.isObjectLiteralExpression(propNode.initializer)
 					? getLitPropertyOptions(propNode.initializer, context)
-					: isPolymerFlavor
+					: inPolymerFlavorContext(context)
 					? parseLitPropertyOption(
 							{
 								kind: "type",

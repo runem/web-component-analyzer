@@ -1,6 +1,7 @@
 import { SourceFile } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
+import { resolveSymbolDeclarations } from "../util/ast-util";
 import { analyzeComponentDeclaration } from "./analyze-declaration";
 
 /**
@@ -17,12 +18,13 @@ export function discoverDeclarations(sourceFile: SourceFile, context: AnalyzerVi
 		const exports = context.checker.getExportsOfModule(symbol);
 
 		// Find all class declarations in the source file
-		for (const exp of exports) {
-			const node = exp.valueDeclaration;
+		for (const symbol of exports) {
+			const node = symbol.valueDeclaration;
 
 			if (node != null) {
 				if (context.ts.isClassDeclaration(node) /* || context.ts.isInterfaceDeclaration(node)*/) {
-					const decl = analyzeComponentDeclaration([node], context, { expandInheritance: false });
+					const nodes = resolveSymbolDeclarations(symbol);
+					const decl = analyzeComponentDeclaration(nodes, context);
 					declarations.push(decl);
 				}
 			}

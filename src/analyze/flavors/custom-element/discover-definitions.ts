@@ -1,6 +1,6 @@
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { getInterfaceKeys, resolveDeclarations } from "../../util/ast-util";
+import { getInterfaceKeys } from "../../util/ast-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
@@ -45,14 +45,13 @@ export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitCo
 
 					// (___, MyElement)
 					if (ts.isIdentifier(identifierNode)) {
-						const declarationNodes = resolveDeclarations(identifierNode, { checker, ts });
-
-						return declarationNodes.map(declarationNode => ({
-							tagName,
-							identifierNode,
-							tagNameNode,
-							declarationNode
-						}));
+						return [
+							{
+								tagName,
+								identifierNode,
+								tagNameNode
+							}
+						];
 					}
 
 					// (___, class { ... })

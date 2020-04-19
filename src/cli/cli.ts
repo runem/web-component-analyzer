@@ -59,7 +59,15 @@ o {tagname}: The element's tag name`,
 			array: true,
 			choices: ["member", "method", "cssproperty", "csspart", "event", "slot"]
 		})
-		.option("discoverLibraryFiles", {
+		.option("analyzeDefaultLibrary", {
+			boolean: true,
+			hidden: true
+		})
+		.option("analyzeDependencies", {
+			boolean: true,
+			hidden: true
+		})
+		.option("discoverNodeModules", {
 			boolean: true,
 			hidden: true
 		})

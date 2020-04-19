@@ -3,14 +3,13 @@ export * from "./analyze-text";
 export * from "./analyze-html-element";
 export * from "./analyzer-visit-context";
 
-export { generateInheritanceTreeText } from "./util/inheritance-tree-util";
+export * from "./util/component-declaration-util";
 
 export { VERSION } from "./constants";
 
 export * from "./types/analyzer-config";
 export * from "./types/analyzer-options";
 export * from "./types/analyzer-result";
-export * from "./types/inheritance-tree";
 export * from "./types/js-doc";
 export * from "./types/modifier-kind";
 export * from "./types/visibility-kind";

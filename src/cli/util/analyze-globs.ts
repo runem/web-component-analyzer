@@ -67,6 +67,8 @@ export async function analyzeGlobs(
 			ts: config.ts,
 			config: {
 				features: config.features,
+				analyzeDependencies: config.analyzeDependencies,
+				analyzeDefaultLib: config.analyzeDefaultLibrary,
 				analyzeGlobalFeatures: config.analyzeGlobalFeatures,
 				analyzeAllDeclarations: config.format == "json2" // TODO: find a better way to construct the config
 			}
@@ -91,7 +93,7 @@ export async function analyzeGlobs(
 async function expandGlobs(globs: string | string[], config: AnalyzerCliConfig): Promise<string[]> {
 	globs = Array.isArray(globs) ? globs : [globs];
 
-	const ignoreGlobs = config?.discoverLibraryFiles ? [] : IGNORE_GLOBS;
+	const ignoreGlobs = config?.discoverNodeModules ? [] : IGNORE_GLOBS;
 
 	return arrayFlat(
 		await Promise.all(

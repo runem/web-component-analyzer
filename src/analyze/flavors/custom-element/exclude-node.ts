@@ -7,7 +7,7 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
  * @param context
  */
 export function excludeNode(node: Node, context: AnalyzerVisitContext): boolean | undefined {
-	if (context.config.analyzeLibDom) {
+	if (context.config.analyzeDefaultLib) {
 		return undefined;
 	}
 

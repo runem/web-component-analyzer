@@ -1,6 +1,6 @@
 import { Node } from "typescript";
-import { getInterfaceKeys } from "../../util/ast-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { getInterfaceKeys } from "../../util/ast-util";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
 /**

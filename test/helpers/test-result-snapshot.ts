@@ -1,10 +1,14 @@
 import test, { ExecutionContext, ImplementationResult } from "ava";
 import { Program } from "typescript";
 import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
-import { getExtendsForInheritanceTree, getMixinsForInheritanceTree } from "../../src/analyze/util/inheritance-tree-util";
+import {
+	getExtendsHeritageClauses,
+	getExtendsHeritageClausesInChain,
+	getMixinHeritageClauses,
+	getMixinHeritageClausesInChain
+} from "../../src/analyze/util/component-declaration-util";
 import { analyzeGlobs } from "../../src/cli/util/analyze-globs";
 import { arrayFlat } from "../../src/util/array-util";
-import { stripTypescriptValues } from "../../src/util/strip-typescript-values";
 
 function testResult(
 	testName: string,
@@ -13,7 +17,7 @@ function testResult(
 ) {
 	test(testName, async t => {
 		const { results, program } = await analyzeGlobs(globs, {
-			discoverLibraryFiles: true,
+			discoverNodeModules: true,
 			analyzeGlobalFeatures: true
 		});
 
@@ -48,8 +52,22 @@ export function testResultSnapshot(globs: string[]) {
 			events: declarations.reduce((acc, decl) => acc + decl.events.length, 0),
 			slots: declarations.reduce((acc, decl) => acc + decl.slots.length, 0),
 			methods: declarations.reduce((acc, decl) => acc + decl.methods.length, 0),
-			mixins: declarations.map(decl => `[${Array.from(getMixinsForInheritanceTree(decl.inheritanceTree)).join(", ")}]`).join(", "),
-			extends: declarations.map(decl => `[${Array.from(getExtendsForInheritanceTree(decl.inheritanceTree)).join(", ")}]`).join(", ")
+			mixins: declarations
+				.map(
+					decl =>
+						`[${getMixinHeritageClausesInChain(decl)
+							.map(clause => clause.identifier.getText())
+							.join(", ")}]`
+				)
+				.join(", "),
+			extends: declarations
+				.map(
+					decl =>
+						`[${getExtendsHeritageClausesInChain(decl)
+							.map(clause => clause.identifier.getText())
+							.join(", ")}]`
+				)
+				.join(", ")
 		};
 
 		t.pass("Temporary ignore snapshot testing");

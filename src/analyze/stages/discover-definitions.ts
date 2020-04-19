@@ -2,6 +2,7 @@ import { Node, SourceFile } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentDefinition } from "../types/component-definition";
+import { getSymbol, resolveSymbolDeclarations } from "../util/ast-util";
 import { lazy } from "../util/lazy";
 import { visitDefinitions } from "./flavor/visit-definitions";
 
@@ -79,7 +80,15 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 				declarationNodeSet = new Set();
 				definitionToDeclarationMap.set(definition, declarationNodeSet);
 			}
-			declarationNodeSet.add(result.declarationNode);
+
+			// Grab the symbol from the identifier node and get the declarations
+			// If the is no symbol on the result, use "result.declarationNode" instead
+			const symbol = result.identifierNode != null ? getSymbol(result.identifierNode, context) : undefined;
+			const declarations = symbol != null ? resolveSymbolDeclarations(symbol) : result.declarationNode != null ? [result.declarationNode] : [];
+
+			for (const decl of declarations) {
+				declarationNodeSet.add(decl);
+			}
 		}
 	});
 

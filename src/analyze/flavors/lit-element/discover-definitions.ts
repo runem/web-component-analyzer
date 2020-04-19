@@ -1,6 +1,7 @@
 import { Node } from "typescript";
-import { resolveNodeValue } from "../../util/resolve-node-value";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { getNodeIdentifier } from "../../util/ast-util";
+import { resolveNodeValue } from "../../util/resolve-node-value";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
 /**
@@ -27,13 +28,14 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 					// Resolve the value of the first argument. This is the tag name.
 					const unresolvedTagNameNode = callExpression.arguments[0];
 					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker });
+					const identifier = getNodeIdentifier(node, context);
 
 					if (resolvedTagNameNode != null && typeof resolvedTagNameNode.value === "string") {
 						return [
 							{
 								tagName: resolvedTagNameNode.value,
 								tagNameNode: resolvedTagNameNode.node,
-								declarationNode: node
+								identifierNode: identifier
 							}
 						];
 					}

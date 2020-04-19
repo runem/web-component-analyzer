@@ -6,7 +6,6 @@ import { discoverInheritance } from "./discover-inheritance";
 import { discoverMembers } from "./discover-members";
 import { discoverMethods } from "./discover-methods";
 import { excludeNode } from "./exclude-node";
-import { refineFeature } from "./refine-feature";
 
 /**
  * A flavor that discovers using standard custom element rules
@@ -23,8 +22,6 @@ export class CustomElementFlavor implements AnalyzerFlavor {
 	};
 
 	discoverGlobalFeatures = discoverGlobalFeatures;
-
-	refineFeature = refineFeature;
 
 	discoverInheritance = discoverInheritance;
 }

@@ -30,28 +30,77 @@ export interface AstContext {
  */
 export function resolveDeclarations(node: Node, context: { checker: TypeChecker; ts: typeof tsModule }): Declaration[] {
 	if (node == null) return [];
+
+	const symbol = getSymbol(node, context);
+	if (symbol == null) return [];
+
+	return resolveSymbolDeclarations(symbol);
+}
+
+/**
+ * Returns the symbol of a node.
+ * This function follows aliased symbols.
+ * @param node
+ * @param context
+ */
+export function getSymbol(node: Node, context: { checker: TypeChecker; ts: typeof tsModule }): Symbol | undefined {
+	if (node == null) return undefined;
 	const { checker, ts } = context;
 
 	// Get the symbol
 	let symbol = checker.getSymbolAtLocation(node);
-	if (symbol == null) return [];
+
+	if (symbol == null) {
+		const identifier = getNodeIdentifier(node, context);
+		symbol = identifier != null ? checker.getSymbolAtLocation(identifier) : undefined;
+	}
 
 	// Resolve aliased symbols
-	if (isAliasSymbol(symbol, ts)) {
+	if (symbol != null && isAliasSymbol(symbol, ts)) {
 		symbol = checker.getAliasedSymbol(symbol);
-		if (symbol == null) return [];
+		if (symbol == null) return undefined;
 	}
 
+	return symbol;
+}
+
+/**
+ * Resolves the declarations of a symbol. A valueDeclaration is always the first entry in the array
+ * @param symbol
+ */
+export function resolveSymbolDeclarations(symbol: Symbol): Declaration[] {
 	// Filters all declarations
-	const allDeclarations = symbol.getDeclarations() || [];
-	const validDeclarations = allDeclarations.filter(declaration => !ts.isIdentifier(declaration));
+	const valueDeclaration = symbol.valueDeclaration;
+	const declarations = symbol.getDeclarations() || [];
 
-	if (validDeclarations.length > 0) {
-		return validDeclarations;
+	if (valueDeclaration == null) {
+		return declarations;
 	} else {
-		const declaration = symbol.valueDeclaration;
-		return declaration != null ? [declaration] : [];
+		// Make sure that "valueDeclaration" is always the first entry
+		return [valueDeclaration, ...declarations.filter(decl => decl !== valueDeclaration)];
 	}
+}
+
+/**
+ * Resolve a declaration by trying to find the real value by following assignments.
+ * @param node
+ * @param context
+ */
+export function resolveDeclarationsDeep(node: Node, context: { checker: TypeChecker; ts: typeof tsModule }): Node[] {
+	const declarations: Node[] = [];
+	const allDeclarations = resolveDeclarations(node, context);
+
+	for (const declaration of allDeclarations) {
+		if (context.ts.isVariableDeclaration(declaration) && declaration.initializer != null && context.ts.isIdentifier(declaration.initializer)) {
+			declarations.push(...resolveDeclarationsDeep(declaration.initializer, context));
+		} else if (context.ts.isTypeAliasDeclaration(declaration) && declaration.type != null && context.ts.isIdentifier(declaration.type)) {
+			declarations.push(...resolveDeclarationsDeep(declaration.type, context));
+		} else {
+			declarations.push(declaration);
+		}
+	}
+
+	return declarations;
 }
 
 /**
@@ -132,10 +181,10 @@ export function getMemberVisibilityFromNode(
 export function getInterfaceKeys(
 	interfaceDeclaration: InterfaceDeclaration,
 	context: AstContext
-): { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] {
-	const extensions: { key: string; keyNode: Node; identifier?: Node; declaration: Declaration }[] = [];
+): { key: string; keyNode: Node; identifier?: Node; declaration?: Node }[] {
+	const extensions: { key: string; keyNode: Node; identifier?: Node; declaration?: Node }[] = [];
 
-	const { ts, checker } = context;
+	const { ts } = context;
 
 	for (const member of interfaceDeclaration.members) {
 		// { "my-button": MyButton; }
@@ -145,11 +194,11 @@ export function getInterfaceKeys(
 				continue;
 			}
 
-			let declaration, identifier: Node | undefined;
+			let identifier: Node | undefined;
+			let declaration: Node | undefined;
 			if (ts.isTypeReferenceNode(member.type)) {
 				// { ____: MyButton; } or { ____: namespace.MyButton; }
 				identifier = member.type.typeName;
-				declaration = resolveDeclarations(identifier, { checker, ts })[0];
 			} else if (ts.isTypeLiteralNode(member.type)) {
 				identifier = undefined;
 				declaration = member.type;
@@ -157,7 +206,7 @@ export function getInterfaceKeys(
 				continue;
 			}
 
-			if (declaration != null) {
+			if (declaration != null || identifier != null) {
 				extensions.push({ key: String(resolvedKey.value), keyNode: resolvedKey.node, declaration, identifier });
 			}
 		}
@@ -282,8 +331,8 @@ export function isExtensionInterface(node: Node, context: AnalyzerVisitContext, 
  * @param node
  * @param context
  */
-export function getDeclarationName(node: Node, context: AnalyzerVisitContext): string | undefined {
-	return getDeclarationIdentifier(node, context)?.text;
+export function getNodeName(node: Node, context: { ts: typeof tsModule }): string | undefined {
+	return getNodeIdentifier(node, context)?.getText();
 }
 
 /**
@@ -291,10 +340,12 @@ export function getDeclarationName(node: Node, context: AnalyzerVisitContext): s
  * @param node
  * @param context
  */
-export function getDeclarationIdentifier(node: Node, context: AnalyzerVisitContext): Identifier | undefined {
+export function getNodeIdentifier(node: Node, context: { ts: typeof tsModule }): Identifier | undefined {
 	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
 		return node.name;
-	} else if (context.ts.isVariableDeclaration(node) && context.ts.isIdentifier(node.name)) {
+	} else if (context.ts.isIdentifier(node)) {
+		return node;
+	} else if (context.ts.isVariableDeclaration(node) && node.name != null && context.ts.isIdentifier(node.name)) {
 		return node.name;
 	}
 

@@ -17,8 +17,10 @@ export interface AnalyzerCliConfig {
 	visibility?: VisibilityKind;
 
 	features?: ComponentFeature[];
-	discoverLibraryFiles?: boolean;
 	analyzeGlobalFeatures?: boolean;
+	analyzeDependencies?: boolean;
+	analyzeDefaultLibrary?: boolean;
+	discoverNodeModules?: boolean;
 
 	markdown?: {
 		headerLevel?: number;

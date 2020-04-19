@@ -1,6 +1,6 @@
 import { join } from "path";
 import { analyzeHTMLElement } from "../../../src/analyze/analyze-html-element";
-import { getExtendsForInheritanceTree } from "../../../src/analyze/util/inheritance-tree-util";
+import { ComponentHeritageClause } from "../../../src/analyze/types/component-declaration";
 import { getCurrentTsModule, getCurrentTsModuleDirectory, tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
 
@@ -11,7 +11,7 @@ tsTest("analyzeHTMLElement returns correct result", t => {
 
 	t.truthy(result);
 
-	const ext = getExtendsForInheritanceTree(result!.inheritanceTree);
+	const ext = getAllInheritedNames(result!.heritageClauses);
 
 	// Test that the node extends some of the interfaces
 	t.truthy(ext.has("EventTarget"));
@@ -26,3 +26,14 @@ tsTest("analyzeHTMLElement returns correct result", t => {
 	// From EventTarget interface
 	t.truthy(result!.methods.find(m => m.name === "addEventListener"));
 });
+
+function getAllInheritedNames(heritageClauses: ComponentHeritageClause[], names: Set<string> = new Set()) {
+	for (const heritageClause of heritageClauses) {
+		names.add(heritageClause.identifier.getText());
+		if (heritageClause.declaration != null) {
+			getAllInheritedNames(heritageClause.declaration.heritageClauses, names);
+		}
+	}
+
+	return names;
+}

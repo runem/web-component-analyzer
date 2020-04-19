@@ -1,6 +1,6 @@
 import * as tsModule from "typescript";
 import { AnalyzerVisitContext } from "./analyzer-visit-context";
-import { DEFAULT_FEATURE_COLLECTION_CACHE, DEFAULT_FLAVORS } from "./constants";
+import { DEFAULT_COMPONENT_DECLARATION_CACHE, DEFAULT_FEATURE_COLLECTION_CACHE, DEFAULT_FLAVORS } from "./constants";
 import { AnalyzerOptions } from "./types/analyzer-options";
 import { ALL_COMPONENT_FEATURES } from "./types/features/component-feature";
 
@@ -25,12 +25,13 @@ export function makeContextFromConfig(options: AnalyzerOptions): AnalyzerVisitCo
 		flavors,
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
+			componentDeclaration: DEFAULT_COMPONENT_DECLARATION_CACHE,
 			general: new Map()
 		},
 		config: {
 			...options.config,
-			analyzeLibDom: options.config?.analyzeLibDom ?? false,
-			analyzeLib: options.config?.analyzeLib ?? false,
+			analyzeDefaultLib: options.config?.analyzeDefaultLib ?? false,
+			analyzeDependencies: options.config?.analyzeDependencies ?? false,
 			excludedDeclarationNames: options.config?.excludedDeclarationNames ?? [],
 			features: options.config?.features ?? ALL_COMPONENT_FEATURES
 		}

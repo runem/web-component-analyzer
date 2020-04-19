@@ -1,11 +1,10 @@
-import { Node } from "typescript";
+import { Node, Symbol } from "typescript";
 import { ComponentCssPart } from "./features/component-css-part";
 import { ComponentCssProperty } from "./features/component-css-property";
 import { ComponentEvent } from "./features/component-event";
 import { ComponentMember } from "./features/component-member";
 import { ComponentMethod } from "./features/component-method";
 import { ComponentSlot } from "./features/component-slot";
-import { InheritanceTreeNode } from "./inheritance-tree";
 import { JsDoc } from "./js-doc";
 
 export interface ComponentFeatures {
@@ -17,11 +16,23 @@ export interface ComponentFeatures {
 	cssParts: ComponentCssPart[];
 }
 
+export type ComponentHeritageClauseKind = "implements" | "extends" | "mixin";
+
+export interface ComponentHeritageClause {
+	kind: ComponentHeritageClauseKind;
+	identifier: Node;
+	declaration: ComponentDeclaration | undefined;
+}
+
+export type ComponentDeclarationKind = "mixin" | "interface" | "class";
+
 export interface ComponentDeclaration extends ComponentFeatures {
 	node: Node;
-	inheritanceTree: InheritanceTreeNode;
 	declarationNodes: Set<Node>;
-	jsDoc: JsDoc | undefined;
 
+	kind: ComponentDeclarationKind;
+	jsDoc?: JsDoc;
+	symbol?: Symbol;
 	deprecated?: boolean | string;
+	heritageClauses: ComponentHeritageClause[];
 }

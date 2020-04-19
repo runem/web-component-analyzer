@@ -14,6 +14,10 @@ export function mergeFeatures(
 	context: AnalyzerVisitContext
 ): ComponentFeatureCollection {
 	if (Array.isArray(collection)) {
+		if (collection.length === 1) {
+			return collection[0];
+		}
+
 		collection = {
 			cssParts: arrayFlat(collection.map(c => c.cssParts)),
 			cssProperties: arrayFlat(collection.map(c => c.cssProperties)),

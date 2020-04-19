@@ -1,6 +1,6 @@
 import { Node, SourceFile } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
-import { ComponentDeclaration } from "../types/component-declaration";
+import { ComponentDeclaration, ComponentDeclarationKind, ComponentHeritageClause } from "../types/component-declaration";
 import { ComponentCssPart } from "../types/features/component-css-part";
 import { ComponentCssProperty } from "../types/features/component-css-property";
 import { ComponentEvent } from "../types/features/component-event";
@@ -8,15 +8,16 @@ import { ComponentFeature } from "../types/features/component-feature";
 import { ComponentMember } from "../types/features/component-member";
 import { ComponentMethod } from "../types/features/component-method";
 import { ComponentSlot } from "../types/features/component-slot";
-import { InheritanceTreeClause } from "../types/inheritance-tree";
 
 export type PriorityKind = "low" | "medium" | "high";
 
 export interface DefinitionNodeResult {
 	tagName: string;
-	declarationNode: Node; // Where to find the node that contains the "meat" of the component
-	identifierNode?: Node; // Where to find the node that refers to the declaration node
+
 	tagNameNode?: Node; // Where to find the node that contains the name of the component
+	identifierNode?: Node; // Where to find the node that refers to the declaration node
+	declarationNode?: Node; // Where to find the node that contains the implementation of the component
+
 	analyzerFlavor?: AnalyzerFlavor;
 }
 
@@ -46,7 +47,7 @@ export interface ComponentFeatureCollection {
 export interface AnalyzerDeclarationVisitContext extends AnalyzerVisitContext {
 	//getDefinition: () => ComponentDefinition;
 	getDeclaration: () => ComponentDeclaration;
-	declarationNode?: Node;
+	declarationNode: Node;
 	sourceFile: SourceFile;
 }
 
@@ -61,10 +62,16 @@ export type FeatureRefineVisitMap = {
 	) => FeatureVisitReturnTypeMap[K] | FeatureVisitReturnTypeMap[K][] | undefined;
 };
 
+export interface InheritanceResult {
+	heritageClauses?: ComponentHeritageClause[];
+	declarationNodes?: Node[];
+	declarationKind?: ComponentDeclarationKind;
+}
+
 export interface AnalyzerFlavor {
 	excludeNode?(node: Node, context: AnalyzerVisitContext): boolean | undefined;
 	discoverDefinitions?(node: Node, context: AnalyzerVisitContext): DefinitionNodeResult[] | undefined;
-	discoverInheritance?(node: Node, context: AnalyzerVisitContext): InheritanceTreeClause[] | undefined;
+	discoverInheritance?(node: Node, context: AnalyzerVisitContext): InheritanceResult | undefined;
 	discoverFeatures?: Partial<FeatureDiscoverVisitMap<AnalyzerDeclarationVisitContext>>;
 	discoverGlobalFeatures?: Partial<FeatureDiscoverVisitMap<AnalyzerVisitContext>>;
 	refineFeature?: Partial<FeatureRefineVisitMap>;

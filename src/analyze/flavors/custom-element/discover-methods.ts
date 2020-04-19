@@ -23,7 +23,7 @@ export function discoverMethods(node: Node, context: AnalyzerDeclarationVisitCon
 		// Outscope static methods for now
 		const name = node.name.getText();
 
-		if (isHTMLElementMethodName(name)) {
+		if (!context.config.analyzeDefaultLib && isHTMLElementMethodName(name)) {
 			return undefined;
 		}
 

@@ -2,6 +2,7 @@ import * as tsModule from "typescript";
 import { Node, TypeChecker } from "typescript";
 import { AnalyzerFlavor, ComponentFeatureCollection } from "./flavors/analyzer-flavor";
 import { AnalyzerConfig } from "./types/analyzer-config";
+import { ComponentDeclaration } from "./types/component-declaration";
 
 /**
  * This context is used in the entire analyzer.
@@ -15,6 +16,7 @@ export interface AnalyzerVisitContext {
 	emitContinue?(): void;
 	cache: {
 		featureCollection: WeakMap<Node, ComponentFeatureCollection>;
+		componentDeclaration: WeakMap<Node, ComponentDeclaration>;
 		general: Map<unknown, unknown>;
 	};
 }

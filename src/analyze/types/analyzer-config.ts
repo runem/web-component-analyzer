@@ -4,8 +4,8 @@ import { ComponentFeature } from "./features/component-feature";
  * Configuration to give when analyzing components.
  */
 export interface AnalyzerConfig {
-	analyzeLibDom?: boolean;
-	analyzeLib?: boolean;
+	analyzeDefaultLib?: boolean;
+	analyzeDependencies?: boolean;
 	analyzeGlobalFeatures?: boolean;
 	analyzeAllDeclarations?: boolean;
 	excludedDeclarationNames?: string[];

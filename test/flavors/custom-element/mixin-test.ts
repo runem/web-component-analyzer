@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers, getAttributeNames, getComponentProp, getPropertyNames } from "../../helpers/util";
 
 tsTest("Handles circular inheritance", t => {
@@ -12,7 +12,7 @@ tsTest("Handles circular inheritance", t => {
 		/**
 		 * @element
 		 */
-		class MyElement extends MyBase {
+		class MyElement extends MyElement {
 			static get observedAttributes() {
 				return ["a", "b"];
 			}
@@ -244,8 +244,7 @@ tsTest("Handles mixins generated with factory functions", t => {
 	const {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
-		export const FieldCustomMixin = dedupeMixin(
-		superclass =>
+		export const FieldCustomMixin = dedupeMixin(superclass =>
 			class FieldCustomMixin extends superclass {
 				static get observedAttributes() { 
 					return ["c", "d"]; 
@@ -267,22 +266,22 @@ tsTest("Handles mixins generated with factory functions", t => {
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
-tsTest("Handles nested mixin extends", t => {
+tsTest.only("Handles nested mixin extends", t => {
 	const {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
 		const MyMixin1 = (Base) => {
-			return class Mixin extends Base {
+			return class Mixin1 extends Base {
 				static get observedAttributes() {
-					return ["d", ...super.observedAttributes];
+					return ["c", ...super.observedAttributes];
 				}
 			}
 		}
 		
 		const MyMixin2 = (Base) => {
-			return class Mixin extends Base {
+			return class Mixin2 extends Base {
 				static get observedAttributes() {
-					return ["c", ...super.observedAttributes];
+					return ["b", ...super.observedAttributes];
 				}
 			}
 		}
@@ -298,7 +297,7 @@ tsTest("Handles nested mixin extends", t => {
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
-	t.deepEqual(attributeNames, ["a", "c", "d"]);
+	t.deepEqual(attributeNames, ["a", "b", "c"]);
 });
 
 tsTest("Handles nested mixin wrapper functions", t => {

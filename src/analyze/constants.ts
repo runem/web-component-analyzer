@@ -9,3 +9,5 @@ export const VERSION = "<@VERSION@>";
 export const DEFAULT_FLAVORS: AnalyzerFlavor[] = [new LitElementFlavor(), new CustomElementFlavor(), new JsDocFlavor(), new JSXFlavor()];
 
 export const DEFAULT_FEATURE_COLLECTION_CACHE = new WeakMap();
+
+export const DEFAULT_COMPONENT_DECLARATION_CACHE = new WeakMap();
