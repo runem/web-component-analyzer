@@ -97,6 +97,11 @@ export interface AttributeDoc {
 	 * The name of the field this attribute is associated with, if any.
 	 */
 	fieldName?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface EventDoc {
@@ -120,6 +125,11 @@ export interface EventDoc {
 	 * If the event is a CustomEvent, the type of `detail` field.
 	 */
 	detailType?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface SlotDoc {
@@ -132,6 +142,11 @@ export interface SlotDoc {
 	 * A markdown description of the slot.
 	 */
 	description?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface CSSPropertyDoc {
@@ -139,11 +154,21 @@ export interface CSSPropertyDoc {
 	description?: string;
 	type?: string;
 	default?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface CSSPartDoc {
 	name: string;
 	description?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface ClassDoc {
@@ -191,12 +216,22 @@ export interface FieldDoc {
 	default?: string; // TODO: make this a Type type or a Reference
 	privacy?: Privacy;
 	type?: string;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 export interface MethodDoc extends FunctionLike {
 	kind: "method";
 
 	static?: boolean;
+
+	/**
+	 * A reference to the class or mixin that declared this property.
+	 */
+	inheritedFrom?: Reference;
 }
 
 /**

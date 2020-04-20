@@ -1,12 +1,13 @@
 import { SimpleTypeKind } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
+import { ComponentMember } from "../../types/features/component-member";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLang, hasModifier } from "../../util/ast-util";
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { camelToDashCase } from "../../util/text-util";
-import { AnalyzerDeclarationVisitContext, ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
 import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPropertyOption } from "./parse-lit-property-configuration";
 
 /**
@@ -15,7 +16,7 @@ import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPr
  * @param node
  * @param context
  */
-export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
+export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMember[] | undefined {
 	const { ts } = context;
 
 	// Never pick up members not declared directly on the declaration node being traversed
@@ -48,7 +49,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 function parsePropertyDecorator(
 	node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature,
 	context: AnalyzerDeclarationVisitContext
-): ComponentMemberResult[] | undefined {
+): ComponentMember[] | undefined {
 	const { ts, checker } = context;
 
 	// Parse the content of a possible lit "@property" decorator.
@@ -75,24 +76,22 @@ function parsePropertyDecorator(
 		return [
 			{
 				priority: "high",
-				member: {
-					kind: "property",
-					propName,
-					attrName,
-					type: lazy(() => {
-						const propType = checker.getTypeAtLocation(node);
-						const inJavascriptFile = getNodeSourceFileLang(node) === "js";
-						return inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
-					}),
-					node,
-					default: def,
-					required,
-					jsDoc,
-					meta: litConfig,
-					visibility: getMemberVisibilityFromNode(node, ts),
-					reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined,
-					modifiers: getModifiersFromNode(node, ts)
-				}
+				kind: "property",
+				propName,
+				attrName,
+				type: lazy(() => {
+					const propType = checker.getTypeAtLocation(node);
+					const inJavascriptFile = getNodeSourceFileLang(node) === "js";
+					return inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
+				}),
+				node,
+				default: def,
+				required,
+				jsDoc,
+				meta: litConfig,
+				visibility: getMemberVisibilityFromNode(node, ts),
+				reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined,
+				modifiers: getModifiersFromNode(node, ts)
 			}
 		];
 	}
@@ -160,10 +159,10 @@ function getLitAttributeName(propName: string, litConfig: LitElementPropertyConf
  * @param returnStatement
  * @param context
  */
-function parseStaticProperties(returnStatement: ReturnStatement, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] {
+function parseStaticProperties(returnStatement: ReturnStatement, context: AnalyzerDeclarationVisitContext): ComponentMember[] {
 	const { ts } = context;
 
-	const memberResults: ComponentMemberResult[] = [];
+	const memberResults: ComponentMember[] = [];
 
 	if (returnStatement.expression != null && ts.isObjectLiteralExpression(returnStatement.expression)) {
 		// Each property in the object literal expression corresponds to a class field.
@@ -202,19 +201,17 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 			// Emit either the attribute or the property
 			memberResults.push({
 				priority: "high",
-				member: {
-					kind: "property",
-					type: lazy(() => {
-						return (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
-					}),
-					propName: propName,
-					attrName: emitAttribute ? attrName : undefined,
-					jsDoc,
-					node: propNode,
-					meta: litConfig,
-					default: litConfig.default,
-					reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined
-				}
+				kind: "property",
+				type: lazy(() => {
+					return (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
+				}),
+				propName: propName,
+				attrName: emitAttribute ? attrName : undefined,
+				jsDoc,
+				node: propNode,
+				meta: litConfig,
+				default: litConfig.default,
+				reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined
 			});
 		}
 	}

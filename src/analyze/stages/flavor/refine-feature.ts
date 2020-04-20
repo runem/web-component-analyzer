@@ -1,6 +1,6 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
-import { ComponentFeature } from "../../types/features/component-feature";
+import { AnalyzerDeclarationVisitContext, FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
+import { ComponentFeature, ComponentFeatureBase } from "../../types/features/component-feature";
 
 export type RefineFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K]) => void };
 
@@ -12,10 +12,10 @@ export type RefineFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVi
  * @param context
  * @param emitMap
  */
-export function refineFeature<FeatureKind extends ComponentFeature, ValueType = FeatureVisitReturnTypeMap[FeatureKind]>(
+export function refineFeature<FeatureKind extends ComponentFeature, ValueType extends ComponentFeatureBase = FeatureVisitReturnTypeMap[FeatureKind]>(
 	featureKind: FeatureKind,
 	value: ValueType | ValueType[],
-	context: AnalyzerVisitContext,
+	context: AnalyzerVisitContext | AnalyzerDeclarationVisitContext,
 	emitMap: Partial<RefineFeatureEmitMap>
 ): void {
 	/*if (Array.isArray(value)) {
@@ -23,7 +23,22 @@ export function refineFeature<FeatureKind extends ComponentFeature, ValueType = 
 		return;
 	}*/
 
-	let refinedValue: undefined | typeof value = value;
+	let refinedValue: undefined | ComponentFeatureBase | ComponentFeatureBase[] = value;
+
+	// Add "declaration" to the feature if necessary
+	if ("getDeclaration" in context && refinedValue != null) {
+		const decl = context.getDeclaration();
+
+		if (Array.isArray(refinedValue)) {
+			for (const val of refinedValue) {
+				if (val.declaration == null) {
+					val.declaration = decl;
+				}
+			}
+		} else if (refinedValue.declaration == null) {
+			refinedValue.declaration = decl;
+		}
+	}
 
 	for (const flavor of context.flavors) {
 		const refineFunc = flavor.refineFeature?.[featureKind];

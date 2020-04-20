@@ -1,6 +1,6 @@
 import { TypeChecker } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { ComponentMemberResult, PriorityKind } from "../../flavors/analyzer-flavor";
+import { PriorityKind } from "../../flavors/analyzer-flavor";
 import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
 import { mergeJsDoc, mergeModifiers } from "./merge-util";
 
@@ -17,21 +17,21 @@ interface MergeMap {
 
 /**
  * Merges multiple members based on priority
- * @param memberResults
+ * @param members
  * @param context
  */
-export function mergeMemberResults(memberResults: ComponentMemberResult[], context: AnalyzerVisitContext): ComponentMemberResult[] {
+export function mergeMembers(members: ComponentMember[], context: AnalyzerVisitContext): ComponentMember[] {
 	// Start merging by sorting member results from high to low priority.
 	// If two priorities are the same: prioritize the first found element
 	// From node 11, equal elements keep their order after sort, but not in node 10
 	// Therefore we use "indexOf" to return correct order if two priorities are equal
-	memberResults = [...memberResults].sort((a, b) => {
+	members = [...members].sort((a, b) => {
 		const vA = priorityValueMap[a.priority];
 		const vB = priorityValueMap[b.priority];
 
 		if (vA === vB) {
-			const iA = memberResults.indexOf(a);
-			const iB = memberResults.indexOf(b);
+			const iA = members.indexOf(a);
+			const iB = members.indexOf(b);
 
 			return iA < iB ? -1 : 1;
 		}
@@ -47,7 +47,7 @@ export function mergeMemberResults(memberResults: ComponentMemberResult[], conte
 	};
 
 	// Merge all members one by one adding them to the merge map
-	for (const { member } of memberResults) {
+	for (const member of members) {
 		// Find a member that is similar to this member
 		const mergeableMember = findMemberToMerge(member, mergeMap);
 		let newMember: ComponentMember | undefined = undefined;
@@ -76,7 +76,7 @@ export function mergeMemberResults(memberResults: ComponentMemberResult[], conte
 	}
 
 	// Return merged results with only "high" priorities
-	return [...mergeMap.props.values(), ...mergeMap.attrs.values()].map(member => ({ priority: "high", member }));
+	return [...mergeMap.props.values(), ...mergeMap.attrs.values()].map(member => ({ ...member, priority: "high" }));
 }
 
 /**
@@ -167,6 +167,7 @@ function mergeMemberIntoMember<T extends ComponentMemberProperty | ComponentMemb
 		default: leftMember.default === undefined ? rightMember.default : leftMember.default,
 		required: leftMember.required ?? rightMember.required,
 		visibility: leftMember.visibility ?? rightMember.visibility,
-		deprecated: leftMember.deprecated ?? rightMember.deprecated
+		deprecated: leftMember.deprecated ?? rightMember.deprecated,
+		declaration: rightMember.declaration ?? leftMember.declaration
 	};
 }

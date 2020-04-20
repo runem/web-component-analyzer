@@ -1,19 +1,20 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
+import { ComponentMember } from "../../types/features/component-member";
 import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { isNamePrivate } from "../../util/text-util";
 import { relaxType } from "../../util/type-util";
-import { AnalyzerDeclarationVisitContext, ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
 
 /**
  * Discovers members based on standard vanilla custom element rules
  * @param node
  * @param context
  */
-export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMemberResult[] | undefined {
+export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitContext): ComponentMember[] | undefined {
 	const { ts, checker } = context;
 
 	// Never pick up members not declared directly on the declaration node being traversed
@@ -24,7 +25,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 	// static get observedAttributes() { return ['c', 'l']; }
 	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
 		if (node.name.getText() === "observedAttributes" && node.body != null) {
-			const members: ComponentMemberResult[] = [];
+			const members: ComponentMember[] = [];
 
 			// Find either the first "return" statement or the first "array literal expression"
 			const arrayLiteralExpression =
@@ -39,13 +40,11 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 
 					members.push({
 						priority: "medium",
-						member: {
-							node: attrNameNode,
-							jsDoc: getJsDoc(attrNameNode, ts),
-							kind: "attribute",
-							attrName,
-							type: undefined // () => ({ kind: SimpleTypeKind.ANY } as SimpleType),
-						}
+						node: attrNameNode,
+						jsDoc: getJsDoc(attrNameNode, ts),
+						kind: "attribute",
+						attrName,
+						type: undefined // () => ({ kind: SimpleTypeKind.ANY } as SimpleType),
 					});
 				}
 			}
@@ -66,17 +65,15 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 			return [
 				{
 					priority: "high",
-					member: {
-						node,
-						kind: "property",
-						jsDoc: getJsDoc(node, ts),
-						propName: name.text,
-						type: lazy(() => checker.getTypeAtLocation(node)),
-						default: def,
-						visibility: getMemberVisibilityFromNode(node, ts),
-						modifiers: getModifiersFromNode(node, ts)
-						//required: isPropertyRequired(node, context.checker),
-					}
+					node,
+					kind: "property",
+					jsDoc: getJsDoc(node, ts),
+					propName: name.text,
+					type: lazy(() => checker.getTypeAtLocation(node)),
+					default: def,
+					visibility: getMemberVisibilityFromNode(node, ts),
+					modifiers: getModifiersFromNode(node, ts)
+					//required: isPropertyRequired(node, context.checker),
 				}
 			];
 		}
@@ -92,15 +89,13 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 			return [
 				{
 					priority: "high",
-					member: {
-						node,
-						jsDoc: getJsDoc(node, ts),
-						kind: "property",
-						propName: name.text,
-						type: lazy(() => (parameter == null ? context.checker.getTypeAtLocation(node) : context.checker.getTypeAtLocation(parameter))),
-						visibility: getMemberVisibilityFromNode(node, ts),
-						modifiers: getModifiersFromNode(node, ts)
-					}
+					node,
+					jsDoc: getJsDoc(node, ts),
+					kind: "property",
+					propName: name.text,
+					type: lazy(() => (parameter == null ? context.checker.getTypeAtLocation(node) : context.checker.getTypeAtLocation(parameter))),
+					visibility: getMemberVisibilityFromNode(node, ts),
+					modifiers: getModifiersFromNode(node, ts)
 				}
 			];
 		}
@@ -114,7 +109,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 				.map(stmt => stmt.expression)
 				.filter((exp): exp is BinaryExpression => ts.isBinaryExpression(exp));
 
-			const members: ComponentMemberResult[] = [];
+			const members: ComponentMember[] = [];
 			for (const assignment of assignments) {
 				const { left, right } = assignment;
 
@@ -127,15 +122,13 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 
 						members.push({
 							priority: "low",
-							member: {
-								node,
-								kind: "property",
-								propName,
-								default: def,
-								type: () => relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
-								jsDoc: getJsDoc(assignment.parent, ts),
-								visibility: isNamePrivate(propName) ? "private" : undefined
-							}
+							node,
+							kind: "property",
+							propName,
+							default: def,
+							type: () => relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
+							jsDoc: getJsDoc(assignment.parent, ts),
+							visibility: isNamePrivate(propName) ? "private" : undefined
 						});
 					}
 				}

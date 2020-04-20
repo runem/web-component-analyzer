@@ -1,5 +1,6 @@
 import { SimpleType } from "ts-simple-type";
 import { Node, Type } from "typescript";
+import { PriorityKind } from "../../flavors/analyzer-flavor";
 import { ModifierKind } from "../modifier-kind";
 import { VisibilityKind } from "../visibility-kind";
 import { ComponentFeatureBase } from "./component-feature";
@@ -12,6 +13,8 @@ export type ComponentMemberReflectKind = "to-attribute" | "to-property" | "both"
 export interface ComponentMemberBase extends ComponentFeatureBase {
 	kind: ComponentMemberKind;
 	node: Node;
+	priority: PriorityKind;
+
 	typeHint?: string;
 	type: undefined | (() => Type | SimpleType);
 

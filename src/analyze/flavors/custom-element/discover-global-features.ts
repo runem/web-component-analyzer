@@ -2,11 +2,12 @@ import { SimpleTypeKind } from "ts-simple-type";
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentEvent } from "../../types/features/component-event";
+import { ComponentMember } from "../../types/features/component-member";
 import { isExtensionInterface } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerFlavor } from "../analyzer-flavor";
 
 /**
  * Discovers global feature defined on "HTMLElementEventMap" or "HTMLElement"
@@ -38,11 +39,11 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 			return events;
 		}
 	},
-	member: (node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined => {
+	member: (node: Node, context: AnalyzerVisitContext): ComponentMember[] | undefined => {
 		const { ts } = context;
 
 		if (isExtensionInterface(node, context, "HTMLElement")) {
-			const members: ComponentMemberResult[] = [];
+			const members: ComponentMember[] = [];
 
 			for (const member of node.members) {
 				if (ts.isPropertySignature(member)) {
@@ -51,13 +52,11 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 					if (name != null && typeof name === "string") {
 						members.push({
 							priority: "medium",
-							member: {
-								node: member,
-								jsDoc: getJsDoc(member, ts),
-								kind: "property",
-								propName: name,
-								type: lazy(() => context.checker.getTypeAtLocation(member))
-							}
+							node: member,
+							jsDoc: getJsDoc(member, ts),
+							kind: "property",
+							propName: name,
+							type: lazy(() => context.checker.getTypeAtLocation(member))
 						});
 					}
 				}

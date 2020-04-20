@@ -21,13 +21,8 @@ export interface DefinitionNodeResult {
 	analyzerFlavor?: AnalyzerFlavor;
 }
 
-export interface ComponentMemberResult {
-	priority: PriorityKind;
-	member: ComponentMember;
-}
-
 export interface FeatureVisitReturnTypeMap {
-	member: ComponentMemberResult;
+	member: ComponentMember;
 	method: ComponentMethod;
 	cssproperty: ComponentCssProperty;
 	csspart: ComponentCssPart;
@@ -36,7 +31,7 @@ export interface FeatureVisitReturnTypeMap {
 }
 
 export interface ComponentFeatureCollection {
-	memberResults: ComponentMemberResult[];
+	members: ComponentMember[];
 	methods: ComponentMethod[];
 	events: ComponentEvent[];
 	slots: ComponentSlot[];

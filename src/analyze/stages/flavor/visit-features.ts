@@ -1,7 +1,7 @@
 import { Node } from "typescript";
 import { arrayDefined } from "../../../util/array-util";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { AnalyzerFlavor, FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
+import { AnalyzerDeclarationVisitContext, AnalyzerFlavor, FeatureVisitReturnTypeMap } from "../../flavors/analyzer-flavor";
 import { ComponentFeature } from "../../types/features/component-feature";
 
 export type VisitFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVisitReturnTypeMap[K][]) => void };
@@ -12,7 +12,7 @@ export type VisitFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVis
  * @param context
  * @param emitMap
  */
-export function visitFeatures<ReturnType>(node: Node, context: AnalyzerVisitContext, emitMap: Partial<VisitFeatureEmitMap>) {
+export function visitFeatures<ReturnType>(node: Node, context: AnalyzerDeclarationVisitContext, emitMap: Partial<VisitFeatureEmitMap>) {
 	const visitMaps = arrayDefined(context.flavors.map(flavor => flavor.discoverFeatures));
 
 	visitFeaturesWithVisitMaps(node, context, visitMaps, emitMap);

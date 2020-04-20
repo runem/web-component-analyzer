@@ -1,10 +1,24 @@
+export class MySuperSuperClass extends HTMLElement {
+	/**
+	 * My description
+	 */
+	myProp: string = "hehe";
+}
+
+export class MySuperClass extends MySuperSuperClass {
+	/**
+	 * This is a description
+	 */
+	myProp: string = "hehe";
+}
+
 /**
  * This is a custom element
  * @fires my-custom-event - I'm an event!
  * @csspart mypart - Hello
  * @example <h1>Hello</h1>
  */
-export class CustomElement extends HTMLElement {
+export class CustomElement extends MySuperClass {
 	myProp = "hello";
 
 	static get observedAttributes() {

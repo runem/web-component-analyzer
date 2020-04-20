@@ -5,7 +5,7 @@ import { JsDoc } from "../../types/js-doc";
 import { VisibilityKind } from "../../types/visibility-kind";
 import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
-import { AnalyzerFlavor, ComponentMemberResult } from "../analyzer-flavor";
+import { AnalyzerFlavor } from "../analyzer-flavor";
 
 /**
  * Refines features by looking at the jsdoc tags on the feature
@@ -36,18 +36,16 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 
 		return method;
 	},
-	member: (memberResult: ComponentMemberResult) => {
-		const member = memberResult.member;
-
+	member: (member: ComponentMember) => {
 		// Return right away if the member doesn't have jsdoc
-		if (member.jsDoc == null || member.jsDoc.tags == null) return memberResult;
+		if (member.jsDoc == null || member.jsDoc.tags == null) return member;
 
 		// Check if the feature has "@ignore" jsdoc tag
 		if (hasIgnoreJsDocTag(member.jsDoc)) {
 			return undefined;
 		}
 
-		const newMember = [
+		return [
 			applyJsDocDeprecated,
 			applyJsDocVisibility,
 			applyJsDocRequired,
@@ -57,12 +55,6 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 			applyJsDocAttribute,
 			applyJsDocModifiers
 		].reduce((member, applyFunc) => (applyFunc as Function)(member, member.jsDoc), member);
-
-		// only member
-		return {
-			priority: memberResult.priority,
-			member: newMember
-		};
 	}
 };
 

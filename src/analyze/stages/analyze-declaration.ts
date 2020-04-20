@@ -92,7 +92,7 @@ export function analyzeComponentDeclaration(
 		if (heritageClause.declaration != null) {
 			featureCollections.push({
 				...heritageClause.declaration,
-				memberResults: heritageClause.declaration.members.map(member => ({ member, priority: "low" }))
+				members: heritageClause.declaration.members
 			});
 		}
 	}
@@ -106,22 +106,24 @@ export function analyzeComponentDeclaration(
 	const mergedFeatureCollection = mergeFeatures(featureCollections, context);
 
 	// Refine the declaration and return the result
-	const declaration = refineDeclaration(
+	const refinedDeclaration = refineDeclaration(
 		{
 			...baseDeclaration,
 			cssParts: mergedFeatureCollection.cssParts,
 			cssProperties: mergedFeatureCollection.cssProperties,
 			events: mergedFeatureCollection.events,
 			methods: mergedFeatureCollection.methods,
-			members: mergedFeatureCollection.memberResults.map(({ member }) => member),
+			members: mergedFeatureCollection.members,
 			slots: mergedFeatureCollection.slots
 		},
 		context
 	);
 
-	baseContext.cache.componentDeclaration.set(mainDeclarationNode, declaration);
+	Object.assign(baseDeclaration, refinedDeclaration);
 
-	return declaration;
+	baseContext.cache.componentDeclaration.set(mainDeclarationNode, baseDeclaration);
+
+	return baseDeclaration;
 }
 
 /**

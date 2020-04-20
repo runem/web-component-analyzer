@@ -25,10 +25,5 @@ export function discoverGlobalFeatures(node: Node, context: AnalyzerVisitContext
 	});
 
 	// Merge features in the collection
-	const mergedFeatures = mergeFeatures(collection, context);
-
-	return {
-		...mergedFeatures,
-		members: mergedFeatures.memberResults.map(res => res.member)
-	};
+	return mergeFeatures(collection, context);
 }

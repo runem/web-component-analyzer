@@ -6,7 +6,7 @@ import { RefineFeatureEmitMap } from "../stages/flavor/refine-feature";
  */
 export function prepareRefineEmitMap(): { collection: ComponentFeatureCollection; refineEmitMap: RefineFeatureEmitMap } {
 	const collection: ComponentFeatureCollection = {
-		memberResults: [],
+		members: [],
 		methods: [],
 		events: [],
 		slots: [],
@@ -16,7 +16,7 @@ export function prepareRefineEmitMap(): { collection: ComponentFeatureCollection
 
 	const refineEmitMap: RefineFeatureEmitMap = {
 		event: event => collection.events.push(event),
-		member: memberResult => collection.memberResults.push(memberResult),
+		member: member => collection.members.push(member),
 		csspart: cssPart => collection.cssParts.push(cssPart),
 		cssproperty: cssProperty => collection.cssProperties.push(cssProperty),
 		method: method => collection.methods.push(method),

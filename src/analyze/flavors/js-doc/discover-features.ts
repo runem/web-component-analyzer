@@ -4,12 +4,12 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentCssPart } from "../../types/features/component-css-part";
 import { ComponentCssProperty } from "../../types/features/component-css-property";
 import { ComponentEvent } from "../../types/features/component-event";
-import { ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
+import { ComponentMember, ComponentMemberAttribute, ComponentMemberProperty } from "../../types/features/component-member";
 import { ComponentSlot } from "../../types/features/component-slot";
 import { getNodeSourceFileLang } from "../../util/ast-util";
 import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
-import { ComponentMemberResult, FeatureDiscoverVisitMap } from "../analyzer-flavor";
+import { FeatureDiscoverVisitMap } from "../analyzer-flavor";
 import { parseJsDocForNode } from "./parse-js-doc-for-node";
 
 export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitContext>> = {
@@ -105,14 +105,17 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 			);
 		}
 	},
-	member: (node: Node, context: AnalyzerVisitContext): ComponentMemberResult[] | undefined => {
+	member: (node: Node, context: AnalyzerVisitContext): ComponentMember[] | undefined => {
 		if (context.ts.isInterfaceDeclaration(node) || context.ts.isClassDeclaration(node)) {
+			const priority = getNodeSourceFileLang(node) === "js" ? "high" : "medium";
+
 			const properties = parseJsDocForNode(
 				node,
 				["prop", "property"],
 				(tagNode, { name, default: def, type, description }) => {
 					if (name != null && name.length > 0) {
 						return {
+							priority,
 							kind: "property",
 							propName: name,
 							jsDoc: description != null ? { description } : undefined,
@@ -136,6 +139,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 				(tagNode, { name, default: def, type, description }) => {
 					if (name != null && name.length > 0) {
 						return {
+							priority,
 							kind: "attribute",
 							attrName: name,
 							jsDoc: description != null ? { description } : undefined,
@@ -154,10 +158,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 			);
 
 			if (attributes != null || properties != null) {
-				return [...(attributes || []), ...(properties || [])].map(member => ({
-					priority: getNodeSourceFileLang(node) === "js" ? "high" : "medium",
-					member
-				}));
+				return [...(attributes || []), ...(properties || [])];
 			}
 
 			return undefined;

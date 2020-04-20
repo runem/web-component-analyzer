@@ -3,6 +3,7 @@ import * as tsModule from "typescript";
 import { Node, Program, SourceFile, Type, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDeclaration, ComponentHeritageClause } from "../../analyze/types/component-declaration";
+import { ComponentFeatureBase } from "../../analyze/types/features/component-feature";
 import { JsDoc } from "../../analyze/types/js-doc";
 import { findParent, getNodeName, resolveDeclarations } from "../../analyze/util/ast-util";
 import { getMixinHeritageClauses, getSuperclassHeritageClause, visitAllHeritageClauses } from "../../analyze/util/component-declaration-util";
@@ -242,7 +243,8 @@ function getEventDocsFromDeclaration(declaration: ComponentDeclaration, context:
 		description: event.jsDoc?.description,
 		name: event.name,
 		detailType: getTypeHintFromType(event.typeHint || event.type?.(), context.checker, context.config),
-		type: "Event"
+		type: "Event",
+		inheritedFrom: getInheritedFromReference(declaration, event, context)
 		// TODO: missing "type"
 	}));
 }
@@ -255,7 +257,8 @@ function getEventDocsFromDeclaration(declaration: ComponentDeclaration, context:
 function getSlotDocsFromDeclaration(declaration: ComponentDeclaration, context: TransformerContext): SlotDoc[] {
 	return declaration.slots.map(slot => ({
 		description: slot.jsDoc?.description,
-		name: slot.name || ""
+		name: slot.name || "",
+		inheritedFrom: getInheritedFromReference(declaration, slot, context)
 	}));
 }
 
@@ -269,7 +272,8 @@ function getCSSPropertyDocsFromDeclaration(declaration: ComponentDeclaration, co
 		name: cssProperty.name,
 		description: cssProperty.jsDoc?.description,
 		type: cssProperty.typeHint,
-		default: cssProperty.default != null ? JSON.stringify(cssProperty.default) : undefined
+		default: cssProperty.default != null ? JSON.stringify(cssProperty.default) : undefined,
+		inheritedFrom: getInheritedFromReference(declaration, cssProperty, context)
 	}));
 }
 
@@ -281,7 +285,8 @@ function getCSSPropertyDocsFromDeclaration(declaration: ComponentDeclaration, co
 function getCSSPartDocsFromDeclaration(declaration: ComponentDeclaration, context: TransformerContext): CSSPartDoc[] {
 	return declaration.cssParts.map(cssPart => ({
 		name: cssPart.name,
-		description: cssPart.jsDoc?.description
+		description: cssPart.jsDoc?.description,
+		inheritedFrom: getInheritedFromReference(declaration, cssPart, context)
 	}));
 }
 
@@ -300,7 +305,8 @@ function getAttributeDocsFromDeclaration(declaration: ComponentDeclaration, cont
 				fieldName: member.propName,
 				defaultValue: member.default != null ? JSON.stringify(member.default) : undefined,
 				description: member.jsDoc?.description,
-				type: getTypeHintFromType(member.typeHint || member.type?.(), context.checker, context.config)
+				type: getTypeHintFromType(member.typeHint || member.type?.(), context.checker, context.config),
+				inheritedFrom: getInheritedFromReference(declaration, member, context)
 			});
 		}
 	}
@@ -368,7 +374,8 @@ function getMethodDocsFromDeclaration(declaration: ComponentDeclaration, context
 			return: {
 				description: returnDescription,
 				type: getTypeHintFromType(returnTypeHint || returnType, context.checker, context.config)
-			}
+			},
+			inheritedFrom: getInheritedFromReference(declaration, method, context)
 			// TODO: "summary" and "static"
 		});
 	}
@@ -392,13 +399,26 @@ function getFieldDocsFromDeclaration(declaration: ComponentDeclaration, context:
 				privacy: member.visibility,
 				description: member.jsDoc?.description,
 				type: getTypeHintFromType(member.typeHint || member.type?.(), context.checker, context.config),
-				default: member.default != null ? JSON.stringify(member.default) : undefined
+				default: member.default != null ? JSON.stringify(member.default) : undefined,
+				inheritedFrom: getInheritedFromReference(declaration, member, context)
 				// TODO: "static" and "summary"
 			});
 		}
 	}
 
 	return fieldDocs;
+}
+
+function getInheritedFromReference(
+	onDeclaration: ComponentDeclaration,
+	feature: ComponentFeatureBase,
+	context: TransformerContext
+): Reference | undefined {
+	if (feature.declaration != null && feature.declaration !== onDeclaration) {
+		return getReferenceForNode(feature.declaration.node, context);
+	}
+
+	return undefined;
 }
 
 /**
