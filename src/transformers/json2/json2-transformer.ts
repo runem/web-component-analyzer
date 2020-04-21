@@ -119,9 +119,11 @@ function getVariableDocsFromAnalyzerResult(result: AnalyzerResult, context: Tran
 
 	// Get all export symbols in the source file
 	const symbol = context.checker.getSymbolAtLocation(result.sourceFile)!;
-	//console.log(`symbol for ${result.sourceFile.fileName}`, symbol != null);
+	if (symbol == null) {
+		return [];
+	}
+
 	const exports = context.checker.getExportsOfModule(symbol);
-	//const exports: any = []; //checker.getExportsOfModule(symbol);
 
 	// Convert all export variables to VariableDocs
 	for (const exp of exports) {
