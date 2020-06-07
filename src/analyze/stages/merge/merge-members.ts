@@ -26,8 +26,8 @@ export function mergeMembers(members: ComponentMember[], context: AnalyzerVisitC
 	// From node 11, equal elements keep their order after sort, but not in node 10
 	// Therefore we use "indexOf" to return correct order if two priorities are equal
 	members = [...members].sort((a, b) => {
-		const vA = priorityValueMap[a.priority];
-		const vB = priorityValueMap[b.priority];
+		const vA = priorityValueMap[a.priority || "low"];
+		const vB = priorityValueMap[b.priority || "low"];
 
 		if (vA === vB) {
 			const iA = members.indexOf(a);

@@ -13,7 +13,7 @@ export type ComponentMemberReflectKind = "to-attribute" | "to-property" | "both"
 export interface ComponentMemberBase extends ComponentFeatureBase {
 	kind: ComponentMemberKind;
 	node: Node;
-	priority: PriorityKind;
+	priority?: PriorityKind;
 
 	typeHint?: string;
 	type: undefined | (() => Type | SimpleType);

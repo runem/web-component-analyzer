@@ -26,10 +26,12 @@ export function analyzeComponentDeclaration(
 		throw new Error("Couldn't find main declaration node");
 	}
 
-	// Return right away from the cache if any
-	// TODO: better handle invalidating this cache.
-	if (baseContext.cache.componentDeclaration.has(mainDeclarationNode)) {
-		return baseContext.cache.componentDeclaration.get(mainDeclarationNode)!;
+	// Check if there exists a cached declaration for this node.
+	// If a cached declaration was found, test if it should be invalidated (by looking at inherited declarations)
+	const sourceFile = mainDeclarationNode.getSourceFile();
+	const cachedDeclaration = baseContext.cache.componentDeclarationInSourceFile.get(sourceFile)?.get(mainDeclarationNode);
+	if (cachedDeclaration != null && !shouldInvalidateCachedDeclaration(cachedDeclaration, baseContext)) {
+		return cachedDeclaration;
 	}
 
 	options.visitedNodes = options.visitedNodes || new Set();
@@ -121,7 +123,10 @@ export function analyzeComponentDeclaration(
 
 	Object.assign(baseDeclaration, refinedDeclaration);
 
-	baseContext.cache.componentDeclaration.set(mainDeclarationNode, baseDeclaration);
+	// Update the cache
+	const componentCacheMap = baseContext.cache.componentDeclarationInSourceFile.get(sourceFile) || new WeakMap();
+	componentCacheMap.set(mainDeclarationNode, baseDeclaration);
+	baseContext.cache.componentDeclarationInSourceFile.set(sourceFile, componentCacheMap);
 
 	return baseDeclaration;
 }
@@ -142,6 +147,37 @@ function shouldExcludeNode(node: Node, context: AnalyzerVisitContext): boolean {
 
 	if (name != null && context.config.excludedDeclarationNames?.includes(name)) {
 		return true;
+	}
+
+	return false;
+}
+
+/**
+ * Returns if the declaration should be invalidated by testing
+ *    if any of the inherited declarations in the tree has been invalidated
+ * @param componentDeclaration
+ * @param context
+ */
+function shouldInvalidateCachedDeclaration(componentDeclaration: ComponentDeclaration, context: AnalyzerVisitContext): boolean {
+	for (const heritageClause of componentDeclaration.heritageClauses) {
+		if (heritageClause.declaration != null) {
+			// If the Typescript node can be found in the cache along with the source file, this declaration shouldn't be invalidated
+			// By doing "node.getSourceFile()" we get an possible updated source file reference.
+			// Therefore this is a nested WeakMap looking up SourceFile and then the Node
+			const node = heritageClause.declaration.node;
+			const sourceFile = node.getSourceFile();
+			const foundInCache = context.cache.componentDeclarationInSourceFile.get(sourceFile)?.has(node) ?? false;
+
+			// Return "true" that the declaration should invalidate if it wasn't found in the cache
+			if (!foundInCache) {
+				return true;
+			}
+
+			// Test the inherited declarations recursively
+			if (shouldInvalidateCachedDeclaration(heritageClause.declaration, context)) {
+				return true;
+			}
+		}
 	}
 
 	return false;

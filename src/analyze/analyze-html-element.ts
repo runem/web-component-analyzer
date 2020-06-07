@@ -34,7 +34,7 @@ export function analyzeHTMLElement(program: Program, ts: typeof tsModule = tsMod
 		}),
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
-			componentDeclaration: DEFAULT_COMPONENT_DECLARATION_CACHE,
+			componentDeclarationInSourceFile: DEFAULT_COMPONENT_DECLARATION_CACHE,
 			general: new Map()
 		}
 	});
