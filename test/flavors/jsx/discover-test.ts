@@ -33,7 +33,7 @@ tsTest("Discovers elements defined JSX.IntrinsicElements", t => {
 				propName: "bar",
 				attrName: undefined,
 				jsDoc: undefined,
-				type: () => ({ kind: SimpleTypeKind.BOOLEAN }),
+				type: () => ({ kind: "BOOLEAN" }),
 				reflect: undefined,
 				deprecated: undefined,
 				required: undefined,

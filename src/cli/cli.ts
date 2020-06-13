@@ -7,7 +7,7 @@ import { log } from "./util/log";
 /**
  * The main function of the cli.
  */
-export async function cli() {
+export function cli(): void {
 	const argv = yargs
 		.usage("Usage: $0 <command> [glob..] [options]")
 		.command<AnalyzerCliConfig>({

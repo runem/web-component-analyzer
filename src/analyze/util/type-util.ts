@@ -1,4 +1,4 @@
-import { SimpleType, SimpleTypeEnumMember, SimpleTypeKind } from "ts-simple-type";
+import { SimpleType, SimpleTypeEnumMember } from "ts-simple-type";
 
 /**
  * Relax the type so that for example "string literal" become "string" and "function" become "any"
@@ -7,68 +7,68 @@ import { SimpleType, SimpleTypeEnumMember, SimpleTypeKind } from "ts-simple-type
  */
 export function relaxType(type: SimpleType): SimpleType {
 	switch (type.kind) {
-		case SimpleTypeKind.INTERSECTION:
-		case SimpleTypeKind.UNION:
+		case "INTERSECTION":
+		case "UNION":
 			return {
 				...type,
 				types: type.types.map(t => relaxType(t))
 			};
 
-		case SimpleTypeKind.ENUM:
+		case "ENUM":
 			return {
 				...type,
 				types: type.types.map(t => relaxType(t) as SimpleTypeEnumMember)
 			};
 
-		case SimpleTypeKind.ARRAY:
+		case "ARRAY":
 			return {
 				...type,
 				type: relaxType(type.type)
 			};
 
-		case SimpleTypeKind.PROMISE:
+		case "PROMISE":
 			return {
 				...type,
 				type: relaxType(type.type)
 			};
 
-		case SimpleTypeKind.OBJECT:
+		case "OBJECT":
 			return {
 				name: type.name,
-				kind: SimpleTypeKind.OBJECT
+				kind: "OBJECT"
 			};
-		case SimpleTypeKind.INTERFACE:
-		case SimpleTypeKind.FUNCTION:
-		case SimpleTypeKind.CLASS:
+		case "INTERFACE":
+		case "FUNCTION":
+		case "CLASS":
 			return {
 				name: type.name,
-				kind: SimpleTypeKind.ANY
+				kind: "ANY"
 			};
 
-		case SimpleTypeKind.NUMBER_LITERAL:
-			return { kind: SimpleTypeKind.NUMBER };
-		case SimpleTypeKind.STRING_LITERAL:
-			return { kind: SimpleTypeKind.STRING };
-		case SimpleTypeKind.BOOLEAN_LITERAL:
-			return { kind: SimpleTypeKind.BOOLEAN };
-		case SimpleTypeKind.BIG_INT_LITERAL:
-			return { kind: SimpleTypeKind.BIG_INT };
+		case "NUMBER_LITERAL":
+			return { kind: "NUMBER" };
+		case "STRING_LITERAL":
+			return { kind: "STRING" };
+		case "BOOLEAN_LITERAL":
+			return { kind: "BOOLEAN" };
+		case "BIG_INT_LITERAL":
+			return { kind: "BIG_INT" };
 
-		case SimpleTypeKind.ENUM_MEMBER:
+		case "ENUM_MEMBER":
 			return {
 				...type,
 				type: relaxType(type.type)
 			} as SimpleTypeEnumMember;
 
-		case SimpleTypeKind.ALIAS:
+		case "ALIAS":
 			return {
 				...type,
 				target: relaxType(type.target)
 			};
 
-		case SimpleTypeKind.NULL:
-		case SimpleTypeKind.UNDEFINED:
-			return { kind: SimpleTypeKind.ANY };
+		case "NULL":
+		case "UNDEFINED":
+			return { kind: "ANY" };
 
 		default:
 			return type;

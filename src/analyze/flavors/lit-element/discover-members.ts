@@ -1,4 +1,3 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/features/component-member";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
@@ -82,7 +81,7 @@ function parsePropertyDecorator(
 				type: lazy(() => {
 					const propType = checker.getTypeAtLocation(node);
 					const inJavascriptFile = getNodeSourceFileLang(node) === "js";
-					return inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === SimpleTypeKind.ANY ? litConfig.type : propType;
+					return inJavascriptFile && typeof litConfig.type === "object" && litConfig.type.kind === "ANY" ? litConfig.type : propType;
 				}),
 				node,
 				default: def,
@@ -203,7 +202,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 				priority: "high",
 				kind: "property",
 				type: lazy(() => {
-					return (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: SimpleTypeKind.ANY };
+					return (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: "ANY" };
 				}),
 				propName: propName,
 				attrName: emitAttribute ? attrName : undefined,

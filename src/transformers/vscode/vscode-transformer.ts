@@ -1,4 +1,4 @@
-import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, SimpleTypeKind, toSimpleType, toTypeString } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, toSimpleType, typeToString } from "ts-simple-type";
 import { Program, Type, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDefinition } from "../../analyze/types/component-definition";
@@ -94,13 +94,13 @@ function typeToVscodeValuePart(type: SimpleType | Type, checker: TypeChecker): {
 	const simpleType = isSimpleType(type) ? type : toSimpleType(type, checker);
 
 	switch (simpleType.kind) {
-		case SimpleTypeKind.BOOLEAN:
+		case "BOOLEAN":
 			return { valueSet: "v" };
-		case SimpleTypeKind.STRING_LITERAL:
+		case "STRING_LITERAL":
 			return { values: [{ name: simpleType.value }] };
-		case SimpleTypeKind.ENUM:
+		case "ENUM":
 			return { values: typesToStringUnion(simpleType.types.map(({ type }) => type)) };
-		case SimpleTypeKind.UNION:
+		case "UNION":
 			return { values: typesToStringUnion(simpleType.types) };
 	}
 
@@ -116,8 +116,8 @@ function typesToStringUnion(types: SimpleType[]): HtmlDataAttrValue[] {
 	return arrayDefined(
 		types.map(t => {
 			switch (t.kind) {
-				case SimpleTypeKind.STRING_LITERAL:
-				case SimpleTypeKind.NUMBER_LITERAL:
+				case "STRING_LITERAL":
+				case "NUMBER_LITERAL":
 					return { name: t.value.toString() };
 				default:
 					return undefined;
@@ -175,5 +175,5 @@ function formatEntryRow(name: string, doc: JsDoc | string | undefined, type: Typ
  * @param checker
  */
 function formatType(type: Type | SimpleType, checker: TypeChecker): string | undefined {
-	return !isAssignableToSimpleTypeKind(type, SimpleTypeKind.ANY, checker) ? markdownHighlight(toTypeString(type, checker)) : undefined;
+	return !isAssignableToSimpleTypeKind(type, "ANY", checker) ? markdownHighlight(typeToString(type, checker)) : undefined;
 }

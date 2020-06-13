@@ -1,5 +1,29 @@
 import { JsDoc } from "../../types/js-doc";
 import { ModifierKind } from "../../types/modifier-kind";
+/**
+ * Merges based on a name
+ * @param entries
+ * @param direction
+ * @param getName
+ * @param merge
+ */
+export function mergeNamedEntries<T>(entries: T[], getName: (entry: T) => string, merge?: (left: T, right: T) => T): T[] {
+	const merged = new Map<string, T>();
+
+	for (const entry of entries) {
+		const name = getName(entry);
+
+		const existing = merged.get(name);
+
+		if (existing == null) {
+			merged.set(name, entry);
+		} else if (merge != null) {
+			merged.set(name, merge(existing, entry));
+		}
+	}
+
+	return Array.from(merged.values());
+}
 
 /**
  * Merges two jsdocs
@@ -46,37 +70,12 @@ export function mergeModifiers(
 }
 
 /**
- * Merges based on a name
- * @param entries
- * @param direction
- * @param getName
- * @param merge
- */
-export function mergeNamedEntries<T>(entries: T[], getName: (entry: T) => string, merge?: (left: T, right: T) => T): T[] {
-	const merged = new Map<string, T>();
-
-	for (const entry of entries) {
-		const name = getName(entry);
-
-		const existing = merged.get(name);
-
-		if (existing == null) {
-			merged.set(name, entry);
-		} else if (merge != null) {
-			merged.set(name, merge(existing, entry));
-		}
-	}
-
-	return Array.from(merged.values());
-}
-
-/**
  * Merges entries using a "merge" callback
  * @param entries
  * @param isMergeable
  * @param merge
  */
-export function mergeEntries<T>(entries: T[], isMergeable: (entry: T, merged: T) => boolean, merge: (left: T, right: T) => T): T[] {
+/*export function mergeEntries<T>(entries: T[], isMergeable: (entry: T, merged: T) => boolean, merge: (left: T, right: T) => T): T[] {
 	let mergedEntries: T[] = [];
 
 	for (const entry of entries) {
@@ -99,4 +98,4 @@ export function mergeEntries<T>(entries: T[], isMergeable: (entry: T, merged: T)
 	}
 
 	return mergedEntries;
-}
+}*/

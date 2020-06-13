@@ -1,4 +1,4 @@
-import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
 import {
 	Declaration,
@@ -235,7 +235,7 @@ export function isPropertyRequired(property: PropertySignature | PropertyDeclara
 	}
 
 	// "any" or "unknown" should never be required
-	if (isAssignableToSimpleTypeKind(type, [SimpleTypeKind.ANY, SimpleTypeKind.UNKNOWN], checker, { op: "or" })) {
+	if (isAssignableToSimpleTypeKind(type, ["ANY", "UNKNOWN"], checker)) {
 		return false;
 	}
 
@@ -245,7 +245,7 @@ export function isPropertyRequired(property: PropertySignature | PropertyDeclara
 		return false;
 	}
 
-	return !isAssignableToSimpleTypeKind(type, [SimpleTypeKind.UNDEFINED, SimpleTypeKind.NULL], checker, { op: "or" });
+	return !isAssignableToSimpleTypeKind(type, ["UNDEFINED", "NULL"], checker);
 }
 
 /**
@@ -275,7 +275,7 @@ export function findChild<T extends Node = Node>(node: Node | undefined, test: (
  * @param test
  * @param emit
  */
-export function findChildren<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T, emit: (node: T) => void) {
+export function findChildren<T extends Node = Node>(node: Node | undefined, test: (node: Node) => node is T, emit: (node: T) => void): void {
 	if (!node) return;
 	if (test(node)) {
 		emit(node);

@@ -6,7 +6,7 @@ test("Parse required and union", t => {
 	const type = parseSimpleJsDocTypeExpression("!Array|undefined");
 
 	t.deepEqual(type, {
-		kind: SimpleTypeKind.UNION,
-		types: [{ kind: "ARRAY", type: { kind: SimpleTypeKind.ANY } }, { kind: SimpleTypeKind.UNDEFINED }]
+		kind: "UNION",
+		types: [{ kind: "ARRAY", type: { kind: "ANY" } }, { kind: "UNDEFINED" }]
 	} as SimpleType);
 });

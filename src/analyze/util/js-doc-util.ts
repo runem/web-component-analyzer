@@ -1,4 +1,4 @@
-import { SimpleType, SimpleTypeKind, SimpleTypeStringLiteral } from "ts-simple-type";
+import { SimpleType, SimpleTypeStringLiteral } from "ts-simple-type";
 import * as tsModule from "typescript";
 import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node } from "typescript";
 import { arrayDefined } from "../../util/array-util";
@@ -77,8 +77,9 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 								  // Therefore we check if there are multiple jsdoc tags in the string to only take the first one
 								  // This will discard the following jsdocs, but at least we don't crash :-)
 								  typeExpressionPart.split(/\n\s*\*\s?@/)[0] || ""
-								: `@${tag}${typeExpressionPart != null ? ` ${typeExpressionPart} ` : ""}${namePart != null ? ` ${namePart} ` : ""} ${node.comment ||
-										""}`;
+								: `@${tag}${typeExpressionPart != null ? ` ${typeExpressionPart} ` : ""}${namePart != null ? ` ${namePart} ` : ""} ${
+										node.comment || ""
+								  }`;
 
 							return {
 								node,
@@ -100,28 +101,28 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	// Fail safe if "str" is somehow undefined
 	if (str == null) {
-		return { kind: SimpleTypeKind.ANY };
+		return { kind: "ANY" };
 	}
 
 	// Parse normal types
 	switch (str.toLowerCase()) {
 		case "undefined":
-			return { kind: SimpleTypeKind.UNDEFINED };
+			return { kind: "UNDEFINED" };
 		case "null":
-			return { kind: SimpleTypeKind.NULL };
+			return { kind: "NULL" };
 		case "string":
-			return { kind: SimpleTypeKind.STRING };
+			return { kind: "STRING" };
 		case "number":
-			return { kind: SimpleTypeKind.NUMBER };
+			return { kind: "NUMBER" };
 		case "boolean":
-			return { kind: SimpleTypeKind.BOOLEAN };
+			return { kind: "BOOLEAN" };
 		case "array":
-			return { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
+			return { kind: "ARRAY", type: { kind: "ANY" } };
 		case "object":
-			return { kind: SimpleTypeKind.OBJECT, members: [] };
+			return { kind: "OBJECT", members: [] };
 		case "any":
 		case "*":
-			return { kind: SimpleTypeKind.ANY };
+			return { kind: "ANY" };
 	}
 
 	// Match
@@ -134,14 +135,14 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	//   {string|number}
 	if (str.includes("|")) {
 		return {
-			kind: SimpleTypeKind.UNION,
+			kind: "UNION",
 			types: str.split("|").map(str => {
 				const childType = parseSimpleJsDocTypeExpression(str);
 
 				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
-				if (childType.kind === SimpleTypeKind.ANY) {
+				if (childType.kind === "ANY") {
 					return {
-						kind: SimpleTypeKind.STRING_LITERAL,
+						kind: "STRING_LITERAL",
 						value: str
 					} as SimpleTypeStringLiteral;
 				}
@@ -163,10 +164,10 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 		switch (modifier) {
 			case "?":
 				return {
-					kind: SimpleTypeKind.UNION,
+					kind: "UNION",
 					types: [
 						{
-							kind: SimpleTypeKind.NULL
+							kind: "NULL"
 						},
 						type
 					]
@@ -175,7 +176,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 				return type;
 			case "...":
 				return {
-					kind: SimpleTypeKind.ARRAY,
+					kind: "ARRAY",
 					type
 				};
 		}
@@ -193,7 +194,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	const stringLiteralMatch = str.match(/^["'](.+)["']$/);
 	if (stringLiteralMatch != null) {
 		return {
-			kind: SimpleTypeKind.STRING_LITERAL,
+			kind: "STRING_LITERAL",
 			value: stringLiteralMatch[1]
 		};
 	}
@@ -203,12 +204,12 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	const arrayMatch = str.match(/^\[(.+)]$/);
 	if (arrayMatch != null) {
 		return {
-			kind: SimpleTypeKind.ARRAY,
+			kind: "ARRAY",
 			type: parseSimpleJsDocTypeExpression(arrayMatch[1])
 		};
 	}
 
-	return { kind: SimpleTypeKind.ANY };
+	return { kind: "ANY" };
 }
 
 /**

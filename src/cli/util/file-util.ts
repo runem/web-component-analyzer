@@ -1,8 +1,8 @@
 import { mkdirSync } from "fs";
 
-export function ensureDirSync(dir: string) {
+export function ensureDirSync(dir: string): void {
 	try {
-		return mkdirSync(dir, { recursive: true });
+		mkdirSync(dir, { recursive: true });
 	} catch (err) {
 		if (err.code !== "EEXIST") throw err;
 	}

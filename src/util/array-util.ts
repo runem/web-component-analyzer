@@ -6,7 +6,8 @@
 export function arrayFlat<T>(items: (T[] | T)[]): T[] {
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	if ("flat" in (items as any)) {
-		return items.flat();
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return (items as any).flat();
 	}
 
 	const flattenArray: T[] = [];

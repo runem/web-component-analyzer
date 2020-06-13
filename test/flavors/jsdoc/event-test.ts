@@ -19,7 +19,7 @@ tsTest("jsdoc: Discovers custom events with @fires", t => {
 	t.is(events.length, 1);
 	t.is(events[0].name, "my-event");
 	t.is(events[0].jsDoc?.description, "This is a comment");
-	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, SimpleTypeKind.ANY));
+	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, "ANY"));
 });
 
 tsTest("jsdoc: Discovers the detail type of custom events with @fires", t => {
@@ -35,7 +35,7 @@ tsTest("jsdoc: Discovers the detail type of custom events with @fires", t => {
 	 `);
 
 	const { events } = result.componentDefinitions[0].declaration();
-	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, SimpleTypeKind.STRING));
+	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, "STRING"));
 });
 
 tsTest("jsdoc: Discovers events declared with @fires that includes extra jsdoc information", t => {
@@ -55,5 +55,5 @@ tsTest("jsdoc: Discovers events declared with @fires that includes extra jsdoc i
 	t.is(events.length, 1);
 	t.is(events[0].name, "input-switch-check-changed");
 	t.is(events[0].jsDoc?.description, "Fires when check property changes");
-	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, SimpleTypeKind.ANY));
+	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, "ANY"));
 });

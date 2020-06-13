@@ -1,12 +1,7 @@
 import test, { ExecutionContext, ImplementationResult } from "ava";
 import { Program } from "typescript";
 import { AnalyzerResult } from "../../src/analyze/types/analyzer-result";
-import {
-	getExtendsHeritageClauses,
-	getExtendsHeritageClausesInChain,
-	getMixinHeritageClauses,
-	getMixinHeritageClausesInChain
-} from "../../src/analyze/util/component-declaration-util";
+import { getExtendsHeritageClausesInChain, getMixinHeritageClausesInChain } from "../../src/analyze/util/component-declaration-util";
 import { analyzeGlobs } from "../../src/cli/util/analyze-globs";
 import { arrayFlat } from "../../src/util/array-util";
 
@@ -14,7 +9,7 @@ function testResult(
 	testName: string,
 	globs: string[],
 	callback: (result: AnalyzerResult[], program: Program, t: ExecutionContext) => ImplementationResult
-) {
+): void {
 	test(testName, async t => {
 		const { results, program } = await analyzeGlobs(globs, {
 			discoverNodeModules: true,
@@ -38,7 +33,7 @@ function testResult(
 	});
 }
 
-export function testResultSnapshot(globs: string[]) {
+export function testResultSnapshot(globs: string[]): void {
 	testResult(`Snapshot Test: ${globs.map(glob => `"${glob}"`).join(", ")}`, globs, (results, program, t) => {
 		const declarations = arrayFlat(results.map(result => result.componentDefinitions.map(def => def.declaration())));
 		const summary = {

@@ -1,4 +1,4 @@
-import { isSimpleType, SimpleType, SimpleTypeAlias, SimpleTypeKind, simpleTypeToString, toTypeString } from "ts-simple-type";
+import { isSimpleType, SimpleType, SimpleTypeAlias, typeToString } from "ts-simple-type";
 import { Type, TypeChecker, TypeFormatFlags } from "typescript";
 import { TransformerConfig } from "../transformers/transformer-config";
 
@@ -27,7 +27,7 @@ export function getTypeHintFromType(
 				type = type.target;
 			}
 
-			typeHint = simpleTypeToString(type);
+			typeHint = typeToString(type);
 		} else {
 			// Transform using Typescript natively, to avoid transforming all types to simple types (overhead).
 			// The "InTypeAlias" flag expands the type.
@@ -35,7 +35,7 @@ export function getTypeHintFromType(
 		}
 	} else {
 		// Transform types to string
-		typeHint = toTypeString(type, checker);
+		typeHint = typeToString(type, checker);
 	}
 
 	// Replace "anys" and "{}" with more human friendly representations
@@ -51,5 +51,5 @@ export function getTypeHintFromType(
  * @param simpleType
  */
 function isUnionTypeAlias(simpleType: SimpleType): simpleType is SimpleTypeAlias {
-	return simpleType.kind === SimpleTypeKind.ALIAS && simpleType.target.kind === SimpleTypeKind.UNION;
+	return simpleType.kind === "ALIAS" && simpleType.target.kind === "UNION";
 }

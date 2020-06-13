@@ -33,7 +33,7 @@ tsTest("Discovers global features on JSX.IntrinsicAttributes", t => {
 				kind: "property",
 				propName: "bar",
 				attrName: "bar",
-				type: () => ({ kind: SimpleTypeKind.BOOLEAN })
+				type: () => ({ kind: "BOOLEAN" })
 			}
 		],
 		t,

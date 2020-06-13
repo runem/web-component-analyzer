@@ -7,7 +7,7 @@ import { AnalyzerCliConfig } from "../analyzer-cli-config";
  * @param config
  * @param level
  */
-export function log(text: string | object | (() => string), config: AnalyzerCliConfig, level: "normal" | "verbose" = "normal") {
+export function log(text: unknown | (() => string), config: AnalyzerCliConfig, level: "normal" | "verbose" = "normal"): void {
 	// Never log if silent
 	if (config.silent) {
 		return;
@@ -38,6 +38,6 @@ export function log(text: string | object | (() => string), config: AnalyzerCliC
  * @param text
  * @param config
  */
-export function logVerbose(text: () => string | object, config: AnalyzerCliConfig) {
+export function logVerbose(text: () => unknown, config: AnalyzerCliConfig): void {
 	log(text, config, "verbose");
 }

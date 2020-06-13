@@ -1,4 +1,4 @@
-import { SimpleTypeKind, SimpleTypeStringLiteral } from "ts-simple-type";
+import { SimpleTypeStringLiteral } from "ts-simple-type";
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentCssPart } from "../../types/features/component-css-part";
@@ -59,7 +59,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 						return {
 							name: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: "ANY" }),
 							typeHint: type,
 							node: tagNode
 						};
@@ -84,11 +84,11 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 						}
 
 						switch (permittedTagNameType.kind) {
-							case SimpleTypeKind.STRING_LITERAL:
+							case "STRING_LITERAL":
 								return [permittedTagNameType.value];
-							case SimpleTypeKind.UNION:
+							case "UNION":
 								return permittedTagNameType.types
-									.filter((type): type is SimpleTypeStringLiteral => type.kind === SimpleTypeKind.STRING_LITERAL)
+									.filter((type): type is SimpleTypeStringLiteral => type.kind === "STRING_LITERAL")
 									.map(type => type.value);
 							default:
 								return undefined;
@@ -120,7 +120,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 							propName: name,
 							jsDoc: description != null ? { description } : undefined,
 							typeHint: type,
-							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: "ANY" }),
 							node: tagNode,
 							default: def,
 							visibility: undefined,
@@ -143,7 +143,7 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 							kind: "attribute",
 							attrName: name,
 							jsDoc: description != null ? { description } : undefined,
-							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: SimpleTypeKind.ANY }),
+							type: lazy(() => (type && parseSimpleJsDocTypeExpression(type)) || { kind: "ANY" }),
 							typeHint: type,
 							node: tagNode,
 							default: def,

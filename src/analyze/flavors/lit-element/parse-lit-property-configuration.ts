@@ -1,4 +1,3 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
@@ -135,23 +134,23 @@ export function parseLitPropertyOption(
 			switch (value) {
 				case "String":
 				case "StringConstructor":
-					type = { kind: SimpleTypeKind.STRING };
+					type = { kind: "STRING" };
 					break;
 				case "Number":
 				case "NumberConstructor":
-					type = { kind: SimpleTypeKind.NUMBER };
+					type = { kind: "NUMBER" };
 					break;
 				case "Boolean":
 				case "BooleanConstructor":
-					type = { kind: SimpleTypeKind.BOOLEAN };
+					type = { kind: "BOOLEAN" };
 					break;
 				case "Array":
 				case "ArrayConstructor":
-					type = { kind: SimpleTypeKind.ARRAY, type: { kind: SimpleTypeKind.ANY } };
+					type = { kind: "ARRAY", type: { kind: "ANY" } };
 					break;
 				case "Object":
 				case "ObjectConstructor":
-					type = { kind: SimpleTypeKind.OBJECT, members: [] };
+					type = { kind: "OBJECT", members: [] };
 					break;
 				default:
 					// This is an unknown type, so set the name as a string

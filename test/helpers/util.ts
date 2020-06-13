@@ -1,5 +1,5 @@
 import { ExecutionContext } from "ava";
-import { isAssignableToType, toTypeString } from "ts-simple-type";
+import { isAssignableToType, typeToString } from "ts-simple-type";
 import { TypeChecker } from "typescript";
 import { ComponentMember, ComponentMemberProperty } from "../../src/analyze/types/features/component-member";
 import { arrayDefined } from "../../src/util/array-util";
@@ -9,7 +9,7 @@ export function assertHasMembers(
 	expectedMembers: Partial<ComponentMember>[],
 	t: ExecutionContext,
 	checker?: TypeChecker
-) {
+): void {
 	t.log(actualMembers);
 
 	t.is(actualMembers.length, expectedMembers.length);
@@ -55,14 +55,14 @@ export function assertHasMembers(
 				const typeB = expectedMember.type();
 				t.truthy(
 					isAssignableToType(typeA, typeB, checker),
-					`Type for ${name} doesn't match: ${toTypeString(typeA, checker)} === ${toTypeString(typeB, checker)}`
+					`Type for ${name} doesn't match: ${typeToString(typeA, checker)} === ${typeToString(typeB, checker)}`
 				);
 			}
 		}
 	}
 }
 
-export function getComponentProp(members: ComponentMember[], propName: string) {
+export function getComponentProp(members: ComponentMember[], propName: string): ComponentMemberProperty | undefined {
 	return members.find(member => member.kind === "property" && member.propName === propName) as ComponentMemberProperty | undefined;
 }
 

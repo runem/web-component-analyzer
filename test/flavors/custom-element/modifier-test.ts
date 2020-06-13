@@ -96,7 +96,7 @@ tsTest("Getter and setter become one property without readonly modifier", t => {
 				kind: "property",
 				propName: "myProp",
 				modifiers: new Set(),
-				type: () => ({ kind: SimpleTypeKind.STRING })
+				type: () => ({ kind: "STRING" })
 			}
 		],
 		t,

@@ -12,7 +12,7 @@ export type VisitFeatureEmitMap = { [K in ComponentFeature]: (result: FeatureVis
  * @param context
  * @param emitMap
  */
-export function visitFeatures<ReturnType>(node: Node, context: AnalyzerDeclarationVisitContext, emitMap: Partial<VisitFeatureEmitMap>) {
+export function visitFeatures<ReturnType>(node: Node, context: AnalyzerDeclarationVisitContext, emitMap: Partial<VisitFeatureEmitMap>): void {
 	const visitMaps = arrayDefined(context.flavors.map(flavor => flavor.discoverFeatures));
 
 	visitFeaturesWithVisitMaps(node, context, visitMaps, emitMap);
@@ -30,7 +30,7 @@ export function visitFeaturesWithVisitMaps<ReturnType>(
 	context: AnalyzerVisitContext,
 	visitMaps: NonNullable<AnalyzerFlavor["discoverFeatures"]>[],
 	emitMap: Partial<VisitFeatureEmitMap>
-) {
+): void {
 	for (const feature of context.config.features || []) {
 		// Visit all features: always "continue"
 		for (const functionMap of visitMaps) {

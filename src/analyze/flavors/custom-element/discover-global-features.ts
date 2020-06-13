@@ -1,4 +1,3 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentEvent } from "../../types/features/component-event";
@@ -28,7 +27,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 							node: member.initializer || member,
 							jsDoc: getJsDoc(member, ts),
 							name: name,
-							type: lazy(() => ({ kind: SimpleTypeKind.ANY }))
+							type: lazy(() => ({ kind: "ANY" }))
 						});
 					}
 				}

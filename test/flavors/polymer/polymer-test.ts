@@ -32,17 +32,17 @@ tsTest("Polymer components are correctly picked up", t => {
 
 	const userProp = getComponentProp(members, "user");
 	t.truthy(userProp);
-	t.truthy(isAssignableToSimpleTypeKind(userProp!.type!(), SimpleTypeKind.STRING, checker));
+	t.truthy(isAssignableToSimpleTypeKind(userProp!.type!(), "STRING", checker));
 	t.is(userProp!.attrName, "user");
 
 	const isHappyProp = getComponentProp(members, "isHappy");
 	t.truthy(isHappyProp);
-	t.truthy(isAssignableToSimpleTypeKind(isHappyProp!.type!(), SimpleTypeKind.BOOLEAN, checker));
+	t.truthy(isAssignableToSimpleTypeKind(isHappyProp!.type!(), "BOOLEAN", checker));
 	t.is(isHappyProp!.attrName, "is-happy");
 
 	const countProp = getComponentProp(members, "count");
 	t.truthy(countProp);
-	t.truthy(isAssignableToSimpleTypeKind(countProp!.type!(), SimpleTypeKind.NUMBER, checker));
+	t.truthy(isAssignableToSimpleTypeKind(countProp!.type!(), "NUMBER", checker));
 	t.is(countProp!.attrName, "count");
 	t.is(countProp!.default, 10);
 });

@@ -14,7 +14,7 @@ export function discoverDefinitions(node: Node, { ts, checker }: AnalyzerVisitCo
 	// customElements.define("my-element", MyElement)
 	if (ts.isCallExpression(node)) {
 		if (ts.isPropertyAccessExpression(node.expression) && node.expression.name.escapedText === "define") {
-			let leftExpression = node.expression.expression;
+			let leftExpression: Node = node.expression.expression;
 
 			// Take "window.customElements" into account and return the "customElements" part
 			if (

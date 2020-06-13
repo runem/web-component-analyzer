@@ -1,9 +1,9 @@
-import { SimpleType, SimpleTypeKind } from "ts-simple-type";
+import { SimpleType } from "ts-simple-type";
 import { Node } from "typescript";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentEvent } from "../../types/features/component-event";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
-import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 
 /**
  * Discovers events dispatched
@@ -39,7 +39,7 @@ export function discoverEvents(node: Node, context: AnalyzerVisitContext): Compo
 							return (
 								(typeArguments?.[0] != null && checker.getTypeFromTypeNode(typeArguments[0])) ||
 								({
-									kind: SimpleTypeKind.ANY
+									kind: "ANY"
 								} as SimpleType)
 							);
 						})

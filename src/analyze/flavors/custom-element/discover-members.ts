@@ -44,7 +44,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 						jsDoc: getJsDoc(attrNameNode, ts),
 						kind: "attribute",
 						attrName,
-						type: undefined // () => ({ kind: SimpleTypeKind.ANY } as SimpleType),
+						type: undefined // () => ({ kind: "ANY" } as SimpleType),
 					});
 				}
 			}

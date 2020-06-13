@@ -9,7 +9,7 @@ import { VisitFeatureEmitMap, visitFeaturesWithVisitMaps } from "./visit-feature
  * @param context
  * @param emitMap
  */
-export function visitGlobalFeatures<ReturnType>(node: Node, context: AnalyzerVisitContext, emitMap: Partial<VisitFeatureEmitMap>) {
+export function visitGlobalFeatures<ReturnType>(node: Node, context: AnalyzerVisitContext, emitMap: Partial<VisitFeatureEmitMap>): void {
 	const visitMaps = arrayDefined(context.flavors.map(flavor => flavor.discoverGlobalFeatures));
 
 	visitFeaturesWithVisitMaps(node, context, visitMaps, emitMap);
