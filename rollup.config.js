@@ -30,8 +30,7 @@ export default [
 			{
 				dir: dirname(pkg.module),
 				format: "esm",
-				chunkFileNames: "chunk-[name]-[hash].js",
-				plugins
+				chunkFileNames: "chunk-[name]-[hash].js"
 			}
 		],
 		plugins,
