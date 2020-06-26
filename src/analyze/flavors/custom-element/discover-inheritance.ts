@@ -1,4 +1,4 @@
-import { HeritageClause, Node } from "typescript";
+import { ConstructSignatureDeclaration, HeritageClause, Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentDeclarationKind, ComponentHeritageClause, ComponentHeritageClauseKind } from "../../types/component-declaration";
 import { findChild, findChildren, resolveDeclarationsDeep } from "../../util/ast-util";
@@ -7,21 +7,23 @@ import { InheritanceResult } from "../analyzer-flavor";
 /**
  * Discovers inheritance from a node by looking at "extends" and "implements"
  * @param node
- * @param context
+ * @param baseContext
  */
-export function discoverInheritance(node: Node, context: AnalyzerVisitContext): InheritanceResult | undefined {
+export function discoverInheritance(node: Node, baseContext: AnalyzerVisitContext): InheritanceResult | undefined {
 	let declarationKind: ComponentDeclarationKind | undefined = undefined;
 	const heritageClauses: ComponentHeritageClause[] = [];
 	const declarationNodes = new Set<Node>();
 
-	// Resolve the structure of the node
-	resolveStructure(node, {
-		...context,
+	const context: InheritanceAnalyzerVisitContext = {
+		...baseContext,
 		emitDeclaration: decl => declarationNodes.add(decl),
 		emitInheritance: (kind, identifier) => heritageClauses.push({ kind, identifier, declaration: undefined }),
 		emitDeclarationKind: kind => (declarationKind = declarationKind || kind),
 		visitedNodes: new Set<Node>()
-	});
+	};
+
+	// Resolve the structure of the node
+	resolveStructure(node, context);
 
 	// Reverse heritage clauses because they come out in wrong order
 	heritageClauses.reverse();
@@ -76,50 +78,46 @@ function resolveStructure(node: Node, context: InheritanceAnalyzerVisitContext) 
 	}
 
 	// Emit a mixin if this node is a function
-	else if (ts.isFunctionLike(node)) {
+	else if (ts.isFunctionLike(node) || ts.isCallLikeExpression(node)) {
 		context.emitDeclarationKind("mixin");
 
-		// Else find the first class declaration in the block
-		// Note that we don't look for a return statement because this would complicate things
-		const clzDecl = findChild(node, ts.isClassLike);
-		if (clzDecl != null) {
-			resolveStructure(clzDecl, context);
-			return;
-		}
-
-		// If we didn't find any class declarations, we might be in a function that wraps a mixin
-		// Therefore find the return statement and call this method recursively
-		const returnNode = findChild(node, ts.isReturnStatement);
-		if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
-			const returnNodeExp = returnNode.expression;
-
-			// If a function call is returned, this function call expression is followed, and the arguments are treated as heritage
-			//    Example: return MyFirstMixin(MySecondMixin(Base))   -->   MyFirstMixin is followed, and MySecondMixin + Base are inherited
-			if (ts.isCallExpression(returnNodeExp) && returnNodeExp.expression != null) {
-				for (const arg of returnNodeExp.arguments) {
-					resolveHeritage(undefined, arg, context);
-				}
-
-				resolveStructure(returnNodeExp.expression, context);
+		if (ts.isFunctionLike(node) && node.getSourceFile().isDeclarationFile) {
+			// Find any identifiers if the node is in a declaration file
+			findChildren(node.type, ts.isIdentifier, identifier => {
+				resolveStructure(identifier, context);
+			});
+		} else {
+			// Else find the first class declaration in the block
+			// Note that we don't look for a return statement because this would complicate things
+			const clzDecl = findChild(node, ts.isClassLike);
+			if (clzDecl != null) {
+				resolveStructure(clzDecl, context);
+				return;
 			}
 
-			return;
-		}
-	}
+			// If we didn't find any class declarations, we might be in a function that wraps a mixin
+			// Therefore find the return statement and call this method recursively
+			const returnNode = findChild(node, ts.isReturnStatement);
+			if (returnNode != null && returnNode.expression != null && returnNode.expression !== node) {
+				const returnNodeExp = returnNode.expression;
 
-	// Find any identifiers if the node is in a declaration file
-	else if (node.getSourceFile().isDeclarationFile) {
-		findChildren(node, ts.isIdentifier, identifier => {
-			resolveStructure(identifier, context);
-		});
-	}
+				// If a function call is returned, this function call expression is followed, and the arguments are treated as heritage
+				//    Example: return MyFirstMixin(MySecondMixin(Base))   -->   MyFirstMixin is followed, and MySecondMixin + Base are inherited
+				if (ts.isCallExpression(returnNodeExp) && returnNodeExp.expression != null) {
+					for (const arg of returnNodeExp.arguments) {
+						resolveHeritage(undefined, arg, context);
+					}
 
-	// Handle variable declarations that are assigned to functions (mixins)
-	else if (ts.isVariableDeclaration(node)) {
-		const functionDecl = findChild(node.initializer, ts.isFunctionLike);
-		if (functionDecl != null) {
-			resolveStructure(functionDecl, context);
+					resolveStructure(returnNodeExp.expression, context);
+				}
+
+				return;
+			}
 		}
+	} else if (ts.isVariableDeclaration(node) && (node.initializer != null || node.type != null)) {
+		resolveStructure((node.initializer || node.type)!, context);
+	} else if (ts.isIntersectionTypeNode(node)) {
+		emitTypeLiteralsDeclarations(node, context);
 	}
 }
 
@@ -199,5 +197,25 @@ function resolveHeritage(
 
 			context.emitInheritance(kind, node);
 		}
+	}
+}
+
+/**
+ * Emits "type literals" in the AST. Emits them with "emitDeclaration"
+ * @param node
+ * @param context
+ */
+function emitTypeLiteralsDeclarations(node: Node, context: InheritanceAnalyzerVisitContext) {
+	if (context.ts.isTypeLiteralNode(node)) {
+		// If we encounter a construct signature, follow the type
+		const construct = node.members?.find((member): member is ConstructSignatureDeclaration => context.ts.isConstructSignatureDeclaration(member));
+		if (construct != null && construct.type != null) {
+			context.emitDeclarationKind("mixin");
+			emitTypeLiteralsDeclarations(construct.type, context);
+		} else {
+			context.emitDeclaration(node);
+		}
+	} else {
+		node.forEachChild(n => emitTypeLiteralsDeclarations(n, context));
 	}
 }

@@ -30,11 +30,11 @@ export function discoverDefinitions(
 
 /**
  * Finds all component definitions in a file and combine multiple declarations with same tag name.
- * @param node
+ * @param sourceFile
  * @param context
  */
-function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext): Map<ComponentDefinition, Set<Node>> {
-	if (node == null) return new Map();
+function analyzeAndDedupeDefinitions(sourceFile: SourceFile, context: AnalyzerVisitContext): Map<ComponentDefinition, Set<Node>> {
+	if (sourceFile == null) return new Map();
 
 	// Keep a map of "tag name" ==> "definition"
 	const tagNameDefinitionMap: Map<string, ComponentDefinition> = new Map();
@@ -43,7 +43,7 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 	const definitionToDeclarationMap: Map<ComponentDefinition, Set<Node>> = new Map();
 
 	// Discover definitions using flavors
-	visitDefinitions(node, context, results => {
+	visitDefinitions(sourceFile, context, results => {
 		// Definitions are unique by tag name and are merged when pointing to multiple declaration nodes.
 		// This is because multiple definitions can exist side by side for the same tag name (think global TagName type definition and customElements.define)
 		for (const result of results) {
@@ -53,6 +53,7 @@ function analyzeAndDedupeDefinitions(node: Node, context: AnalyzerVisitContext):
 			if (definition == null) {
 				// No existing definition was found, - create one!
 				definition = {
+					sourceFile,
 					declaration: () => {
 						throw new Error("This is a noop function. It's expected that this function is overwritten.");
 					},

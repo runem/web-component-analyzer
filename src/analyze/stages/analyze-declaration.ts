@@ -55,6 +55,7 @@ export function analyzeComponentDeclaration(
 	const symbol = getSymbol(mainDeclarationNode, baseContext);
 
 	const baseDeclaration: ComponentDeclaration = {
+		sourceFile,
 		node: mainDeclarationNode,
 		declarationNodes: new Set(declarationNodes),
 		symbol,
@@ -73,8 +74,8 @@ export function analyzeComponentDeclaration(
 	const context: AnalyzerDeclarationVisitContext = {
 		...baseContext,
 		declarationNode: mainDeclarationNode,
-		getDeclaration: () => baseDeclaration,
-		sourceFile: mainDeclarationNode.getSourceFile()
+		sourceFile: mainDeclarationNode.getSourceFile(),
+		getDeclaration: () => baseDeclaration
 	};
 
 	// Find features on all declaration nodes
@@ -86,7 +87,13 @@ export function analyzeComponentDeclaration(
 		}
 
 		// Discover component features using flavors
-		featureCollections.push(discoverFeatures(node, { ...context, declarationNode: node }));
+		featureCollections.push(
+			discoverFeatures(node, {
+				...context,
+				declarationNode: node,
+				sourceFile: node.getSourceFile()
+			})
+		);
 	}
 
 	// Add all inherited features to the feature collections array

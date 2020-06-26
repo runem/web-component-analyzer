@@ -95,7 +95,7 @@
 	},
 	"lint-staged": {
 		"*.{ts,js}": "eslint --fix",
-		"*.{ts,js,md}": "prettier --write"
+		"*.{ts,js,md,json}": "prettier --write"
 	},
 	"bin": {
 		"wca": "cli.js",

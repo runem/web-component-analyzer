@@ -263,10 +263,11 @@ tsTest("Handles mixins generated with factory functions", t => {
 
 	const { members } = result.componentDefinitions[0]?.declaration();
 	const attributeNames = getAttributeNames(members);
+
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
 });
 
-tsTest.only("Handles nested mixin extends", t => {
+tsTest("Handles nested mixin extends", t => {
 	const {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
@@ -308,14 +309,14 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	/* =============== Mixin 1 ===================== */
 	export function AtFormItemMixin<A>(base: A) {
 		abstract class AtFormItemMixinImplementation extends base {
-			a = "a";
+			f = "f";
 		}
 	}
 
 	/* =============== Mixin 2 ===================== */
 	function __AtInputOrTextareaFormItemMixin<A>(base: A) {
 		abstract class AtInputOrTextareaFormItemMixinImplementation extends base {
-			b = "b";
+			e = "e";
 		}
 	}
 
@@ -326,7 +327,7 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	/* =============== Mixin 3 ===================== */
 	function __AtInputFormItemMixin<A>(base: A) {
 		abstract class AtInputFormItemMixinImplementation extends base {
-			c = "c";
+			d = "d";
 		}
 
 		return AtInputFormItemMixinImplementation;
@@ -339,7 +340,7 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	/* =============== Mixin 4 ===================== */
 	function __AtTextFormItemMixin<A>(base: A) {
 		abstract class AtTextFormItemMixinImplementation extends base {
-			d = "d";
+			c = "c";
 		}
 	}
 	
@@ -350,7 +351,7 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	/* =============== Mixin 5 ===================== */
 	function __AtTextFieldFormItemMixin<A>(base: A) {
 		class AtTextFieldFormItemMixinImplementation extends base {
-			e = "e";
+			b = "b";
 		}
 	}
 	
@@ -360,11 +361,11 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	
 	/* =============== Element =====================0 */
 	class AtFormField extends AtFormFieldMixin(HTMLElement) {
-		f = "f";
+		g = "g";
 	}
 	
 	export class AtTextField extends AtTextFieldFormItemMixin(AtFormField) {
-		g = "g";
+		a = "a";
 	}
 	
 	customElements.define("at-text-field", AtTextField);
@@ -373,5 +374,52 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	const { members } = result.componentDefinitions[0]?.declaration();
 
 	const propertyNames = getPropertyNames(members);
-	t.deepEqual(propertyNames, ["g", "f", "e", "d", "c", "b", "a"]);
+	t.deepEqual(propertyNames, ["a", "b", "c", "d", "e", "f", "g"]);
+});
+
+tsTest("Handles types in declaration files that represents a component with mixins", t => {
+	const {
+		results: [result]
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "element.d.ts",
+		text: `
+		import { LitElement } from "lit-element";
+import { TemplateResult } from "lit-html";
+declare const AtButton_base: {
+    new (...args: any[]): import("lit-element").LitElement & {
+        color: "review" | "create" | "act" | "grow" | "rate" | "done" | "error" | "primary" | "accent" | "warn" | "white" | "black" | "success" | "shady" | undefined;
+        size: "small" | "medium" | "large" | undefined;
+        updateTabIndex(): void;
+    };
+    readonly styles: import("lit-element").CSSResultArray;
+} & {
+    new (...args: any[]): import("lit-element").LitElement & {
+        fab: boolean;
+        flat: boolean;
+        $formItem: HTMLInputElement | HTMLSelectElement | HTMLButtonElement | HTMLOutputElement | HTMLTextAreaElement | undefined;
+    };
+    readonly styles: import("lit-element").CSSResultArray;
+} & {
+    new (...args: any[]): import("lit-element").LitElement & {
+        min: number | undefined;
+        max: number | undefined;
+    };
+    readonly styles: import("lit-element").CSSResultArray;
+} & typeof LitElement;
+
+export declare class AtButton extends AtButton_base { }
+
+declare global {
+    interface HTMLElementTagNameMap {
+        "at-button": AtButton;
+    }
+}
+	 `
+	});
+
+	const { members } = result.componentDefinitions[0]?.declaration();
+
+	const propNames = getPropertyNames(members);
+
+	t.deepEqual(propNames, ["color", "size", "fab", "flat", "$formItem", "min", "max"]);
 });

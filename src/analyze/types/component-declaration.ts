@@ -1,4 +1,4 @@
-import { Node, Symbol } from "typescript";
+import { Node, SourceFile, Symbol } from "typescript";
 import { ComponentCssPart } from "./features/component-css-part";
 import { ComponentCssProperty } from "./features/component-css-property";
 import { ComponentEvent } from "./features/component-event";
@@ -27,6 +27,7 @@ export interface ComponentHeritageClause {
 export type ComponentDeclarationKind = "mixin" | "interface" | "class";
 
 export interface ComponentDeclaration extends ComponentFeatures {
+	sourceFile: SourceFile;
 	node: Node;
 	declarationNodes: Set<Node>;
 
