@@ -86,7 +86,8 @@
 		"files": [
 			"test/**/*.ts",
 			"!test/{helpers,snapshots}/**/*"
-		]
+		],
+		"timeout": "200s"
 	},
 	"husky": {
 		"hooks": {
