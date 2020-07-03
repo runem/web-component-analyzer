@@ -341,11 +341,18 @@ export function getNodeName(node: Node, context: { ts: typeof tsModule }): strin
  * @param context
  */
 export function getNodeIdentifier(node: Node, context: { ts: typeof tsModule }): Identifier | undefined {
-	if (context.ts.isClassLike(node) || context.ts.isInterfaceDeclaration(node)) {
-		return node.name;
-	} else if (context.ts.isIdentifier(node)) {
+	if (context.ts.isIdentifier(node)) {
 		return node;
-	} else if (context.ts.isVariableDeclaration(node) && node.name != null && context.ts.isIdentifier(node.name)) {
+	} else if (
+		(context.ts.isClassLike(node) ||
+			context.ts.isInterfaceDeclaration(node) ||
+			context.ts.isVariableDeclaration(node) ||
+			context.ts.isMethodDeclaration(node) ||
+			context.ts.isPropertyDeclaration(node) ||
+			context.ts.isFunctionDeclaration(node)) &&
+		node.name != null &&
+		context.ts.isIdentifier(node.name)
+	) {
 		return node.name;
 	}
 

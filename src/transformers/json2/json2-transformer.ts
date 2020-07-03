@@ -20,6 +20,7 @@ import {
 	ClassMember,
 	CSSPartDoc,
 	CSSPropertyDoc,
+	CustomElementDefinitionDoc,
 	CustomElementDoc,
 	EventDoc,
 	ExportDoc,
@@ -93,6 +94,7 @@ function analyzerResultToModuleDoc(result: AnalyzerResult, context: TransformerC
 function getExportsDocsFromAnalyzerResult(result: AnalyzerResult, context: TransformerContext): ExportDoc[] {
 	// Return all class- and variable-docs
 	return [
+		...getDefinitionDocsFromAnalyzerResult(result, context),
 		...getClassDocsFromAnalyzerResult(result, context),
 		...getVariableDocsFromAnalyzerResult(result, context),
 		...getFunctionDocsFromAnalyzerResult(result, context)
@@ -107,6 +109,14 @@ function getExportsDocsFromAnalyzerResult(result: AnalyzerResult, context: Trans
 function getFunctionDocsFromAnalyzerResult(result: AnalyzerResult, context: TransformerContext): FunctionDoc[] {
 	// TODO: support function exports
 	return [];
+}
+
+function getDefinitionDocsFromAnalyzerResult(result: AnalyzerResult, context: TransformerContext): CustomElementDefinitionDoc[] {
+	return result.componentDefinitions.map(definition => ({
+		kind: "definition",
+		name: definition.tagName,
+		declaration: getReferenceForNode(definition.declaration().node, context)
+	}));
 }
 
 /**
@@ -141,8 +151,8 @@ function getVariableDocsFromAnalyzerResult(result: AnalyzerResult, context: Tran
 						kind: "variable",
 						name: node.name.getText(),
 						description: jsDoc?.description,
-						type: getTypeHintFromType(context.checker.getTypeAtLocation(node), context.checker, context.config)
-						// TODO: "summary"
+						type: getTypeHintFromType(context.checker.getTypeAtLocation(node), context.checker, context.config),
+						summary: getSummaryFromJsDoc(jsDoc)
 					});
 				}
 				break;
@@ -204,8 +214,8 @@ function getExportsDocFromDeclaration(
 		mixins: mixinRefs.length > 0 ? mixinRefs : undefined,
 		description: declaration.jsDoc?.description,
 		name: declaration.symbol?.name || getNodeName(declaration.node, { ts: tsModule }) || "",
-		members: members.length > 0 ? members : undefined
-		// TODO: "summary"
+		members: members.length > 0 ? members : undefined,
+		summary: getSummaryFromJsDoc(declaration.jsDoc)
 	};
 
 	// Find the first corresponding custom element definition for this declaration
@@ -377,8 +387,9 @@ function getMethodDocsFromDeclaration(declaration: ComponentDeclaration, context
 				description: returnDescription,
 				type: getTypeHintFromType(returnTypeHint || returnType, context.checker, context.config)
 			},
-			inheritedFrom: getInheritedFromReference(declaration, method, context)
-			// TODO: "summary" and "static"
+			inheritedFrom: getInheritedFromReference(declaration, method, context),
+			summary: getSummaryFromJsDoc(method.jsDoc)
+			// TODO: "static"
 		});
 	}
 
@@ -402,8 +413,9 @@ function getFieldDocsFromDeclaration(declaration: ComponentDeclaration, context:
 				description: member.jsDoc?.description,
 				type: getTypeHintFromType(member.typeHint || member.type?.(), context.checker, context.config),
 				default: member.default != null ? JSON.stringify(member.default) : undefined,
-				inheritedFrom: getInheritedFromReference(declaration, member, context)
-				// TODO: "static" and "summary"
+				inheritedFrom: getInheritedFromReference(declaration, member, context),
+				summary: getSummaryFromJsDoc(member.jsDoc)
+				// TODO: "static"
 			});
 		}
 	}
@@ -597,4 +609,18 @@ function flattenAnalyzerResults(results: AnalyzerResult[]): AnalyzerResult[] {
 			declarations: declarations != null ? Array.from(declarations) : result.declarations
 		};
 	});
+}
+
+/**
+ * Returns the content of the summary jsdoc tag if any
+ * @param jsDoc
+ */
+function getSummaryFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
+	const summaryTag = jsDoc?.tags?.find(tag => tag.tag === "summary");
+
+	if (summaryTag == null) {
+		return undefined;
+	}
+
+	return summaryTag.comment;
 }

@@ -16,7 +16,7 @@ export function getSuperclassHeritageClause(declaration: ComponentDeclaration): 
  * @param declaration
  */
 export function getMixinHeritageClauses(declaration: ComponentDeclaration): ComponentHeritageClause[] {
-	return declaration.heritageClauses.filter(clause => clause.kind === "mixin");
+	return declaration.heritageClauses.filter(clause => clause.kind === "mixin" || clause.declaration?.kind === "mixin");
 }
 
 /**

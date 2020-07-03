@@ -36,7 +36,7 @@ export interface ModuleDoc {
 	exports?: Array<ExportDoc>;
 }
 
-export type ExportDoc = ClassDoc | FunctionDoc | VariableDoc;
+export type ExportDoc = ClassDoc | FunctionDoc | VariableDoc | CustomElementDefinitionDoc;
 
 /**
  * A reference to an export of a module.
@@ -70,6 +70,14 @@ export interface CustomElementDoc extends ClassDoc {
 	cssParts?: CSSPartDoc[];
 
 	demos?: Demo[];
+}
+
+export interface CustomElementDefinitionDoc {
+	kind: "definition";
+
+	name: string;
+
+	declaration: Reference;
 }
 
 export interface AttributeDoc {
