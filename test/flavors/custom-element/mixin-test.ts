@@ -19,7 +19,7 @@ tsTest("Handles circular inheritance", t => {
 		}
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const attributeNames = getAttributeNames(members);
 
@@ -48,7 +48,7 @@ tsTest("Handles circular inheritance using mixins", t => {
 		}
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const attributeNames = getAttributeNames(members);
 
@@ -91,7 +91,7 @@ tsTest("Handles mixin with variable declaration in TS declaration file", t => {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,
@@ -134,7 +134,7 @@ tsTest("Handles simple mixin", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const attributeNames = getAttributeNames(members);
 
@@ -172,7 +172,7 @@ tsTest("Handles mixin with local variable subclass", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const attributeNames = getAttributeNames(members);
 
@@ -208,7 +208,7 @@ tsTest("Handles 2 levels of mixins", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const attributeNames = getAttributeNames(members);
 
@@ -233,7 +233,7 @@ tsTest("Handles mixins with properties", t => {
 		}
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(members.length, 2);
 	t.truthy(getComponentProp(members, "elementProperty"));
@@ -261,7 +261,7 @@ tsTest("Handles mixins generated with factory functions", t => {
 		customElements.define("my-element", SomeElement);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 	const attributeNames = getAttributeNames(members);
 
 	t.deepEqual(attributeNames, ["a", "b", "c", "d"]);
@@ -296,7 +296,7 @@ tsTest("Handles nested mixin extends", t => {
 		customElements.define("my-element", MyElement);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 	const attributeNames = getAttributeNames(members);
 	t.deepEqual(attributeNames, ["a", "b", "c"]);
 });
@@ -371,7 +371,7 @@ tsTest("Handles nested mixin wrapper functions", t => {
 	customElements.define("at-text-field", AtTextField);
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const propertyNames = getPropertyNames(members);
 	t.deepEqual(propertyNames, ["a", "b", "c", "d", "e", "f", "g"]);
@@ -417,7 +417,7 @@ declare global {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const propNames = getPropertyNames(members);
 

@@ -48,7 +48,7 @@ tsTest("jsDoc: Handles visibility modifier on constructor assignment", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const member = getComponentProp(members, "foo");
 

@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 
 tsTest("Discovers elements defined using customElements.define", t => {
 	const {
@@ -137,4 +137,34 @@ tsTest("Discovers declaration in other file", t => {
 	t.is(componentDefinitions.length, 1);
 	t.is(componentDefinitions[0].tagName, "my-element");
 	t.is(componentDefinitions[0].declaration?.jsDoc?.description, "hello");
+});
+
+tsTest("Correctly discovers multiple declarations", t => {
+	const {
+		results: [result]
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "test.d.ts",
+		text: `
+		interface MyElement extends HTMLElement {
+		}
+		var MyElement: {
+			prototype: MyElement;
+			new (): MyElement;
+		};	
+		customElements.define("my-element", MyElement);
+	 `
+	});
+
+	const { componentDefinitions } = result;
+
+	t.is(componentDefinitions.length, 1);
+	t.is(componentDefinitions[0].tagName, "my-element");
+	t.is(
+		componentDefinitions[0].declaration?.members?.some(m => m.propName === "prototype"),
+		false
+	);
+	t.is(
+		componentDefinitions[0].declaration?.methods?.some(m => m.name === "new"),
+		false
+	);
 });
