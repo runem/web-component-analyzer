@@ -19,7 +19,7 @@ tsTest("Readonly modifier is found", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -53,7 +53,7 @@ tsTest("Getter have readonly modifier", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -87,7 +87,7 @@ tsTest("Getter and setter become one property without readonly modifier", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,

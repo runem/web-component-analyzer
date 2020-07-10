@@ -3,7 +3,6 @@ import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ComponentDeclaration } from "../types/component-declaration";
 import { ComponentDefinition } from "../types/component-definition";
 import { getSymbol, resolveSymbolDeclarations } from "../util/ast-util";
-import { lazy } from "../util/lazy";
 import { visitDefinitions } from "./flavor/visit-definitions";
 
 /**
@@ -15,15 +14,25 @@ import { visitDefinitions } from "./flavor/visit-definitions";
 export function discoverDefinitions(
 	sourceFile: SourceFile,
 	context: AnalyzerVisitContext,
-	analyzeDeclaration: (definition: ComponentDefinition, declarationNodes: Node[]) => ComponentDeclaration
+	analyzeDeclaration: (definition: ComponentDefinition, declarationNodes: Node[]) => ComponentDeclaration | undefined
 ): ComponentDefinition[] {
 	// Find all definitions in the file using flavors
 	const definitionResults = analyzeAndDedupeDefinitions(sourceFile, context);
 
 	return Array.from(definitionResults.entries()).map(([definition, declarationSet]) => {
+		let declaration: ComponentDeclaration | undefined;
+		let didEvaluateDeclaration = false;
+
 		return {
 			...definition,
-			declaration: lazy(() => analyzeDeclaration(definition, Array.from(declarationSet)))
+			get declaration() {
+				if (!didEvaluateDeclaration) {
+					declaration = analyzeDeclaration(definition, Array.from(declarationSet));
+					didEvaluateDeclaration = true;
+				}
+
+				return declaration;
+			}
 		};
 	});
 }
@@ -54,9 +63,6 @@ function analyzeAndDedupeDefinitions(sourceFile: SourceFile, context: AnalyzerVi
 				// No existing definition was found, - create one!
 				definition = {
 					sourceFile,
-					declaration: () => {
-						throw new Error("This is a noop function. It's expected that this function is overwritten.");
-					},
 					tagName: result.tagName,
 					tagNameNodes: new Set(),
 					identifierNodes: new Set()

@@ -20,7 +20,7 @@ tsTest("jsdoc: Discovers properties with @prop", t => {
 	 }
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -91,7 +91,7 @@ tsTest("jsdoc: Discovers attributes defined on getters with @attr", t => {
 	 }
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,

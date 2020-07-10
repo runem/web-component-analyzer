@@ -20,10 +20,11 @@ export function analyzeComponentDeclaration(
 	initialDeclarationNodes: Node[],
 	baseContext: AnalyzerVisitContext,
 	options: { visitedNodes?: Set<Node> } = {}
-): ComponentDeclaration {
+): ComponentDeclaration | undefined {
 	const mainDeclarationNode = initialDeclarationNodes[0];
 	if (mainDeclarationNode == null) {
-		throw new Error("Couldn't find main declaration node");
+		return undefined;
+		//throw new Error("Couldn't find main declaration node");
 	}
 
 	// Check if there exists a cached declaration for this node.

@@ -5,7 +5,7 @@ import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLan
 import { getJsDoc, getJsDocType } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
-import { camelToDashCase } from "../../util/text-util";
+import { camelToDashCase, isNamePrivate } from "../../util/text-util";
 import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
 import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPropertyOption } from "./parse-lit-property-configuration";
 
@@ -210,7 +210,8 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 				node: propNode,
 				meta: litConfig,
 				default: litConfig.default,
-				reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined
+				reflect: litConfig.reflect ? "both" : attrName != null ? "to-property" : undefined,
+				visibility: isNamePrivate(propName) ? "private" : undefined
 			});
 		}
 	}

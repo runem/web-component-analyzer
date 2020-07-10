@@ -23,7 +23,7 @@ tsTest("Discovers elements defined JSX.IntrinsicElements", t => {
 	t.is(componentDefinitions.length, 1);
 	t.is(componentDefinitions[0].tagName, "my-element");
 
-	const { members } = componentDefinitions[0].declaration();
+	const { members } = componentDefinitions[0].declaration;
 
 	assertHasMembers(
 		members,

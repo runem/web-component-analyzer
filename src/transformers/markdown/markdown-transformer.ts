@@ -28,87 +28,93 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 	const definitions = arrayFlat(results.map(res => res.componentDefinitions));
 
 	// Transform all definitions to markdown
-	const markdownSegments = definitions.map(definition => {
-		const declaration = definition.declaration();
+	const markdownSegments = arrayDefined(
+		definitions.map(definition => {
+			// Add tagName as header
+			let segmentText = markdownHeader(definition.tagName, 1, config) + "\n";
 
-		// Add tagName as header
-		let segmentText = markdownHeader(definition.tagName, 1, config) + "\n";
-
-		// Add component jsdoc comment to the output
-		if (declaration.jsDoc?.description != null) segmentText += `\n${declaration.jsDoc?.description}\n`;
-
-		// Add mixins (don't include mixins prefixed with _)
-		const mixins = arrayDefined(
-			getMixinHeritageClausesInChain(declaration).map(
-				clause => clause.declaration?.symbol?.name || (clause.identifier.getText() as string | undefined)
-			)
-		).filter(name => !name.startsWith("_"));
-
-		if (mixins.length > 0) {
-			segmentText += `\n**Mixins:** ${mixins.join(", ")}\n`;
-		}
-
-		// Add examples
-		const examples = getExamplesFromComponent(declaration);
-		if (examples.length > 0) {
-			segmentText += "\n" + markdownHeader(`Example${examples.length > 1 ? "s" : ""}`, 2, config) + "\n";
-
-			for (const example of examples) {
-				if (example.description != null) {
-					segmentText += `\n${example.description}\n`;
-				}
-				segmentText += `\n\`\`\`${example.lang || ""}\n${example.code}\n\`\`\`\n`;
+			const declaration = definition.declaration;
+			if (declaration == null) {
+				return undefined;
 			}
-		}
 
-		// Grab all items from the component and add them as tables to the output.
-		const properties = filterVisibility(
-			config.visibility,
-			declaration.members.filter((m): m is ComponentMemberProperty => m.kind === "property").sort((a, b) => (a.propName < b.propName ? -1 : 1))
-		);
-		const attributes = filterVisibility(
-			config.visibility,
-			declaration.members.filter((m): m is ComponentMemberAttribute => m.kind === "attribute").sort((a, b) => (a.attrName < b.attrName ? -1 : 1))
-		);
-		const methods = filterVisibility(
-			config.visibility,
-			declaration.methods.sort((a, b) => (a.name < b.name ? -1 : 1))
-		);
-		const slots = declaration.slots.sort((a, b) => (a.name == null ? -1 : b.name == null ? 1 : a.name < b.name ? -1 : 1));
-		const events = declaration.events.sort((a, b) => (a.name < b.name ? -1 : 1));
-		const cssProps = declaration.cssProperties.sort((a, b) => (a.name < b.name ? -1 : 1));
-		const cssParts = declaration.cssParts.sort((a, b) => (a.name < b.name ? -1 : 1));
+			// Add component jsdoc comment to the output
+			if (declaration.jsDoc?.description != null) segmentText += `\n${declaration.jsDoc?.description}\n`;
 
-		if (attributes.length > 0) {
-			segmentText += "\n" + memberAttributeSection(attributes, program.getTypeChecker(), config);
-		}
+			// Add mixins (don't include mixins prefixed with _)
+			const mixins = arrayDefined(
+				getMixinHeritageClausesInChain(declaration).map(
+					clause => clause.declaration?.symbol?.name || (clause.identifier.getText() as string | undefined)
+				)
+			).filter(name => !name.startsWith("_"));
 
-		if (properties.length > 0) {
-			segmentText += "\n" + memberPropertySection(properties, program.getTypeChecker(), config);
-		}
+			if (mixins.length > 0) {
+				segmentText += `\n**Mixins:** ${mixins.join(", ")}\n`;
+			}
 
-		if (methods.length > 0) {
-			segmentText += "\n" + methodSection(methods, program.getTypeChecker(), config);
-		}
+			// Add examples
+			const examples = getExamplesFromComponent(declaration);
+			if (examples.length > 0) {
+				segmentText += "\n" + markdownHeader(`Example${examples.length > 1 ? "s" : ""}`, 2, config) + "\n";
 
-		if (events.length > 0) {
-			segmentText += "\n" + eventSection(events, program.getTypeChecker(), config);
-		}
+				for (const example of examples) {
+					if (example.description != null) {
+						segmentText += `\n${example.description}\n`;
+					}
+					segmentText += `\n\`\`\`${example.lang || ""}\n${example.code}\n\`\`\`\n`;
+				}
+			}
 
-		if (slots.length > 0) {
-			segmentText += "\n" + slotSection(slots, config);
-		}
+			// Grab all items from the component and add them as tables to the output.
+			const properties = filterVisibility(
+				config.visibility,
+				declaration.members
+					.filter((m): m is ComponentMemberProperty => m.kind === "property")
+					.filter(m => m.modifiers == null || !m.modifiers.has("static"))
+			).sort((a, b) => (a.propName < b.propName ? -1 : 1));
 
-		if (cssParts.length > 0) {
-			segmentText += "\n" + cssPartSection(cssParts, config);
-		}
+			const attributes = filterVisibility(
+				config.visibility,
+				declaration.members.filter((m): m is ComponentMemberAttribute => m.kind === "attribute")
+			).sort((a, b) => (a.attrName < b.attrName ? -1 : 1));
 
-		if (cssProps.length > 0) {
-			segmentText += "\n" + cssPropSection(cssProps, config);
-		}
+			const methods = filterVisibility(config.visibility, declaration.methods).sort((a, b) => (a.name < b.name ? -1 : 1));
+			const slots = declaration.slots.sort((a, b) => (a.name == null ? -1 : b.name == null ? 1 : a.name < b.name ? -1 : 1));
+			const events = declaration.events.sort((a, b) => (a.name < b.name ? -1 : 1));
+			const cssProps = declaration.cssProperties.sort((a, b) => (a.name < b.name ? -1 : 1));
+			const cssParts = declaration.cssParts.sort((a, b) => (a.name < b.name ? -1 : 1));
 
-		return segmentText;
-	});
+			if (attributes.length > 0) {
+				segmentText += "\n" + memberAttributeSection(attributes, program.getTypeChecker(), config);
+			}
+
+			if (properties.length > 0) {
+				segmentText += "\n" + memberPropertySection(properties, program.getTypeChecker(), config);
+			}
+
+			if (methods.length > 0) {
+				segmentText += "\n" + methodSection(methods, program.getTypeChecker(), config);
+			}
+
+			if (events.length > 0) {
+				segmentText += "\n" + eventSection(events, program.getTypeChecker(), config);
+			}
+
+			if (slots.length > 0) {
+				segmentText += "\n" + slotSection(slots, config);
+			}
+
+			if (cssParts.length > 0) {
+				segmentText += "\n" + cssPartSection(cssParts, config);
+			}
+
+			if (cssProps.length > 0) {
+				segmentText += "\n" + cssPropSection(cssProps, config);
+			}
+
+			return segmentText;
+		})
+	);
 
 	return markdownSegments.join("\n\n");
 };

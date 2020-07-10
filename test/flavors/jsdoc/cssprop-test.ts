@@ -13,7 +13,7 @@ tsTest("jsdoc: Discovers css properties with @cssprop", t => {
 	 }
 	 `);
 
-	const { cssProperties } = result.componentDefinitions[0].declaration();
+	const { cssProperties } = result.componentDefinitions[0].declaration;
 
 	t.is(cssProperties.length, 1);
 	t.is(cssProperties[0].name, "--this-is-a-css-prop");
@@ -32,7 +32,7 @@ tsTest("jsdoc: Discovers css properties with @cssproperty", t => {
 	 }
 	 `);
 
-	const { cssProperties } = result.componentDefinitions[0].declaration();
+	const { cssProperties } = result.componentDefinitions[0].declaration;
 
 	t.is(cssProperties.length, 1);
 	t.is(cssProperties[0].name, "--this-is-a-css-prop");
@@ -51,7 +51,7 @@ tsTest("jsdoc: Discovers css properties with @cssproperty and default", t => {
 	 }
 	 `);
 
-	const { cssProperties } = result.componentDefinitions[0].declaration();
+	const { cssProperties } = result.componentDefinitions[0].declaration;
 
 	t.is(cssProperties.length, 1);
 	t.is(cssProperties[0].name, "--element-color");

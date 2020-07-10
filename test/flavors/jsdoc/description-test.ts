@@ -21,7 +21,7 @@ tsTest("jsdoc: Correctly discovers the description in the jsdoc", t => {
 	 }
 	 `);
 
-	const declaration = result.componentDefinitions[0].declaration();
+	const declaration = result.componentDefinitions[0].declaration;
 
 	t.is(
 		declaration.jsDoc?.description,

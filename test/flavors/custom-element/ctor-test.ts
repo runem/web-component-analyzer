@@ -36,7 +36,7 @@ tsTest("Property assignments in the constructor are picked up", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -144,7 +144,7 @@ tsTest("Property assignments in the constructor are correctly merged", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -190,7 +190,7 @@ tsTest("Property assignments in the constructor don't overwrite Typescript modif
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,

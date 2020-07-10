@@ -19,7 +19,7 @@ tsTest("jsDoc: Handles @readonly on members", t => {
 		}
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,

@@ -30,7 +30,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -67,7 +67,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -101,7 +101,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -129,7 +129,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -157,7 +157,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));

@@ -26,7 +26,7 @@ tsTest("jsDoc: Handles @ignore jsdoc tag", t => {
 		}
 	 `);
 
-	const { events, methods, members } = result.componentDefinitions[0]?.declaration();
+	const { events, methods, members } = result.componentDefinitions[0]?.declaration;
 
 	t.is(events.length, 0);
 	t.is(members.length, 0);

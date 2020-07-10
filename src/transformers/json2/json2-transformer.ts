@@ -112,11 +112,21 @@ function getFunctionDocsFromAnalyzerResult(result: AnalyzerResult, context: Tran
 }
 
 function getDefinitionDocsFromAnalyzerResult(result: AnalyzerResult, context: TransformerContext): CustomElementDefinitionDoc[] {
-	return result.componentDefinitions.map(definition => ({
-		kind: "definition",
-		name: definition.tagName,
-		declaration: getReferenceForNode(definition.declaration().node, context)
-	}));
+	return arrayDefined(
+		result.componentDefinitions.map(definition => {
+			// It's not possible right now to model a tag name where the
+			//   declaration couldn't be resolved because the "declaration" is required
+			if (definition.declaration == null) {
+				return undefined;
+			}
+
+			return {
+				kind: "definition",
+				name: definition.tagName,
+				declaration: getReferenceForNode(definition.declaration.node, context)
+			};
+		})
+	);
 }
 
 /**
@@ -219,7 +229,7 @@ function getExportsDocFromDeclaration(
 	};
 
 	// Find the first corresponding custom element definition for this declaration
-	const definition = result.componentDefinitions.find(def => def.declaration().node === declaration.node);
+	const definition = result.componentDefinitions.find(def => def.declaration?.node === declaration.node);
 
 	if (definition != null) {
 		const events = getEventDocsFromDeclaration(declaration, context);

@@ -35,7 +35,7 @@ function testResult(
 
 export function testResultSnapshot(globs: string[]): void {
 	testResult(`Snapshot Test: ${globs.map(glob => `"${glob}"`).join(", ")}`, globs, (results, program, t) => {
-		const declarations = arrayFlat(results.map(result => result.componentDefinitions.map(def => def.declaration())));
+		const declarations = arrayFlat(results.map(result => result.componentDefinitions.map(def => def.declaration)));
 		const summary = {
 			elements: results.reduce((acc, result) => acc + result.componentDefinitions.length, 0),
 			tagNames: arrayFlat(results.map(result => result.componentDefinitions))

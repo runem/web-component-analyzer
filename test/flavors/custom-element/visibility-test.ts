@@ -16,7 +16,7 @@ tsTest("Handle Typescript visibility modifiers", t => {
 	}
 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members } = result.componentDefinitions[0]?.declaration;
 
 	assertHasMembers(
 		members,
@@ -55,7 +55,7 @@ tsTest("Handle visibility for private '_' prefixed names", t => {
 	const {
 		members,
 		methods: [method]
-	} = result.componentDefinitions[0]?.declaration();
+	} = result.componentDefinitions[0]?.declaration;
 
 	t.is(method.name, "_myMethod");
 	t.is(method.visibility, "private");

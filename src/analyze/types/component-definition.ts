@@ -8,5 +8,5 @@ export interface ComponentDefinition {
 	tagNameNodes: Set<Node>;
 
 	tagName: string;
-	declaration: () => ComponentDeclaration;
+	declaration?: ComponentDeclaration;
 }
