@@ -8,7 +8,7 @@ import { ComponentMethod } from "../../analyze/types/features/component-method";
 import { ComponentSlot } from "../../analyze/types/features/component-slot";
 import { VisibilityKind } from "../../analyze/types/visibility-kind";
 import { getMixinHeritageClausesInChain } from "../../analyze/util/component-declaration-util";
-import { arrayDefined, arrayFlat } from "../../util/array-util";
+import { arrayDedupe, arrayDefined, arrayFlat } from "../../util/array-util";
 import { getExamplesFromComponent } from "../../util/get-examples-from-component";
 import { getTypeHintFromMethod } from "../../util/get-type-hint-from-method";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
@@ -42,11 +42,13 @@ export const markdownTransformer: TransformerFunction = (results: AnalyzerResult
 			if (declaration.jsDoc?.description != null) segmentText += `\n${declaration.jsDoc?.description}\n`;
 
 			// Add mixins (don't include mixins prefixed with _)
-			const mixins = arrayDefined(
-				getMixinHeritageClausesInChain(declaration).map(
-					clause => clause.declaration?.symbol?.name || (clause.identifier.getText() as string | undefined)
-				)
-			).filter(name => !name.startsWith("_"));
+			const mixins = arrayDedupe(
+				arrayDefined(
+					getMixinHeritageClausesInChain(declaration).map(
+						clause => clause.declaration?.symbol?.name || (clause.identifier.getText() as string | undefined)
+					)
+				).filter(name => !name.startsWith("_"))
+			);
 
 			if (mixins.length > 0) {
 				segmentText += `\n**Mixins:** ${mixins.join(", ")}\n`;
