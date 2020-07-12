@@ -10,6 +10,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.0.3] - 2020-07-12
+
+### Fixed
+
+- WCA now resolves more declarations and mixins patterns ([#172](https://github.com/runem/web-component-analyzer/issues/172))
+
+### Changes
+
+- JSDoc related utils are now exported from WCA ([#171](https://github.com/runem/web-component-analyzer/pull/171))
+- `hasUpdated` and `updateComplete` are now considered protected members for `LitElement` elements ([#166](https://github.com/runem/web-component-analyzer/pull/166)
+
 ## [1.0.2] - 2020-01-18
 
 ### Fixed
