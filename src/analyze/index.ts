@@ -25,8 +25,10 @@ export * from "./types/features/component-method";
 export * from "./types/features/component-slot";
 export * from "./types/features/lit-element-property-config";
 
-/*export * from "./flavors/analyzer-flavor";
-export * from "./flavors/custom-element/custom-element-flavor";
+export * from "./flavors/analyzer-flavor";
 export * from "./flavors/js-doc/js-doc-flavor";
+export * from "./util/js-doc-util";
+/*
+export * from "./flavors/custom-element/custom-element-flavor";
 export * from "./flavors/jsx/jsx-flavor";
 export * from "./flavors/lit-element/lit-element-flavor";*/
