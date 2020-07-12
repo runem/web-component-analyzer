@@ -43,6 +43,9 @@ export function getTypeHintFromType(
 	if (typeHint === "any[]") return "array";
 	if (typeHint === "{}") return "object";
 
+	// "CustomEvent<unknown>" and "Event" of no interest
+	if (typeHint === "CustomEvent<unknown>" || typeHint === "Event") return undefined;
+
 	return typeHint;
 }
 

@@ -41,7 +41,7 @@ export function discoverEvents(node: Node, context: AnalyzerVisitContext): Compo
 		if (EVENT_NAMES.includes(expression.getText()) && args && args.length >= 1) {
 			const arg = args[0];
 
-			const eventName = resolveNodeValue(arg, context)?.value;
+			const eventName = resolveNodeValue(arg, { ...context, strict: true })?.value;
 
 			if (typeof eventName === "string") {
 				// Either grab jsdoc from the new expression or from a possible call expression that its wrapped in
