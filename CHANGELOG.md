@@ -20,9 +20,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 ### Added
 
 - JSDoc related utils are now exported from WCA ([#171](https://github.com/runem/web-component-analyzer/pull/171))
-- `hasUpdated` and `updateComplete` are now considered protected members for `LitElement` elements ([#166](https://github.com/runem/web-component-analyzer/pull/166)
+- `hasUpdated` and `updateComplete` are now considered protected members for `LitElement` elements (https://github.com/runem/web-component-analyzer/pull/166)
 - Updated all dependencies.
 - It's now possible to traverse the entire inheritance tree using `declaration.heritageClauses`.
+- Added `--inline-types` CLI option that can be used to expand type aliases in order to inline types in the documentation ([#140](https://github.com/runem/web-component-analyzer/issues/140))
 
 ## [1.0.2] - 2020-01-18
 
