@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "fs";
+import { dirname, join } from "path";
 import * as tsModule from "typescript";
 import { CompilerOptions, Program, ScriptKind, ScriptTarget, SourceFile, System, TypeChecker } from "typescript";
 //import * as ts from "typescript";
@@ -10,6 +12,7 @@ export interface IVirtualSourceFile {
 	fileName: string;
 	text?: string;
 	analyze?: boolean;
+	includeLib?: boolean;
 }
 
 export type VirtualSourceFile = IVirtualSourceFile | string;
@@ -45,9 +48,24 @@ export function analyzeText(inputFiles: VirtualSourceFile[] | VirtualSourceFile,
 		)
 		.map(file => ({ ...file, fileName: file.fileName }));
 
+	const includeLib = files.some(file => file.includeLib);
+
 	const readFile = (fileName: string): string | undefined => {
 		const matchedFile = files.find(currentFile => currentFile.fileName === fileName);
-		return matchedFile == null ? undefined : matchedFile.text;
+		if (matchedFile != null) {
+			return matchedFile.text;
+		}
+
+		if (includeLib) {
+			// TODO: find better method of finding the current typescript module path
+			fileName = fileName.match(/[/\\]/) ? fileName : join(dirname(require.resolve("typescript")), fileName);
+		}
+
+		if (existsSync(fileName)) {
+			return readFileSync(fileName, "utf8").toString();
+		}
+
+		return undefined;
 	};
 
 	const fileExists = (fileName: string): boolean => {

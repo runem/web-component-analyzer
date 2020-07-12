@@ -1,9 +1,30 @@
-import { SimpleType } from "ts-simple-type";
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentEvent } from "../../types/features/component-event";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
+import { resolveNodeValue } from "../../util/resolve-node-value";
+
+const EVENT_NAMES = [
+	"Event",
+	"CustomEvent",
+	"AnimationEvent",
+	"ClipboardEvent",
+	"DragEvent",
+	"FocusEvent",
+	"HashChangeEvent",
+	"InputEvent",
+	"KeyboardEvent",
+	"MouseEvent",
+	"PageTransitionEvent",
+	"PopStateEvent",
+	"ProgressEvent",
+	"StorageEvent",
+	"TouchEvent",
+	"TransitionEvent",
+	"UiEvent",
+	"WheelEvent"
+];
 
 /**
  * Discovers events dispatched
@@ -15,14 +36,14 @@ export function discoverEvents(node: Node, context: AnalyzerVisitContext): Compo
 
 	// new CustomEvent("my-event");
 	if (ts.isNewExpression(node)) {
-		const { expression, arguments: args, typeArguments } = node;
+		const { expression, arguments: args } = node;
 
-		if (expression.getText() === "CustomEvent" && args && args.length >= 1) {
+		if (EVENT_NAMES.includes(expression.getText()) && args && args.length >= 1) {
 			const arg = args[0];
 
-			if (ts.isStringLiteralLike(arg)) {
-				const eventName = arg.text;
+			const eventName = resolveNodeValue(arg, context)?.value;
 
+			if (typeof eventName === "string") {
 				// Either grab jsdoc from the new expression or from a possible call expression that its wrapped in
 				const jsDoc =
 					getJsDoc(expression, ts) ||
@@ -35,14 +56,7 @@ export function discoverEvents(node: Node, context: AnalyzerVisitContext): Compo
 						jsDoc,
 						name: eventName,
 						node,
-						type: lazy(() => {
-							return (
-								(typeArguments?.[0] != null && checker.getTypeFromTypeNode(typeArguments[0])) ||
-								({
-									kind: "ANY"
-								} as SimpleType)
-							);
-						})
+						type: lazy(() => checker.getTypeAtLocation(node))
 					}
 				];
 			}

@@ -21,6 +21,7 @@ export function makeContextFromConfig(options: AnalyzerOptions): AnalyzerVisitCo
 	// Create context
 	return {
 		checker,
+		program: options.program,
 		ts,
 		flavors,
 		cache: {

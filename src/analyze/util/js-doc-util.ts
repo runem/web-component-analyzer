@@ -1,7 +1,8 @@
 import { SimpleType, SimpleTypeStringLiteral } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node } from "typescript";
+import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node, Program } from "typescript";
 import { arrayDefined } from "../../util/array-util";
+import { getLibTypeWithName } from "../../util/type-util";
 import { JsDoc, JsDocTag, JsDocTagParsed } from "../types/js-doc";
 import { getLeadingCommentForNode } from "./ast-util";
 import { lazy } from "./lazy";
@@ -97,8 +98,9 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
  * Defaults to ANY
  * See http://usejsdoc.org/tags-type.html
  * @param str
+ * @param context
  */
-export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
+export function parseSimpleJsDocTypeExpression(str: string, context: { program: Program; ts: typeof tsModule }): SimpleType {
 	// Fail safe if "str" is somehow undefined
 	if (str == null) {
 		return { kind: "ANY" };
@@ -128,7 +130,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	// Match
 	//  {  string  }
 	if (str.startsWith(" ") || str.endsWith(" ")) {
-		return parseSimpleJsDocTypeExpression(str.trim());
+		return parseSimpleJsDocTypeExpression(str.trim(), context);
 	}
 
 	// Match:
@@ -137,7 +139,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 		return {
 			kind: "UNION",
 			types: str.split("|").map(str => {
-				const childType = parseSimpleJsDocTypeExpression(str);
+				const childType = parseSimpleJsDocTypeExpression(str, context);
 
 				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
 				if (childType.kind === "ANY") {
@@ -160,7 +162,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 
 	if (prefixMatch != null) {
 		const modifier = prefixMatch[1];
-		const type = parseSimpleJsDocTypeExpression(prefixMatch[3]);
+		const type = parseSimpleJsDocTypeExpression(prefixMatch[3], context);
 		switch (modifier) {
 			case "?":
 				return {
@@ -186,7 +188,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	//  {(......)}
 	const parenMatch = str.match(/^\((.+)\)$/);
 	if (parenMatch != null) {
-		return parseSimpleJsDocTypeExpression(parenMatch[1]);
+		return parseSimpleJsDocTypeExpression(parenMatch[1], context);
 	}
 
 	// Match
@@ -205,18 +207,47 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	if (arrayMatch != null) {
 		return {
 			kind: "ARRAY",
-			type: parseSimpleJsDocTypeExpression(arrayMatch[1])
+			type: parseSimpleJsDocTypeExpression(arrayMatch[1], context)
 		};
 	}
 
-	return { kind: "ANY" };
+	// Match
+	//   CustomEvent<string>
+	//   MyInterface<string, number>
+	//   MyInterface<{foo: string, bar: string}, number>
+	const genericArgsMatch = str.match(/^(.*)<(.*)>$/);
+	if (genericArgsMatch != null) {
+		// Here we split generic arguments by "," and
+		//   afterwards remerge parts that were incorrectly split
+		// For example: "{foo: string, bar: string}, number" would result in
+		//   ["{foo: string", "bar: string}", "number"]
+		// The correct way to improve "parseSimpleJsDocTypeExpression" is to build a custom lexer/parser.
+		const typeArgStrings: string[] = [];
+		for (const part of genericArgsMatch[2].split(/\s*,\s*/)) {
+			if (part.match(/[}:]/) != null && typeArgStrings.length > 0) {
+				typeArgStrings[typeArgStrings.length - 1] += `, ${part}`;
+			} else {
+				typeArgStrings.push(part);
+			}
+		}
+
+		return {
+			kind: "GENERIC_ARGUMENTS",
+			target: parseSimpleJsDocTypeExpression(genericArgsMatch[1], context),
+			typeArguments: typeArgStrings.map(typeArg => parseSimpleJsDocTypeExpression(typeArg, context))
+		};
+	}
+
+	// If nothing else, try to find the type in Typescript global lib or else return "any"
+	return getLibTypeWithName(str, context) || { kind: "ANY" };
 }
 
 /**
  * Finds a @type jsdoc tag in the jsdoc and returns the corresponding simple type
  * @param jsDoc
+ * @param context
  */
-export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
+export function getJsDocType(jsDoc: JsDoc, context: { program: Program; ts: typeof tsModule }): SimpleType | undefined {
 	if (jsDoc.tags != null) {
 		const typeJsDocTag = jsDoc.tags.find(t => t.tag === "type");
 
@@ -225,7 +256,7 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 			const parsedJsDoc = parseJsDocTagString(typeJsDocTag.node?.getText() || "");
 
 			if (parsedJsDoc.type != null) {
-				return parseSimpleJsDocTypeExpression(parsedJsDoc.type);
+				return parseSimpleJsDocTypeExpression(parsedJsDoc.type, context);
 			}
 		}
 	}

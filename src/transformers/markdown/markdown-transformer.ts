@@ -191,7 +191,8 @@ function methodSection(methods: ComponentMethod[], checker: TypeChecker, config:
  */
 function eventSection(events: ComponentEvent[], checker: TypeChecker, config: TransformerConfig): string {
 	const showVisibility = shouldShowVisibility(events, config);
-	const rows: string[][] = [["Event", "Visibility", "Detail", "Description"]];
+	const rows: string[][] = [["Event", "Visibility", "Type", "Description"]];
+
 	rows.push(
 		...events.map(event => [
 			(event.name && markdownHighlight(event.name)) || "",

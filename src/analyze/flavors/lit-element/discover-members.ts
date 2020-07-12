@@ -202,7 +202,7 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 				priority: "high",
 				kind: "property",
 				type: lazy(() => {
-					return (jsDoc && getJsDocType(jsDoc)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: "ANY" };
+					return (jsDoc && getJsDocType(jsDoc, context)) || (typeof litConfig.type === "object" && litConfig.type) || { kind: "ANY" };
 				}),
 				propName: propName,
 				attrName: emitAttribute ? attrName : undefined,

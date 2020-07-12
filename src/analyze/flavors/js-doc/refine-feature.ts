@@ -1,6 +1,5 @@
-import { ComponentEvent } from "../../types/features/component-event";
+import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentMember, ComponentMemberReflectKind } from "../../types/features/component-member";
-import { ComponentMethod } from "../../types/features/component-method";
 import { JsDoc } from "../../types/js-doc";
 import { VisibilityKind } from "../../types/visibility-kind";
 import { parseSimpleJsDocTypeExpression } from "../../util/js-doc-util";
@@ -11,7 +10,7 @@ import { AnalyzerFlavor } from "../analyzer-flavor";
  * Refines features by looking at the jsdoc tags on the feature
  */
 export const refineFeature: AnalyzerFlavor["refineFeature"] = {
-	event: (event: ComponentEvent) => {
+	event: (event, context) => {
 		if (event.jsDoc == null || event.jsDoc.tags == null) return event;
 
 		// Check if the feature has "@ignore" jsdoc tag
@@ -20,11 +19,11 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 		}
 
 		return [applyJsDocDeprecated, applyJsDocVisibility, applyJsDocType].reduce(
-			(event, applyFunc) => (applyFunc as Function)(event, event.jsDoc),
+			(event, applyFunc) => (applyFunc as Function)(event, event.jsDoc, context),
 			event
 		);
 	},
-	method: (method: ComponentMethod) => {
+	method: (method, context) => {
 		if (method.jsDoc == null || method.jsDoc.tags == null) return method;
 
 		// Check if the feature has "@ignore" jsdoc tag
@@ -32,11 +31,14 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 			return undefined;
 		}
 
-		method = [applyJsDocDeprecated, applyJsDocVisibility].reduce((method, applyFunc) => (applyFunc as Function)(method, method.jsDoc), method);
+		method = [applyJsDocDeprecated, applyJsDocVisibility].reduce(
+			(method, applyFunc) => (applyFunc as Function)(method, method.jsDoc, context),
+			method
+		);
 
 		return method;
 	},
-	member: (member: ComponentMember) => {
+	member: (member, context) => {
 		// Return right away if the member doesn't have jsdoc
 		if (member.jsDoc == null || member.jsDoc.tags == null) return member;
 
@@ -54,7 +56,7 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 			applyJsDocType,
 			applyJsDocAttribute,
 			applyJsDocModifiers
-		].reduce((member, applyFunc) => (applyFunc as Function)(member, member.jsDoc), member);
+		].reduce((member, applyFunc) => (applyFunc as Function)(member, member.jsDoc, context), member);
 	}
 };
 
@@ -122,10 +124,12 @@ function applyJsDocVisibility<T extends Partial<Pick<ComponentMember, "visibilit
  * Applies the "@attribute" jsdoc tag
  * @param feature
  * @param jsDoc
+ * @param context
  */
 function applyJsDocAttribute<T extends Partial<Pick<ComponentMember, "propName" | "attrName" | "default" | "type" | "typeHint">>>(
 	feature: T,
-	jsDoc: JsDoc
+	jsDoc: JsDoc,
+	context: AnalyzerVisitContext
 ): T {
 	const attributeTag = jsDoc.tags?.find(tag => ["attr", "attribute"].includes(tag.tag));
 
@@ -141,7 +145,7 @@ function applyJsDocAttribute<T extends Partial<Pick<ComponentMember, "propName" 
 		// @attr jsdoc tag can also include the type of attribute
 		if (parsed.type != null && result.typeHint == null) {
 			result.typeHint = parsed.type;
-			result.type = feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || ""));
+			result.type = feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || "", context));
 		}
 
 		return result;
@@ -237,8 +241,9 @@ function applyJsDocReflect<T extends Partial<Pick<ComponentMember, "reflect">>>(
  * Applies the "@type" jsdoc tag
  * @param feature
  * @param jsDoc
+ * @param context
  */
-function applyJsDocType<T extends Partial<Pick<ComponentMember, "type" | "typeHint">>>(feature: T, jsDoc: JsDoc): T {
+function applyJsDocType<T extends Partial<Pick<ComponentMember, "type" | "typeHint">>>(feature: T, jsDoc: JsDoc, context: AnalyzerVisitContext): T {
 	const typeTag = jsDoc.tags?.find(tag => tag.tag === "type");
 
 	if (typeTag != null && feature.typeHint == null) {
@@ -248,7 +253,7 @@ function applyJsDocType<T extends Partial<Pick<ComponentMember, "type" | "typeHi
 			return {
 				...feature,
 				typeHint: parsed.type,
-				type: feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || ""))
+				type: feature.type ?? lazy(() => parseSimpleJsDocTypeExpression(parsed.type || "", context))
 			};
 		}
 	}

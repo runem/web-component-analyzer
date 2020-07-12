@@ -28,7 +28,8 @@ export class CustomElement extends MySuperClass {
 	set attr1(val: string) {}
 
 	onClick() {
-		new CustomEvent("my-custom-event");
+		this.dispatchEvent(new CustomEvent("my-custom-event", { detail: "hello" }));
+		this.dispatchEvent(new MouseEvent("mouse-move"));
 	}
 }
 

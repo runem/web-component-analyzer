@@ -1,4 +1,5 @@
 import { basename, relative } from "path";
+import { isSimpleType, toSimpleType } from "ts-simple-type";
 import * as tsModule from "typescript";
 import { Node, Program, SourceFile, Type, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
@@ -261,14 +262,21 @@ function getExportsDocFromDeclaration(
  * @param context
  */
 function getEventDocsFromDeclaration(declaration: ComponentDeclaration, context: TransformerContext): EventDoc[] {
-	return filterVisibility(context.config.visibility, declaration.events).map(event => ({
-		description: event.jsDoc?.description,
-		name: event.name,
-		detailType: getTypeHintFromType(event.typeHint || event.type?.(), context.checker, context.config),
-		type: "Event",
-		inheritedFrom: getInheritedFromReference(declaration, event, context)
-		// TODO: missing "type"
-	}));
+	return filterVisibility(context.config.visibility, declaration.events).map(event => {
+		const type = event.type?.() || { kind: "ANY" };
+		const simpleType = isSimpleType(type) ? type : toSimpleType(type, context.checker);
+
+		const typeName = simpleType.kind === "GENERIC_ARGUMENTS" ? simpleType.target.name : simpleType.name;
+		const customEventDetailType = typeName === "CustomEvent" && simpleType.kind === "GENERIC_ARGUMENTS" ? simpleType.typeArguments[0] : undefined;
+
+		return {
+			description: event.jsDoc?.description,
+			name: event.name,
+			inheritedFrom: getInheritedFromReference(declaration, event, context),
+			type: typeName == null || simpleType.kind === "ANY" ? "Event" : typeName,
+			detailType: customEventDetailType != null ? getTypeHintFromType(customEventDetailType, context.checker, context.config) : undefined
+		};
+	});
 }
 
 /**
