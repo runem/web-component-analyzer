@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 
 - Improved logic for resolving declarations and mixins ([#172](https://github.com/runem/web-component-analyzer/issues/172))
 - Added support for JSDoc syntax where type comes after name (eg. `@fires my-event {MouseEvent}`) ([#165](https://github.com/runem/web-component-analyzer/issues/165))
+- Event types are now inferred correctly and all events are now analyzed instead of only `CustomEvent` (https://github.com/runem/web-component-analyzer/issues/165)
 
 ### Added
 
