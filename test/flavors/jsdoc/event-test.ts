@@ -1,4 +1,4 @@
-import { isAssignableToSimpleTypeKind, SimpleType, SimpleTypeKind } from "ts-simple-type";
+import { isAssignableToSimpleTypeKind, SimpleType } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 
@@ -14,7 +14,7 @@ tsTest("jsdoc: Discovers custom events with @fires", t => {
 	 }
 	 `);
 
-	const { events } = result.componentDefinitions[0].declaration;
+	const { events } = result.componentDefinitions[0].declaration!;
 
 	t.is(events.length, 1);
 	t.is(events[0].name, "my-event");
@@ -22,20 +22,24 @@ tsTest("jsdoc: Discovers custom events with @fires", t => {
 	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, "ANY"));
 });
 
-tsTest("jsdoc: Discovers the detail type of custom events with @fires", t => {
+tsTest.only("jsdoc: Discovers the detail type of custom events with @fires", t => {
 	const {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
 	/**
 	 * @element
 	 * @fires {string} my-event
+	 * @fires my-second-event {number}
 	 */
 	 class MyElement extends HTMLElement { 
 	 }
 	 `);
 
-	const { events } = result.componentDefinitions[0].declaration;
-	t.truthy(isAssignableToSimpleTypeKind(events[0].type() as SimpleType, "STRING"));
+	const { events } = result.componentDefinitions[0].declaration!;
+	const myEvent = events.find(e => e.name === "my-event")!;
+	const mySecondEvent = events.find(e => e.name === "my-second-event")!;
+	t.truthy(isAssignableToSimpleTypeKind(myEvent.type() as SimpleType, "STRING"));
+	t.truthy(isAssignableToSimpleTypeKind(mySecondEvent.type() as SimpleType, "NUMBER"));
 });
 
 tsTest("jsdoc: Discovers events declared with @fires that includes extra jsdoc information", t => {
@@ -50,7 +54,7 @@ tsTest("jsdoc: Discovers events declared with @fires that includes extra jsdoc i
 	 }
 	 `);
 
-	const { events } = result.componentDefinitions[0].declaration;
+	const { events } = result.componentDefinitions[0].declaration!;
 
 	t.is(events.length, 1);
 	t.is(events[0].name, "input-switch-check-changed");

@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 
 tsTest("jsdoc: Discovers css parts with @csspart", t => {
 	const {
@@ -13,7 +13,7 @@ tsTest("jsdoc: Discovers css parts with @csspart", t => {
 	 }
 	 `);
 
-	const { cssParts } = result.componentDefinitions[0].declaration;
+	const { cssParts } = result.componentDefinitions[0].declaration!;
 
 	t.is(cssParts.length, 1);
 	t.is(cssParts[0].name, "thumb");

@@ -269,7 +269,7 @@ function parseJsDocValue(value: string | undefined): unknown {
 }
 
 /**
- * Parses "@tag {type} name description"
+ * Parses "@tag {type} name description" or "@tag name {type} description"
  * @param str
  */
 function parseJsDocTagString(str: string): JsDocTagParsed {
@@ -289,86 +289,105 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 		return quotedStr.replace(/^['"](.+)["']$/, (_, match) => match);
 	};
 
-	// Match tag
-	// Example: "  @mytag"
-	const tagResult = str.match(/^(\s*@(\S+))/);
-	if (tagResult == null) {
-		return jsDocTag;
-	} else {
-		// Move string to the end of the match
-		// Example: "  @mytag|"
-		moveStr(tagResult[1]);
-		jsDocTag.tag = tagResult[2];
-	}
-
-	// Match type
-	// Example: "   {MyType}"
-	const typeResult = str.match(/^(\s*{([\s\S]*)})/);
-	if (typeResult != null) {
-		// Move string to the end of the match
-		// Example: "  {MyType}|"
-		moveStr(typeResult[1]);
-		jsDocTag.type = typeResult[2];
-	}
-
-	// Match optional name
-	// Example: "  [myname=mydefault]"
-	const defaultNameResult = str.match(/^(\s*\[([\s\S]+)\])/);
-	if (defaultNameResult != null) {
-		// Move string to the end of the match
-		// Example: "  [myname=mydefault]|"
-		moveStr(defaultNameResult[1]);
-
-		// Using [...] means that this doc is optional
-		jsDocTag.optional = true;
-
-		// Split the inner content between [...] into parts
-		// Example:  "myname=mydefault" => "myname", "mydefault"
-		const parts = defaultNameResult[2].split("=");
-		if (parts.length === 2) {
-			// Both name and default were given
-			jsDocTag.name = unqouteStr(parts[0]);
-			jsDocTag.default = parseJsDocValue(parts[1]);
-		} else if (parts.length !== 0) {
-			// No default was given
-			jsDocTag.name = unqouteStr(parts[0]);
+	const matchTag = () => {
+		// Match tag
+		// Example: "  @mytag"
+		const tagResult = str.match(/^(\s*@(\S+))/);
+		if (tagResult == null) {
+			return jsDocTag;
+		} else {
+			// Move string to the end of the match
+			// Example: "  @mytag|"
+			moveStr(tagResult[1]);
+			jsDocTag.tag = tagResult[2];
 		}
-	} else {
-		// else, match required name
-		// Example: "   myname"
+	};
 
-		// A name is needed some jsdoc tags making it possible to include omit "-"
-		// Therefore we don't look for "-" or line end if the name is required - in that case we only need to eat the first word to find the name.
-		const regex = JSDOC_TAGS_WITH_REQUIRED_NAME.includes(jsDocTag.tag) ? /^(\s*(\S+))/ : /^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/;
-		const nameResult = str.match(regex);
-		if (nameResult != null) {
-			// Move string to end of match
-			// Example: "   myname|"
-			moveStr(nameResult[1]);
-			jsDocTag.name = unqouteStr(nameResult[2].trim());
+	const matchType = () => {
+		// Match type
+		// Example: "   {MyType}"
+		const typeResult = str.match(/^(\s*{([\s\S]*)})/);
+		if (typeResult != null) {
+			// Move string to the end of the match
+			// Example: "  {MyType}|"
+			moveStr(typeResult[1]);
+			jsDocTag.type = typeResult[2];
 		}
-	}
+	};
 
-	// Match comment
-	if (str.length > 0) {
-		// The rest of the string is parsed as comment. Remove "-" if needed.
-		jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
-	}
+	const matchName = () => {
+		// Match optional name
+		// Example: "  [myname=mydefault]"
+		const defaultNameResult = str.match(/^(\s*\[([\s\S]+)\])/);
+		if (defaultNameResult != null) {
+			// Move string to the end of the match
+			// Example: "  [myname=mydefault]|"
+			moveStr(defaultNameResult[1]);
 
-	// Expand the name based on namespace and classname
-	if (jsDocTag.name != null) {
-		/**
-		 * The name could look like this, so we need to parse and the remove the class name and namespace from the name
-		 *   InputSwitch#[CustomEvent]input-switch-check-changed
-		 *   InputSwitch#input-switch-check-changed
-		 */
-		const match = jsDocTag.name.match(/(.*)#(\[.*\])?(.*)/);
-		if (match != null) {
-			jsDocTag.className = match[1];
-			jsDocTag.namespace = match[2];
-			jsDocTag.name = match[3];
+			// Using [...] means that this doc is optional
+			jsDocTag.optional = true;
+
+			// Split the inner content between [...] into parts
+			// Example:  "myname=mydefault" => "myname", "mydefault"
+			const parts = defaultNameResult[2].split("=");
+			if (parts.length === 2) {
+				// Both name and default were given
+				jsDocTag.name = unqouteStr(parts[0]);
+				jsDocTag.default = parseJsDocValue(parts[1]);
+			} else if (parts.length !== 0) {
+				// No default was given
+				jsDocTag.name = unqouteStr(parts[0]);
+			}
+		} else {
+			// else, match required name
+			// Example: "   myname"
+
+			// A name is needed some jsdoc tags making it possible to include omit "-"
+			// Therefore we don't look for "-" or line end if the name is required - in that case we only need to eat the first word to find the name.
+			const regex = JSDOC_TAGS_WITH_REQUIRED_NAME.includes(jsDocTag.tag) ? /^(\s*(\S+))/ : /^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/;
+			const nameResult = str.match(regex);
+			if (nameResult != null) {
+				// Move string to end of match
+				// Example: "   myname|"
+				moveStr(nameResult[1]);
+				jsDocTag.name = unqouteStr(nameResult[2].trim());
+			}
 		}
+	};
+
+	const matchComment = () => {
+		// Match comment
+		if (str.length > 0) {
+			// The rest of the string is parsed as comment. Remove "-" if needed.
+			jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
+		}
+
+		// Expand the name based on namespace and classname
+		if (jsDocTag.name != null) {
+			/**
+			 * The name could look like this, so we need to parse and the remove the class name and namespace from the name
+			 *   InputSwitch#[CustomEvent]input-switch-check-changed
+			 *   InputSwitch#input-switch-check-changed
+			 */
+			const match = jsDocTag.name.match(/(.*)#(\[.*\])?(.*)/);
+			if (match != null) {
+				jsDocTag.className = match[1];
+				jsDocTag.namespace = match[2];
+				jsDocTag.name = match[3];
+			}
+		}
+	};
+
+	matchTag();
+	matchType();
+	matchName();
+
+	// Type can come both before and after "name"
+	if (jsDocTag.type == null) {
+		matchType();
 	}
+
+	matchComment();
 
 	return jsDocTag;
 }

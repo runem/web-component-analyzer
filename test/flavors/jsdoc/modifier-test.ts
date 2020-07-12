@@ -1,6 +1,5 @@
-import { SimpleTypeKind } from "ts-simple-type";
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 tsTest("jsDoc: Handles @readonly on members", t => {

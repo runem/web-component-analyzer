@@ -14,7 +14,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 
 ### Fixed
 
-- WCA now resolves more declarations and mixins patterns ([#172](https://github.com/runem/web-component-analyzer/issues/172))
+- Improved logic for resolving declarations and mixins ([#172](https://github.com/runem/web-component-analyzer/issues/172))
+- Added support for JSDoc syntax where type comes after name (eg. `@fires my-event {MouseEvent}`) ([#165](https://github.com/runem/web-component-analyzer/issues/165))
 
 ### Changes
 

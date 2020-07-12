@@ -1,4 +1,3 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
