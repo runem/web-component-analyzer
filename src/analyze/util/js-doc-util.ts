@@ -26,18 +26,9 @@ function getJSDocNode(node: Node, ts: typeof tsModule): JSDoc | undefined {
  * Returns jsdoc for a given node.
  * @param node
  * @param ts
+ * @param tagNames
  */
-export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined;
-export function getJsDoc(node: Node, tagNames: string[], ts: typeof tsModule): JsDoc | undefined;
-export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, ts?: typeof tsModule): JsDoc | undefined {
-	// Overloaded case
-	let tagNames: string[] | null = null;
-	if (ts == null) {
-		ts = tagNamesOrTs as typeof tsModule;
-	} else {
-		tagNames = tagNamesOrTs as string[];
-	}
-
+export function getJsDoc(node: Node, ts: typeof tsModule, tagNames?: string[]): JsDoc | undefined {
 	const jsDocNode = getJSDocNode(node, ts);
 
 	// If we couldn't find jsdoc, find and parse the jsdoc string ourselves
@@ -45,7 +36,17 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 		const leadingComment = getLeadingCommentForNode(node, ts);
 
 		if (leadingComment != null) {
-			return parseJsDocString(leadingComment);
+			const jsDoc = parseJsDocString(leadingComment);
+
+			// Return this jsdoc if we don't have to filter by tag name
+			if (jsDoc == null || tagNames == null || tagNames.length === 0) {
+				return jsDoc;
+			}
+
+			return {
+				...jsDoc,
+				tags: jsDoc.tags?.filter(t => tagNames.includes(t.tag))
+			};
 		}
 
 		return undefined;
@@ -63,6 +64,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 						jsDocNode.tags.map(node => {
 							const tag = String(node.tagName.escapedText);
 
+							// Filter by tag name
 							if (tagNames != null && tagNames.length > 0 && !tagNames.includes(tag.toLowerCase())) {
 								return undefined;
 							}

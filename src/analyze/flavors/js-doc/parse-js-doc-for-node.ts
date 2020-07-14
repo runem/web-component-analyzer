@@ -17,7 +17,7 @@ export function parseJsDocForNode<T>(
 	transform: (tagNode: JSDocTag | undefined, parsed: JsDocTagParsed) => T | undefined,
 	context: AnalyzerVisitContext
 ): T[] | undefined {
-	const { tags } = getJsDoc(node, tagNames, context.ts) || {};
+	const { tags } = getJsDoc(node, context.ts, tagNames) || {};
 
 	if (tags != null && tags.length > 0) {
 		context.emitContinue?.();
