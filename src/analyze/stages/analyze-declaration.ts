@@ -170,12 +170,11 @@ function shouldInvalidateCachedDeclaration(componentDeclaration: ComponentDeclar
 	for (const heritageClause of componentDeclaration.heritageClauses) {
 		if (heritageClause.declaration != null) {
 			// If the Typescript node can be found in the cache along with the source file, this declaration shouldn't be invalidated
-			// By doing "node.getSourceFile()" we get an possible updated source file reference.
+			// By doing "getSourceFileByPath" we get an possible updated source file reference.
 			// Therefore this is a nested WeakMap looking up SourceFile and then the Node
 			const node = heritageClause.declaration.node;
-			context.program.getSourceFileByPath(node.getSourceFile().fileName as Path);
-			const sourceFile = node.getSourceFile();
-			const foundInCache = context.cache.componentDeclarationInSourceFile.get(sourceFile)?.has(node) ?? false;
+			const sourceFile = context.program.getSourceFileByPath(node.getSourceFile().fileName as Path);
+			const foundInCache = (sourceFile != null && context.cache.componentDeclarationInSourceFile.get(sourceFile)?.has(node)) ?? false;
 
 			// Return "true" that the declaration should invalidate if it wasn't found in the cache
 			if (!foundInCache) {
