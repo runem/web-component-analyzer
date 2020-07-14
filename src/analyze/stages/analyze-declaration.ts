@@ -1,4 +1,4 @@
-import { Node, Path } from "typescript";
+import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { ComponentDeclaration } from "../types/component-declaration";
@@ -29,8 +29,7 @@ export function analyzeComponentDeclaration(
 
 	// Check if there exists a cached declaration for this node.
 	// If a cached declaration was found, test if it should be invalidated (by looking at inherited declarations)
-	const sourceFile = mainDeclarationNode.getSourceFile();
-	const cachedDeclaration = baseContext.cache.componentDeclarationInSourceFile.get(sourceFile)?.get(mainDeclarationNode);
+	const cachedDeclaration = baseContext.cache.componentDeclarationCache.get(mainDeclarationNode);
 	if (cachedDeclaration != null && !shouldInvalidateCachedDeclaration(cachedDeclaration, baseContext)) {
 		return cachedDeclaration;
 	}
@@ -54,6 +53,8 @@ export function analyzeComponentDeclaration(
 
 	// Get symbol of main declaration node
 	const symbol = getSymbol(mainDeclarationNode, baseContext);
+
+	const sourceFile = mainDeclarationNode.getSourceFile();
 
 	const baseDeclaration: ComponentDeclaration = {
 		sourceFile,
@@ -132,9 +133,7 @@ export function analyzeComponentDeclaration(
 	Object.assign(baseDeclaration, refinedDeclaration);
 
 	// Update the cache
-	const componentCacheMap = baseContext.cache.componentDeclarationInSourceFile.get(sourceFile) || new WeakMap();
-	componentCacheMap.set(mainDeclarationNode, baseDeclaration);
-	baseContext.cache.componentDeclarationInSourceFile.set(sourceFile, componentCacheMap);
+	baseContext.cache.componentDeclarationCache.set(mainDeclarationNode, baseDeclaration);
 
 	return baseDeclaration;
 }
@@ -169,12 +168,12 @@ function shouldExcludeNode(node: Node, context: AnalyzerVisitContext): boolean {
 function shouldInvalidateCachedDeclaration(componentDeclaration: ComponentDeclaration, context: AnalyzerVisitContext): boolean {
 	for (const heritageClause of componentDeclaration.heritageClauses) {
 		if (heritageClause.declaration != null) {
-			// If the Typescript node can be found in the cache along with the source file, this declaration shouldn't be invalidated
-			// By doing "getSourceFileByPath" we get an possible updated source file reference.
-			// Therefore this is a nested WeakMap looking up SourceFile and then the Node
+			// This declaration shouldn't be invalidated if the existing "node.getSourceFile()" is equal to the "program.getSourceFile(...)" with the same file name,
 			const node = heritageClause.declaration.node;
-			const sourceFile = context.program.getSourceFileByPath(node.getSourceFile().fileName as Path);
-			const foundInCache = (sourceFile != null && context.cache.componentDeclarationInSourceFile.get(sourceFile)?.has(node)) ?? false;
+			const oldSourceFile = node.getSourceFile();
+			const newSourceFile = context.program.getSourceFile(oldSourceFile.fileName);
+
+			const foundInCache = (newSourceFile != null && newSourceFile === oldSourceFile) ?? false;
 
 			// Return "true" that the declaration should invalidate if it wasn't found in the cache
 			if (!foundInCache) {

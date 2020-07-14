@@ -1,5 +1,5 @@
 import * as tsModule from "typescript";
-import { Node, SourceFile, TypeChecker, Program } from "typescript";
+import { Node, Program, TypeChecker } from "typescript";
 import { AnalyzerFlavor, ComponentFeatureCollection } from "./flavors/analyzer-flavor";
 import { AnalyzerConfig } from "./types/analyzer-config";
 import { ComponentDeclaration } from "./types/component-declaration";
@@ -17,7 +17,7 @@ export interface AnalyzerVisitContext {
 	emitContinue?(): void;
 	cache: {
 		featureCollection: WeakMap<Node, ComponentFeatureCollection>;
-		componentDeclarationInSourceFile: WeakMap<SourceFile, WeakMap<Node, ComponentDeclaration>>;
+		componentDeclarationCache: WeakMap<Node, ComponentDeclaration>;
 		general: Map<unknown, unknown>;
 	};
 }
