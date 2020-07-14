@@ -1,4 +1,4 @@
-import { Node } from "typescript";
+import { Node, Path } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { ComponentDeclaration } from "../types/component-declaration";
@@ -173,6 +173,7 @@ function shouldInvalidateCachedDeclaration(componentDeclaration: ComponentDeclar
 			// By doing "node.getSourceFile()" we get an possible updated source file reference.
 			// Therefore this is a nested WeakMap looking up SourceFile and then the Node
 			const node = heritageClause.declaration.node;
+			context.program.getSourceFileByPath(node.getSourceFile().fileName as Path);
 			const sourceFile = node.getSourceFile();
 			const foundInCache = context.cache.componentDeclarationInSourceFile.get(sourceFile)?.has(node) ?? false;
 
