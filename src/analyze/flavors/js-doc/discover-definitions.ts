@@ -21,7 +21,8 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 				return {
 					tagName: name || "",
 					definitionNode: tagNode,
-					identifierNode: identifier
+					identifierNode: identifier,
+					tagNameNode: tagNode
 				};
 			},
 			context
