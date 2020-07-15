@@ -75,6 +75,11 @@ export const discoverFeatures: Partial<FeatureDiscoverVisitMap<AnalyzerVisitCont
 				node,
 				["slot"],
 				(tagNode, { name, type, description }) => {
+					// Treat "-" as unnamed slot
+					if (name === "-") {
+						name = undefined;
+					}
+
 					// Grab the type from jsdoc and use it to find permitted tag names
 					// Example: @slot {"div"|"span"} myslot
 					const permittedTagNameType = type == null ? undefined : parseSimpleJsDocTypeExpression(type, context);

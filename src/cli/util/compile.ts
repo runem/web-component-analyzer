@@ -20,8 +20,7 @@ const defaultOptions: CompilerOptions = {
 	allowSyntheticDefaultImports: true,
 	allowUnreachableCode: true,
 	allowUnusedLabels: true,
-	skipLibCheck: true,
-	isolatedModules: true
+	skipLibCheck: true
 };
 
 export interface CompileResult {
