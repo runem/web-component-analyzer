@@ -12,7 +12,7 @@ import { AnalyzerFlavor } from "../analyzer-flavor";
  */
 export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = {
 	event: (node: Node, context: AnalyzerVisitContext): ComponentEvent[] | undefined => {
-		const { ts } = context;
+		const { ts, checker } = context;
 
 		if (context.ts.isInterfaceDeclaration(node) && ["HTMLElementEventMap", "GlobalEventHandlersEventMap"].includes(node.name.text)) {
 			const events: ComponentEvent[] = [];
@@ -26,7 +26,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 							node: member.initializer || member,
 							jsDoc: getJsDoc(member, ts),
 							name: name,
-							type: lazy(() => ({ kind: "ANY" }))
+							type: lazy(() => checker.getTypeAtLocation(member))
 						});
 					}
 				}
