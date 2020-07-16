@@ -101,7 +101,7 @@ export function getLibTypeWithName(name: string, { ts, program }: { program: Pro
 	let node: Node | undefined;
 
 	for (const libFileName of LIB_FILE_NAMES) {
-		const sourceFile = program.getSourceFile(libFileName);
+		const sourceFile = program.getSourceFile(libFileName) || program.getSourceFiles().find(f => f.fileName.endsWith(libFileName));
 		if (sourceFile == null) {
 			continue;
 		}
