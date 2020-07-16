@@ -80,7 +80,8 @@ export function relaxType(type: SimpleType): SimpleType {
 // Only search in "lib.dom.d.ts" performance reasons for now
 const LIB_FILE_NAMES = ["lib.dom.d.ts"];
 
-const LIB_TYPE_CACHE = new Map<string, SimpleType | undefined>();
+// Map "tsModule => name => SimpleType"
+const LIB_TYPE_CACHE: WeakMap<typeof tsModule, Map<string, SimpleType | undefined>> = new Map();
 
 /**
  * Return a Typescript library type with a specific name
@@ -89,8 +90,12 @@ const LIB_TYPE_CACHE = new Map<string, SimpleType | undefined>();
  * @param program
  */
 export function getLibTypeWithName(name: string, { ts, program }: { program: Program; ts: typeof tsModule }): SimpleType | undefined {
-	if (LIB_TYPE_CACHE.has(name)) {
-		return LIB_TYPE_CACHE.get(name);
+	const nameTypeCache = LIB_TYPE_CACHE.get(ts) || new Map();
+
+	if (nameTypeCache.has(name)) {
+		return nameTypeCache.get(name);
+	} else {
+		LIB_TYPE_CACHE.set(ts, nameTypeCache);
 	}
 
 	let node: Node | undefined;
@@ -124,7 +129,7 @@ export function getLibTypeWithName(name: string, { ts, program }: { program: Pro
 		}
 	}
 
-	LIB_TYPE_CACHE.set(name, type);
+	nameTypeCache.set(name, type);
 
 	return type;
 }
