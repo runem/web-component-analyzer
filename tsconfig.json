@@ -15,6 +15,7 @@
 		"pretty": true,
 		"declaration": true,
 		"declarationMap": true,
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"sourceMap": true
 	}
 }

@@ -47,6 +47,7 @@
 	"homepage": "https://github.com/runem/web-component-analyzer#readme",
 	"dependencies": {
 		"fast-glob": "^3.1.0",
+		"flatted": "^3.0.2",
 		"ts-simple-type": "~0.3.6",
 		"typescript": "^3.5.3",
 		"yargs": "^15.0.2"
