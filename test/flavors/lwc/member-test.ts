@@ -75,7 +75,7 @@ tsTest("LWC: Discovers properties from '@track'", t => {
 	);
 });
 
-tsTest("LWC: Discovers properties from '@track 2'", t => {
+tsTest("LWC: Discovers properties without decorator'", t => {
 	const {
 		results: [result],
 		checker
@@ -109,7 +109,7 @@ tsTest("LWC: Discovers properties from '@track 2'", t => {
 	);
 });
 
-tsTest("LWC: Discovers properties from '@track 3'", t => {
+tsTest("LWC: Does not discover method", t => {
 	const {
 		results: [result],
 		checker
