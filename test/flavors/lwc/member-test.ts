@@ -2,6 +2,10 @@ import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-
 import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
+import { CustomElementFlavor } from "../../../src/analyze/flavors/custom-element/custom-element-flavor";
+import { JsDocFlavor } from "../../../src/analyze/flavors/js-doc/js-doc-flavor";
+import { LwcFlavor } from "../../../src/analyze/flavors/lwc/lwc-flavor";
+
 // To run the test:
 //    yarn ava --ext ts test/flavors/lwc/member-test.ts
 
@@ -13,7 +17,7 @@ tsTest("LWC: Discovers properties from '@api'", t => {
 	/**
 	 * @element
 	 */
-	 class MyElement extends HTMLElement { 
+	 class MyElement extends LightningElement { 
 	    /**
 	     * This is a comment
 	     */
@@ -41,7 +45,9 @@ tsTest("LWC: Discovers properties from '@api'", t => {
 		
 		m() {}
 	 }
-	 `);
+	 `, {
+		flavors: [new LwcFlavor(), new CustomElementFlavor(), new JsDocFlavor()]
+	 });
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 

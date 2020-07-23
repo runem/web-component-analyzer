@@ -1,4 +1,5 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { ComponentFeatureBase } from "../../types/features/component-feature";
 import { ComponentMember } from "../../types/features/component-member";
 import { Node } from "typescript";
 
@@ -26,19 +27,31 @@ function hasApiDecorator(node: Node|undefined, context: AnalyzerVisitContext) {
 	return false;
 }
 
+function isLWCComponent(component: ComponentFeatureBase, context: AnalyzerVisitContext) {
+	// How do we know that we are dealing with LWC components?
+	// Currently assume that it is always the case
+	return true;
+}
+
 export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	member: (member: ComponentMember, context: AnalyzerVisitContext): ComponentMember | undefined  => {
-		const  visibility = hasApiDecorator(member.node,context) ? "public" : "protected";
-		return {
-			...member,
-			visibility
+		if(isLWCComponent(member,context)) {
+			const  visibility = hasApiDecorator(member.node,context) ? "public" : "protected";
+			return {
+				...member,
+				visibility
+			}
 		}
+		return member;
 	},
 	method: (method: ComponentMethod, context: AnalyzerVisitContext): ComponentMethod | undefined => {
-		const  visibility = hasApiDecorator(method.node,context) ? "public" : "protected";
-		return {
-			...method,
-			visibility
+		if(isLWCComponent(method,context)) {
+			const  visibility = hasApiDecorator(method.node,context) ? "public" : "protected";
+			return {
+				...method,
+				visibility
+			}
 		}
+		return method;
 	}
 };
