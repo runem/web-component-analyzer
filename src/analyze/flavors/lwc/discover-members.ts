@@ -6,7 +6,7 @@ import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { camelToDashCase } from "../../util/text-util";
 import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
-import { hasLwcApiPropertyDecorator } from "./parse-lwc-property-configuration";
+import { hasLwcApiPropertyDecorator } from "./utils";
 
 /**
  * Parses LWC related declaration members.

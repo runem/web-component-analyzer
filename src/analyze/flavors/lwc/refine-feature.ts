@@ -1,10 +1,11 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentFeatureBase } from "../../types/features/component-feature";
 import { ComponentMember } from "../../types/features/component-member";
-import { Node } from "typescript";
+import { Node, ClassDeclaration } from "typescript";
 
 import { ComponentMethod } from "../../types/features/component-method";
 import { AnalyzerFlavor } from "../analyzer-flavor";
+import { isLwcComponent } from "./utils";
 
 // In LWC, the public properties & methods must be tagged with @api
 // everything else becomes protected and not accessible externally
@@ -27,7 +28,20 @@ function hasApiDecorator(node: Node|undefined, context: AnalyzerVisitContext) {
 	return false;
 }
 
+function findClassDeclaration(node: Node|undefined, {ts}: AnalyzerVisitContext): ClassDeclaration|undefined {
+	while(node) {
+		if(ts.isClassDeclaration(node)) {
+			return node;
+		}
+		node = node.parent;
+	}
+}
+
 function isLWCComponent(component: ComponentFeatureBase, context: AnalyzerVisitContext) {
+	const node = findClassDeclaration(component.declaration?.node,context);
+	if(node) {
+		return !!isLwcComponent(node,context);
+	}
 	// How do we know that we are dealing with LWC components?
 	// Currently assume that it is always the case
 	return true;

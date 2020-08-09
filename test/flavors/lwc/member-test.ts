@@ -1,53 +1,196 @@
+import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
-import { CustomElementFlavor } from "../../../src/analyze/flavors/custom-element/custom-element-flavor";
-import { JsDocFlavor } from "../../../src/analyze/flavors/js-doc/js-doc-flavor";
-import { LwcFlavor } from "../../../src/analyze/flavors/lwc/lwc-flavor";
-
 // To run the test:
 //    yarn ava --ext ts test/flavors/lwc/member-test.ts
+
 
 tsTest("LWC: Discovers properties from '@api'", t => {
 	const {
 		results: [result],
 		checker
-	} = analyzeTextWithCurrentTsModule(`
-	/**
-	 * @element
-	 */
-	 class MyElement extends LightningElement { 
-	    /**
-	     * This is a comment
-	     */
-	    @api myProp = "hello";
-	    
-	    @api myProp2 = 123;
-	    
-	    @api get myProp3() {};
-	    
-		myProp4 = "not public";
-	    
-		myProp5;
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.js",
+		text: `
+		import { api, LightningElement } from 'lwc';
+		class MyElement extends LightningElement {
+			@api
+			myProp = "hello 123";
+		}
+	`});
 
-		get myProp6() {};
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				attrName: "my-prop",
+				default: "hello 123",
+				typeHint: undefined,
+				type: () => ({ kind: "STRING" }),
+				visibility: "public",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined
+			}
+		],
+		t,
+		checker
+	);
+});
 
-		@api accessKey;
+tsTest("LWC: Discovers properties without @api'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.js",
+		text: `
+		import { api, LightningElement } from 'lwc';
+		class MyElement extends LightningElement {
+			myProp = "hello 123";
+		}
+	`});
 
-		@api get htmlFor() {};
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
-		@api Upper;
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				attrName: undefined,
+				default: "hello 123",
+				typeHint: undefined,
+				type: () => ({ kind: "STRING" }),
+				visibility: "protected",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined
+			}
+		],
+		t,
+		checker
+	);
+	//t.is(members.length, 0);
+});
 
-		noValidate;
+tsTest("LWC: Discovers properties from '@track'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.js",
+		text: `
+		import { api, LightningElement } from 'lwc';
+		class MyElement extends LightningElement {
+			myProp = "hello 123";
+		}
+	`});
+
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				attrName: undefined,
+				default: "hello 123",
+				typeHint: undefined,
+				type: () => ({ kind: "STRING" }),
+				visibility: "protected",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined
+			}
+		],
+		t,
+		checker
+	);
+	//t.is(members.length, 0);
+});
+
+
+tsTest("LWC: Does not discover method", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.js",
+		text: `
+	import { LightningElement } from 'lwc';
+
+	class MyElement extends LightningElement {
+		 myProp(){}
+	}`
+	});
+	const { members } = result.componentDefinitions[0]?.declaration;
+	t.is(members.length, 0);
+});
+
+tsTest("LWC: Discover method with @api", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.js",
+		text: `
+	import { LightningElement, api } from 'lwc';
+
+	class MyElement extends LightningElement {
+		 @api myProp(){}
+	}`
+	});
+	const { members } = result.componentDefinitions[0]?.declaration;
+	t.is(members.length, 0);
+});
+
+tsTest("LWC: Discovers properties. all in one'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/c/myElement/myElement.js",
+		text:`
+			/**
+			 */
+			import { api, LightningElement } from 'lwc';
+			class MyElement extends LightningElement { 
+				/**
+				 * This is a comment
+				 */
+				@api myProp = "hello";
+				
+				@api myProp2 = 123;
+				
+				@api get myProp3() {};
+				
+				myProp4 = "not public";
+				
+				myProp5;
 		
-		@api m() {}
+				get myProp6() {};
 		
-		m() {}
-	 }
-	 `, {
-		flavors: [new LwcFlavor(), new CustomElementFlavor(), new JsDocFlavor()]
-	 });
+				@api accessKey;
+		
+				@api get htmlFor() {};
+		
+				@api Upper;
+		
+				noValidate;
+				
+				@api m() {}
+				
+				m() {}
+			}
+		`});
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
@@ -161,4 +304,4 @@ tsTest("LWC: Discovers properties from '@api'", t => {
 		t,
 		checker
 	);
-});
+})
