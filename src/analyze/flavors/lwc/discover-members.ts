@@ -84,31 +84,31 @@ function parsePropertyDecorator(
 	return undefined;
 }
 
-const HTMLAttrs: { [name: string] : string}  = {
-	"accessKey": "accesskey",
-	"bgColor": "bgcolor",
-	"colSpan": "colspan",
-	"contentEditable": "contenteditable",
-	"crossOrigin": "crossorigin",
-	"dateTime": "datetime",
-	"htmlFor": "for",
-	"formAction": "formaction",
-	"isMap": "ismap",
-	"maxLength": "maxlength",
-	"minLength": "minlength",
-	"noValidate": "novalidate",
-	"readOnly": "readonly",
-	"rowSpan": "rowspan",
-	"tabIndex": "tabindex",
-	"useMap": "usemap"
-}
+const HTMLAttrs: { [name: string]: string } = {
+	accessKey: "accesskey",
+	bgColor: "bgcolor",
+	colSpan: "colspan",
+	contentEditable: "contenteditable",
+	crossOrigin: "crossorigin",
+	dateTime: "datetime",
+	htmlFor: "for",
+	formAction: "formaction",
+	isMap: "ismap",
+	maxLength: "maxlength",
+	minLength: "minlength",
+	noValidate: "novalidate",
+	readOnly: "readonly",
+	rowSpan: "rowspan",
+	tabIndex: "tabindex",
+	useMap: "usemap"
+};
 
 // LWC attribute names
 // https://lwc.dev/guide/javascript#html-attribute-names
 function lwcAttrName(propName: string) {
 	// Look for a global HTML name
 	const htmlAttr: string = HTMLAttrs[propName];
-	if(htmlAttr) {
+	if (htmlAttr) {
 		return htmlAttr;
 	}
 	// Calculate the attribute name from the property

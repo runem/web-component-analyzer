@@ -7,7 +7,13 @@ import { LwcFlavor } from "./flavors/lwc/lwc-flavor";
 
 export const VERSION = "<@VERSION@>";
 
-export const DEFAULT_FLAVORS: AnalyzerFlavor[] = [new LitElementFlavor(), new LwcFlavor(), new CustomElementFlavor(), new JsDocFlavor(), new JSXFlavor()];
+export const DEFAULT_FLAVORS: AnalyzerFlavor[] = [
+	new LitElementFlavor(),
+	new LwcFlavor(),
+	new CustomElementFlavor(),
+	new JsDocFlavor(),
+	new JSXFlavor()
+];
 
 export const DEFAULT_FEATURE_COLLECTION_CACHE = new WeakMap();
 
