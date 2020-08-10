@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 //import { Node, ClassDeclaration, getCombinedModifierFlags, ModifierFlags, SyntaxKind } from "typescript";
 import { Node, ClassDeclaration, getCombinedModifierFlags, ModifierFlags } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
@@ -29,50 +28,50 @@ function _isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRe
 		const jsName = node.getSourceFile().fileName;
 
 		const splitjsName = jsName.split("/");
-		if (splitjsName.length >= 3) {
-			const nameSpace = splitjsName[splitjsName.length - 3];
-			const componentName = splitjsName[splitjsName.length - 2];
-			const tagName = nameSpace + "-" + camelToDashCase(componentName);
+		if (splitjsName.length < 3) {
+			return;
+		}
+		const nameSpace = splitjsName[splitjsName.length - 3];
+		const componentName = splitjsName[splitjsName.length - 2];
+		const tagName = nameSpace + "-" + camelToDashCase(componentName);
 
-			// Main case (~100% of the cases)
-			// The class is a default export and there is a template (.html) starting with <template>
-			// Moreover the JS file name should match the directory name, minus the extension (js|ts)
-			//    https://lwc.dev/guide/reference#html-file
-			const flags = getCombinedModifierFlags(node);
-			if (flags & ModifierFlags.ExportDefault && (jsName.endsWith(".js") || jsName.endsWith(".ts"))) {
-				const fileName = splitjsName[splitjsName.length - 1];
-				const fileNoExt = fileName.substring(0, fileName.length - 3);
-				if (fileNoExt === componentName) {
-					const htmlName = jsName.substring(0, jsName.length - 3) + ".html";
-					if (existsSync(htmlName)) {
-						const content = readFileSync(htmlName, "utf8").trim();
-						if (content.startsWith("<template>")) {
-							return { tagName };
-						}
+		// Main case (~100% of the cases)
+		// The class is a default export and there is a template (.html) starting with <template>
+		// Moreover the JS file name should match the directory name, minus the extension (js|ts)
+		//    https://lwc.dev/guide/reference#html-file
+		const flags = getCombinedModifierFlags(node);
+		if (flags & ModifierFlags.ExportDefault && (jsName.endsWith(".js") || jsName.endsWith(".ts"))) {
+			const fileName = splitjsName[splitjsName.length - 1];
+			const fileNoExt = fileName.substring(0, fileName.length - 3);
+			if (fileNoExt === componentName) {
+				const htmlName = jsName.substring(0, jsName.length - 3) + ".html";
+				if (existsSync(htmlName)) {
+					const content = readFileSync(htmlName, "utf8").trim();
+					if (content.startsWith("<template>")) {
+						return { tagName };
 					}
 				}
 			}
+		}
 
-			// Edge case
-			// The components are not matching the file naming recommendations, so we check the inheritance
-			const lightning = inheritFromLightning(node, context);
-			if (lightning) {
-				return { tagName };
-			}
+		// Edge case
+		// The components are not matching the file naming recommendations, so we check the inheritance
+		const lightning = inheritFromLightning(node, context);
+		if (lightning) {
+			return { tagName };
 		}
 
 		// Finally, we use a JS doc definition in case none of the above work
 		// This is the last resort
 		const v = parseJsDocForNode(
 			node,
-			["lwc-component"],
+			["lwc-element"],
 			(tagNode, { name }) => {
-				return { tagName: name };
+				return { tagName: name || tagName };
 			},
 			context
 		);
 		if (v && v.length === 1) {
-			console.log(JSON.stringify(v[0]));
 			return v[0] as ComponentRef;
 		}
 	}

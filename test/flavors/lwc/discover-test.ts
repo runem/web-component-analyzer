@@ -125,7 +125,26 @@ tsTest("LWC: Invalid template No Lighting Element inheritance", t => {
 // 		text: `
 // 		import { BaseComponent } from 'lwc';
 // 		/**
-// 		 * @lwc-component my-element
+// 		 * @lwc-element
+// 		 */
+//         class MyElement extends BaseComponent {}`
+// 	});
+
+// 	const { componentDefinitions } = result;
+
+// 	t.is(componentDefinitions.length, 1);
+// 	t.is(componentDefinitions[0].tagName, "c-your");
+// });
+// tsTest("LWC: discover with JS tag ", t => {
+// 	const {
+// 		results: [result],
+// 		checker
+// 	} = analyzeTextWithCurrentTsModule({
+// 		fileName: "modules/c/your/anElement.js",
+// 		text: `
+// 		import { BaseComponent } from 'lwc';
+// 		/**
+// 		 * @lwc-element my-element
 // 		 */
 //         class MyElement extends BaseComponent {}`
 // 	});
