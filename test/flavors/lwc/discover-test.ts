@@ -1,10 +1,8 @@
 import path from "path";
 import fs from "fs";
 
-import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
-import { assertHasMembers } from "../../helpers/util";
 
 // To run the test:
 //    yarn ava --ext ts test/flavors/lwc/discover-test.ts
@@ -116,41 +114,41 @@ tsTest("LWC: Invalid template No Lighting Element inheritance", t => {
 
 // PHIL: does not work reliably
 //
-// tsTest("LWC: discover with JS tag ", t => {
-// 	const {
-// 		results: [result],
-// 		checker
-// 	} = analyzeTextWithCurrentTsModule({
-// 		fileName: "modules/c/your/anElement.js",
-// 		text: `
-// 		import { BaseComponent } from 'lwc';
-// 		/**
-// 		 * @lwc-element
-// 		 */
-//         class MyElement extends BaseComponent {}`
-// 	});
+tsTest("LWC: discover with JS tag ", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/c/your/anElement.js",
+		text: `
+		import { BaseComponent } from 'lwc';
+		/**
+		 * @lwcelement
+		 */
+        class MyElement extends BaseComponent {}`
+	});
 
-// 	const { componentDefinitions } = result;
+	const { componentDefinitions } = result;
 
-// 	t.is(componentDefinitions.length, 1);
-// 	t.is(componentDefinitions[0].tagName, "c-your");
-// });
-// tsTest("LWC: discover with JS tag ", t => {
-// 	const {
-// 		results: [result],
-// 		checker
-// 	} = analyzeTextWithCurrentTsModule({
-// 		fileName: "modules/c/your/anElement.js",
-// 		text: `
-// 		import { BaseComponent } from 'lwc';
-// 		/**
-// 		 * @lwc-element my-element
-// 		 */
-//         class MyElement extends BaseComponent {}`
-// 	});
+	t.is(componentDefinitions.length, 1);
+	t.is(componentDefinitions[0].tagName, "c-your");
+});
+tsTest("LWC: discover with JS tag with tag name", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/c/your/anElement.js",
+		text: `
+		import { BaseComponent } from 'lwc';
+		/**
+		 * @lwcelement my-element
+		 */
+        class MyElement extends BaseComponent {}`
+	});
 
-// 	const { componentDefinitions } = result;
+	const { componentDefinitions } = result;
 
-// 	t.is(componentDefinitions.length, 1);
-// 	t.is(componentDefinitions[0].tagName, "my-element");
-// });
+	t.is(componentDefinitions.length, 1);
+	t.is(componentDefinitions[0].tagName, "my-element");
+});

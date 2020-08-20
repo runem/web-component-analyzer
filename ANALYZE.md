@@ -202,12 +202,12 @@ For components that are not following the previous naming scheme, it uses 2 othe
 - Checks if the class extends `LightningElement`.  
   This only works with a direct inheritance as it doesn't check the whole hierarchy.  
 
-- Looks for a `@lwc-element` JSDoc tag.  
+- Looks for a `@lwcelement` JSDoc tag.  
   The JSDoc tag can also override the default tag name.  
 
 ```javascript
 /**
- * @lwc-element my-element
+ * @lwcelement my-element
  */
 export default class MyElement extends BaseComponent {
 ```  

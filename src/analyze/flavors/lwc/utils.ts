@@ -1,5 +1,4 @@
-//import { Node, ClassDeclaration, getCombinedModifierFlags, ModifierFlags, SyntaxKind } from "typescript";
-import { Node, ClassDeclaration, getCombinedModifierFlags, ModifierFlags } from "typescript";
+import { Node, ClassDeclaration } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { camelToDashCase } from "../../util/text-util";
 import { existsSync, readFileSync } from "fs";
@@ -39,8 +38,8 @@ function _isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRe
 		// The class is a default export and there is a template (.html) starting with <template>
 		// Moreover the JS file name should match the directory name, minus the extension (js|ts)
 		//    https://lwc.dev/guide/reference#html-file
-		const flags = getCombinedModifierFlags(node);
-		if (flags & ModifierFlags.ExportDefault && (jsName.endsWith(".js") || jsName.endsWith(".ts"))) {
+		const flags = context.ts.getCombinedModifierFlags(node);
+		if (flags & context.ts.ModifierFlags.ExportDefault && (jsName.endsWith(".js") || jsName.endsWith(".ts"))) {
 			const fileName = splitjsName[splitjsName.length - 1];
 			const fileNoExt = fileName.substring(0, fileName.length - 3);
 			if (fileNoExt === componentName) {
@@ -65,7 +64,7 @@ function _isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRe
 		// This is the last resort
 		const v = parseJsDocForNode(
 			node,
-			["lwc-element"],
+			["lwcelement"],
 			(tagNode, { name }) => {
 				return { tagName: name || tagName };
 			},
@@ -87,12 +86,12 @@ function inheritFromLightning(node: ClassDeclaration, context: AnalyzerVisitCont
 		for (const clause of node.heritageClauses) {
 			// OK we are getting strange results here with the token beeing 87 (ElseKeyword), 89 (ExportKeyword)
 			// Not sure why for now, so we skip checking the keyword as 'LightningElement' is dicriminant enough
-			//if (clause.token == SyntaxKind.ExtendsKeyword) {
-			const symbol = checker.getSymbolAtLocation(clause.types[0].expression);
-			if (symbol?.escapedName === "LightningElement") {
-				return true;
+			if (clause.token == context.ts.SyntaxKind.ExtendsKeyword) {
+				const symbol = checker.getSymbolAtLocation(clause.types[0].expression);
+				if (symbol?.escapedName === "LightningElement") {
+					return true;
+				}
 			}
-			//}
 		}
 	}
 	return false;
