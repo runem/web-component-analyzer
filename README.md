@@ -20,6 +20,7 @@ In addition to [vanilla web components](https://developer.mozilla.org/en-US/docs
 - [lit-element](https://github.com/Polymer/lit-element)
 - [polymer](https://github.com/Polymer/polymer)
 - [stencil](https://github.com/ionic-team/stencil) (partial)
+- [lwc](https://github.com/salesforce/lwc)
 - [open an issue for library requests](https://github.com/runem/web-component-analyzer/issues)
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#installation)
