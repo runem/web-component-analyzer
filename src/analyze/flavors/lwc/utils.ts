@@ -24,6 +24,11 @@ export function isLwcComponent(node: Node, context: AnalyzerVisitContext): Compo
 }
 
 function _isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRef | undefined {
+	// Return right away if the node is not a class declaration
+	if (!context.ts.isClassDeclaration(node)) {
+		return undefined;
+	}
+
 	const jsName = node.getSourceFile().fileName;
 
 	const splitjsName = jsName.split("/");
