@@ -1,6 +1,6 @@
 import fastGlob from "fast-glob";
 import { existsSync, lstatSync } from "fs";
-import { Diagnostic, flattenDiagnosticMessageText, Program, SourceFile } from "typescript";
+import { Program, SourceFile } from "typescript";
 import { analyzeSourceFile } from "../../analyze/analyze-source-file";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { arrayFlat } from "../../util/array-util";
@@ -16,7 +16,6 @@ const DEFAULT_GLOBS = [DEFAULT_DIR_GLOB];
 export interface AnalyzeGlobsContext {
 	didExpandGlobs?(filePaths: string[]): void;
 	willAnalyzeFiles?(filePaths: string[]): void;
-	didFindTypescriptDiagnostics?(diagnostics: ReadonlyArray<Diagnostic>, options: { program: Program }): void;
 	emitAnalyzedFile?(file: SourceFile, result: AnalyzerResult, options: { program: Program }): Promise<void> | void;
 }
 
@@ -46,16 +45,7 @@ export async function analyzeGlobs(
 	context.willAnalyzeFiles?.(filePaths);
 
 	// Parse all the files with typescript
-	const { program, files, diagnostics } = compileTypescript(filePaths);
-
-	if (diagnostics.length > 0) {
-		logVerbose(
-			() => diagnostics.map(d => `${(d.file && d.file.fileName) || "unknown"}: ${flattenDiagnosticMessageText(d.messageText, "\n")}`),
-			config
-		);
-
-		context.didFindTypescriptDiagnostics?.(diagnostics, { program });
-	}
+	const { program, files } = compileTypescript(filePaths);
 
 	// Analyze each file with web component analyzer
 	const results: AnalyzerResult[] = [];
@@ -82,7 +72,7 @@ export async function analyzeGlobs(
 		results.push(result);
 	}
 
-	return { program, diagnostics, files, results };
+	return { program, files, results };
 }
 
 /**

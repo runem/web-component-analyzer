@@ -58,6 +58,11 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 		const { name, initializer } = node;
 
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
+			// Always ignore the "prototype" property
+			if (name.text === "prototype") {
+				return undefined;
+			}
+
 			// Find default value based on initializer
 			const resolvedDefaultValue = initializer != null ? resolveNodeValue(initializer, context) : undefined;
 			const def = resolvedDefaultValue != null ? resolvedDefaultValue.value : initializer?.getText();

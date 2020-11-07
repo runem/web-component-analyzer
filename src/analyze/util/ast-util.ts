@@ -12,7 +12,6 @@ import {
 	SyntaxKind,
 	TypeChecker
 } from "typescript";
-import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { ModifierKind } from "../types/modifier-kind";
 import { VisibilityKind } from "../types/visibility-kind";
 import { resolveNodeValue } from "./resolve-node-value";
@@ -314,16 +313,6 @@ export function getLeadingCommentForNode(node: Node, ts: typeof tsModule): strin
 	}
 
 	return undefined;
-}
-
-/**
- * Returns if the node is in a module declaration context and has a specific name.
- * @param node
- * @param context
- * @param name
- */
-export function isExtensionInterface(node: Node, context: AnalyzerVisitContext, name: string): node is InterfaceDeclaration {
-	return context.ts.isInterfaceDeclaration(node) /*&& context.ts.isModuleBlock(node.parent)*/ && node.name.text === name;
 }
 
 /**

@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
 
 tsTest("jsDoc: Handles visibility modifier on internal event", t => {
@@ -21,7 +21,7 @@ tsTest("jsDoc: Handles visibility modifier on internal event", t => {
 
 	const {
 		events: [event]
-	} = result.componentDefinitions[0]?.declaration();
+	} = result.componentDefinitions[0].declaration!;
 
 	t.truthy(event);
 	t.is(event.visibility, "private");
@@ -48,7 +48,7 @@ tsTest("jsDoc: Handles visibility modifier on constructor assignment", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	const member = getComponentProp(members, "foo");
 

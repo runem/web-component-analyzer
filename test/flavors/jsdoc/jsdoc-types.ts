@@ -1,5 +1,5 @@
 import test from "ava";
-import { SimpleType, SimpleTypeKind } from "ts-simple-type";
+import { SimpleType } from "ts-simple-type";
 import { parseSimpleJsDocTypeExpression } from "../../../src/analyze/util/js-doc-util";
 
 test("Parse required and union", t => {

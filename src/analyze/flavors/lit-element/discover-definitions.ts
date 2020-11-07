@@ -27,7 +27,7 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 				if (decoratorIdentifierName === "customElement") {
 					// Resolve the value of the first argument. This is the tag name.
 					const unresolvedTagNameNode = callExpression.arguments[0];
-					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker });
+					const resolvedTagNameNode = resolveNodeValue(unresolvedTagNameNode, { ts, checker, strict: true });
 					const identifier = getNodeIdentifier(node, context);
 
 					if (resolvedTagNameNode != null && typeof resolvedTagNameNode.value === "string") {

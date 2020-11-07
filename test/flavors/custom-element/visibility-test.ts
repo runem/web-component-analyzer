@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 tsTest("Handle Typescript visibility modifiers", t => {
@@ -16,7 +16,7 @@ tsTest("Handle Typescript visibility modifiers", t => {
 	}
 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const members = result.componentDefinitions[0]?.declaration?.members || [];
 
 	assertHasMembers(
 		members,
@@ -52,10 +52,7 @@ tsTest("Handle visibility for private '_' prefixed names", t => {
 	}
 `);
 
-	const {
-		members,
-		methods: [method]
-	} = result.componentDefinitions[0]?.declaration();
+	const { members = [], methods: [method] = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(method.name, "_myMethod");
 	t.is(method.visibility, "private");

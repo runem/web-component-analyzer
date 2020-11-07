@@ -1,6 +1,6 @@
-import { isAssignableToSimpleTypeKind, SimpleTypeKind } from "ts-simple-type";
-import { tsTest } from "../../helpers/ts-test";
+import { isAssignableToSimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
 
 tsTest("Polymer components are correctly picked up", t => {
@@ -26,7 +26,7 @@ tsTest("Polymer components are correctly picked up", t => {
 		customElements.define('x-custom', XCustom);
 	 `);
 
-	const { members } = result.componentDefinitions[0].declaration();
+	const { members } = result.componentDefinitions[0].declaration;
 
 	t.is(members.length, 3);
 

@@ -16,4 +16,13 @@ export const refineFeature: AnalyzerFlavor["refineFeature"] = {
 	}
 };
 
-const LIT_ELEMENT_PROTECTED_METHODS = ["render", "requestUpdate", "firstUpdated", "updated", "update", "shouldUpdate"];
+const LIT_ELEMENT_PROTECTED_METHODS = [
+	"render",
+	"requestUpdate",
+	"firstUpdated",
+	"updated",
+	"update",
+	"shouldUpdate",
+	"hasUpdated",
+	"updateComplete"
+];

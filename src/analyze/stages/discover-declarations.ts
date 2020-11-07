@@ -25,7 +25,9 @@ export function discoverDeclarations(sourceFile: SourceFile, context: AnalyzerVi
 				if (context.ts.isClassDeclaration(node) /* || context.ts.isInterfaceDeclaration(node)*/) {
 					const nodes = resolveSymbolDeclarations(symbol);
 					const decl = analyzeComponentDeclaration(nodes, context);
-					declarations.push(decl);
+					if (decl != null) {
+						declarations.push(decl);
+					}
 				}
 			}
 		}

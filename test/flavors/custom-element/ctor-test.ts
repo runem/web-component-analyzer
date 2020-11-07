@@ -1,6 +1,5 @@
-import { SimpleTypeKind } from "ts-simple-type";
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 tsTest("Property assignments in the constructor are picked up", t => {
@@ -36,7 +35,7 @@ tsTest("Property assignments in the constructor are picked up", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,
@@ -144,7 +143,7 @@ tsTest("Property assignments in the constructor are correctly merged", t => {
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,
@@ -190,7 +189,7 @@ tsTest("Property assignments in the constructor don't overwrite Typescript modif
 	 `
 	});
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,

@@ -37,7 +37,14 @@ export const vscodeTransformer: TransformerFunction = (results: AnalyzerResult[]
 };
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker): HtmlDataTag {
-	const declaration = definition.declaration();
+	const declaration = definition.declaration;
+
+	if (declaration == null) {
+		return {
+			name: definition.tagName,
+			attributes: []
+		};
+	}
 
 	// Transform all members into "attributes"
 	const customElementAttributes = arrayDefined(declaration.members.map(d => componentMemberToVscodeAttr(d, checker)));

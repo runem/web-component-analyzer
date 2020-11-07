@@ -2,7 +2,6 @@ import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentEvent } from "../../types/features/component-event";
 import { ComponentMember } from "../../types/features/component-member";
-import { isExtensionInterface } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
 import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -13,9 +12,9 @@ import { AnalyzerFlavor } from "../analyzer-flavor";
  */
 export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = {
 	event: (node: Node, context: AnalyzerVisitContext): ComponentEvent[] | undefined => {
-		const { ts } = context;
+		const { ts, checker } = context;
 
-		if (isExtensionInterface(node, context, "HTMLElementEventMap")) {
+		if (context.ts.isInterfaceDeclaration(node) && ["HTMLElementEventMap", "GlobalEventHandlersEventMap"].includes(node.name.text)) {
 			const events: ComponentEvent[] = [];
 
 			for (const member of node.members) {
@@ -27,7 +26,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 							node: member.initializer || member,
 							jsDoc: getJsDoc(member, ts),
 							name: name,
-							type: lazy(() => ({ kind: "ANY" }))
+							type: lazy(() => checker.getTypeAtLocation(member))
 						});
 					}
 				}
@@ -41,7 +40,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 	member: (node: Node, context: AnalyzerVisitContext): ComponentMember[] | undefined => {
 		const { ts } = context;
 
-		if (isExtensionInterface(node, context, "HTMLElement")) {
+		if (context.ts.isInterfaceDeclaration(node) && node.name.text === "HTMLElement") {
 			const members: ComponentMember[] = [];
 
 			for (const member of node.members) {

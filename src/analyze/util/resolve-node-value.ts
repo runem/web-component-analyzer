@@ -96,6 +96,10 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 			}
 		}
 
+		if (context.strict) {
+			return undefined;
+		}
+
 		return { value: node.getText(), node };
 	}
 

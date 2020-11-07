@@ -184,3 +184,69 @@ declare global {
 - **Attributes**: `decimalSize (Number)`
 
 In addition, the entire content of HTMLElement is copied into the interfaces, so WCA makes sure to filter that out.
+
+## [LWC](https://lwc.dev/guide/introduction)
+
+### Component discovery
+
+An LWC component class is automatically identified from a JavaScript/Typescript file if:  
+- It is the default export of the file
+- The JS file name equals the parent folder name (ex: `/../mycomp/mycomp.{js|ts}`)
+- There is an HTML template with the same name in the same folder (ex: `/../mycomp/mycomp.html`)  
+
+The component is named after the last 2 parts of its parent directory. For example, if the file path is
+`/../myns/mycomp/mycomp.js`, then the component tag is `myns-mycomp`. The name is also transformed from camel case
+to dash case: `/../myns/mycomp/myComp.js` leads to `myns-my-comp`.  
+
+For components that are not following the previous naming scheme, it uses 2 other methods:  
+- Checks if the class extends `LightningElement`.  
+  This only works with a direct inheritance as it doesn't check the whole hierarchy.  
+
+- Looks for a `@lwcelement` JSDoc tag.  
+  The JSDoc tag can also override the default tag name.  
+
+```javascript
+/**
+ * @lwcelement my-element
+ */
+export default class MyElement extends BaseComponent {
+```  
+
+#### In your own code
+
+<!-- prettier-ignore -->
+```javascript
+export default class MyElement extends LightningElement {
+
+  prop1 = "myProp";
+	
+  @api prop2 = "hello";
+
+  /**
+   * @type number
+   */
+  @api prop3;
+}
+```
+
+All the member definitions are set as protected unless the are decorated with `@api`. In this case,
+they become public and the properties also becomes attributes. It will automatically guess the type
+of the property, or JSDoc tag can be used as well.
+
+- **Tag name**: `my-element`
+- **Properties**: `prop1 (String)`, `prop2 (String)`, `prop3 (Number)`
+- **Attributes**: `prop2 (String)`, `prop3 (Number)`
+
+#### In typescript definition files
+
+<!-- prettier-ignore -->
+```typescript
+export default class MyElement extends LightningElement {
+  prop1: string;
+  @api prop2: string;
+  /**
+   * @type number
+   */
+  @api prop3;
+}
+```

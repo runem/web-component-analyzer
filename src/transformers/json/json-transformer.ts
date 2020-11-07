@@ -49,12 +49,19 @@ export const jsonTransformer: TransformerFunction = (results: AnalyzerResult[], 
 };
 
 function definitionToHtmlDataTag(definition: ComponentDefinition, checker: TypeChecker, config: TransformerConfig): HtmlDataTag {
-	const declaration = definition.declaration();
-
 	// Grab path to the definition file if possible
 	const node = getFirst(definition.tagNameNodes) || getFirst(definition.identifierNodes);
 	const fileName = node?.getSourceFile().fileName;
 	const path = fileName != null && config.cwd != null ? `./${relative(config.cwd, fileName)}` : undefined;
+
+	const declaration = definition.declaration;
+
+	if (declaration == null) {
+		return {
+			name: definition.tagName,
+			path
+		};
+	}
 
 	const attributes = arrayDefined(
 		filterVisibility(config.visibility, declaration.members).map(d => componentMemberToHtmlDataAttribute(d, checker, config))

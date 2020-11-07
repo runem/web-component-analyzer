@@ -1,4 +1,6 @@
-import { SimpleType, SimpleTypeEnumMember } from "ts-simple-type";
+import { SimpleType, SimpleTypeEnumMember, toSimpleType } from "ts-simple-type";
+import * as tsModule from "typescript";
+import { Node, Program } from "typescript";
 
 /**
  * Relax the type so that for example "string literal" become "string" and "function" become "any"
@@ -73,4 +75,61 @@ export function relaxType(type: SimpleType): SimpleType {
 		default:
 			return type;
 	}
+}
+
+// Only search in "lib.dom.d.ts" performance reasons for now
+const LIB_FILE_NAMES = ["lib.dom.d.ts"];
+
+// Map "tsModule => name => SimpleType"
+const LIB_TYPE_CACHE: WeakMap<typeof tsModule, Map<string, SimpleType | undefined>> = new Map();
+
+/**
+ * Return a Typescript library type with a specific name
+ * @param name
+ * @param ts
+ * @param program
+ */
+export function getLibTypeWithName(name: string, { ts, program }: { program: Program; ts: typeof tsModule }): SimpleType | undefined {
+	const nameTypeCache = LIB_TYPE_CACHE.get(ts) || new Map();
+
+	if (nameTypeCache.has(name)) {
+		return nameTypeCache.get(name);
+	} else {
+		LIB_TYPE_CACHE.set(ts, nameTypeCache);
+	}
+
+	let node: Node | undefined;
+
+	for (const libFileName of LIB_FILE_NAMES) {
+		const sourceFile = program.getSourceFile(libFileName) || program.getSourceFiles().find(f => f.fileName.endsWith(libFileName));
+		if (sourceFile == null) {
+			continue;
+		}
+
+		for (const statement of sourceFile.statements) {
+			if (ts.isInterfaceDeclaration(statement) && statement.name?.text === name) {
+				node = statement;
+				break;
+			}
+		}
+
+		if (node != null) {
+			break;
+		}
+	}
+
+	const checker = program.getTypeChecker();
+	let type = node == null ? undefined : toSimpleType(node, checker);
+
+	if (type != null) {
+		// Apparently Typescript wraps the type in "generic arguments" when take the type from the interface declaration
+		// Remove "generic arguments" here
+		if (type.kind === "GENERIC_ARGUMENTS") {
+			type = type.target;
+		}
+	}
+
+	nameTypeCache.set(name, type);
+
+	return type;
 }

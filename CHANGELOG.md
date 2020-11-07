@@ -10,6 +10,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
+## [1.1.0] - 2020-07-12
+
+### Fixed
+
+- Improved logic for resolving declarations and mixins ([#172](https://github.com/runem/web-component-analyzer/issues/172))
+- Added support for JSDoc syntax where type comes after name (eg. `@fires my-event {MouseEvent}`) ([#165](https://github.com/runem/web-component-analyzer/issues/165))
+- Event types are now inferred correctly and all events are now analyzed instead of only `CustomEvent` (https://github.com/runem/web-component-analyzer/issues/165)
+
+### Added
+
+- JSDoc related utils are now exported from WCA ([#171](https://github.com/runem/web-component-analyzer/pull/171))
+- `hasUpdated` and `updateComplete` are now considered protected members for `LitElement` elements (https://github.com/runem/web-component-analyzer/pull/166)
+- Updated all dependencies.
+- It's now possible to traverse the entire inheritance tree using `declaration.heritageClauses`.
+- Added `--inline-types` CLI option that can be used to expand type aliases in order to inline types in the documentation ([#140](https://github.com/runem/web-component-analyzer/issues/140))
+
 ## [1.0.2] - 2020-01-18
 
 ### Fixed

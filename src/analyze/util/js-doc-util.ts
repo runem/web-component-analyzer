@@ -1,10 +1,11 @@
 import { SimpleType, SimpleTypeStringLiteral } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node } from "typescript";
+import { JSDoc, JSDocParameterTag, JSDocTypeTag, Node, Program } from "typescript";
 import { arrayDefined } from "../../util/array-util";
 import { JsDoc, JsDocTag, JsDocTagParsed } from "../types/js-doc";
 import { getLeadingCommentForNode } from "./ast-util";
 import { lazy } from "./lazy";
+import { getLibTypeWithName } from "./type-util";
 
 /**
  * Returns typescript jsdoc node for a given node
@@ -25,18 +26,9 @@ function getJSDocNode(node: Node, ts: typeof tsModule): JSDoc | undefined {
  * Returns jsdoc for a given node.
  * @param node
  * @param ts
+ * @param tagNames
  */
-export function getJsDoc(node: Node, ts: typeof tsModule): JsDoc | undefined;
-export function getJsDoc(node: Node, tagNames: string[], ts: typeof tsModule): JsDoc | undefined;
-export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, ts?: typeof tsModule): JsDoc | undefined {
-	// Overloaded case
-	let tagNames: string[] | null = null;
-	if (ts == null) {
-		ts = tagNamesOrTs as typeof tsModule;
-	} else {
-		tagNames = tagNamesOrTs as string[];
-	}
-
+export function getJsDoc(node: Node, ts: typeof tsModule, tagNames?: string[]): JsDoc | undefined {
 	const jsDocNode = getJSDocNode(node, ts);
 
 	// If we couldn't find jsdoc, find and parse the jsdoc string ourselves
@@ -44,7 +36,17 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 		const leadingComment = getLeadingCommentForNode(node, ts);
 
 		if (leadingComment != null) {
-			return parseJsDocString(leadingComment);
+			const jsDoc = parseJsDocString(leadingComment);
+
+			// Return this jsdoc if we don't have to filter by tag name
+			if (jsDoc == null || tagNames == null || tagNames.length === 0) {
+				return jsDoc;
+			}
+
+			return {
+				...jsDoc,
+				tags: jsDoc.tags?.filter(t => tagNames.includes(t.tag))
+			};
 		}
 
 		return undefined;
@@ -62,6 +64,7 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
 						jsDocNode.tags.map(node => {
 							const tag = String(node.tagName.escapedText);
 
+							// Filter by tag name
 							if (tagNames != null && tagNames.length > 0 && !tagNames.includes(tag.toLowerCase())) {
 								return undefined;
 							}
@@ -97,8 +100,9 @@ export function getJsDoc(node: Node, tagNamesOrTs: string[] | typeof tsModule, t
  * Defaults to ANY
  * See http://usejsdoc.org/tags-type.html
  * @param str
+ * @param context
  */
-export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
+export function parseSimpleJsDocTypeExpression(str: string, context: { program: Program; ts: typeof tsModule }): SimpleType {
 	// Fail safe if "str" is somehow undefined
 	if (str == null) {
 		return { kind: "ANY" };
@@ -128,7 +132,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	// Match
 	//  {  string  }
 	if (str.startsWith(" ") || str.endsWith(" ")) {
-		return parseSimpleJsDocTypeExpression(str.trim());
+		return parseSimpleJsDocTypeExpression(str.trim(), context);
 	}
 
 	// Match:
@@ -137,7 +141,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 		return {
 			kind: "UNION",
 			types: str.split("|").map(str => {
-				const childType = parseSimpleJsDocTypeExpression(str);
+				const childType = parseSimpleJsDocTypeExpression(str, context);
 
 				// Convert ANY types to string literals so that {on|off} is "on"|"off" and not ANY|ANY
 				if (childType.kind === "ANY") {
@@ -160,7 +164,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 
 	if (prefixMatch != null) {
 		const modifier = prefixMatch[1];
-		const type = parseSimpleJsDocTypeExpression(prefixMatch[3]);
+		const type = parseSimpleJsDocTypeExpression(prefixMatch[3], context);
 		switch (modifier) {
 			case "?":
 				return {
@@ -186,7 +190,7 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	//  {(......)}
 	const parenMatch = str.match(/^\((.+)\)$/);
 	if (parenMatch != null) {
-		return parseSimpleJsDocTypeExpression(parenMatch[1]);
+		return parseSimpleJsDocTypeExpression(parenMatch[1], context);
 	}
 
 	// Match
@@ -205,18 +209,47 @@ export function parseSimpleJsDocTypeExpression(str: string): SimpleType {
 	if (arrayMatch != null) {
 		return {
 			kind: "ARRAY",
-			type: parseSimpleJsDocTypeExpression(arrayMatch[1])
+			type: parseSimpleJsDocTypeExpression(arrayMatch[1], context)
 		};
 	}
 
-	return { kind: "ANY" };
+	// Match
+	//   CustomEvent<string>
+	//   MyInterface<string, number>
+	//   MyInterface<{foo: string, bar: string}, number>
+	const genericArgsMatch = str.match(/^(.*)<(.*)>$/);
+	if (genericArgsMatch != null) {
+		// Here we split generic arguments by "," and
+		//   afterwards remerge parts that were incorrectly split
+		// For example: "{foo: string, bar: string}, number" would result in
+		//   ["{foo: string", "bar: string}", "number"]
+		// The correct way to improve "parseSimpleJsDocTypeExpression" is to build a custom lexer/parser.
+		const typeArgStrings: string[] = [];
+		for (const part of genericArgsMatch[2].split(/\s*,\s*/)) {
+			if (part.match(/[}:]/) != null && typeArgStrings.length > 0) {
+				typeArgStrings[typeArgStrings.length - 1] += `, ${part}`;
+			} else {
+				typeArgStrings.push(part);
+			}
+		}
+
+		return {
+			kind: "GENERIC_ARGUMENTS",
+			target: parseSimpleJsDocTypeExpression(genericArgsMatch[1], context),
+			typeArguments: typeArgStrings.map(typeArg => parseSimpleJsDocTypeExpression(typeArg, context))
+		};
+	}
+
+	// If nothing else, try to find the type in Typescript global lib or else return "any"
+	return getLibTypeWithName(str, context) || { kind: "ANY" };
 }
 
 /**
  * Finds a @type jsdoc tag in the jsdoc and returns the corresponding simple type
  * @param jsDoc
+ * @param context
  */
-export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
+export function getJsDocType(jsDoc: JsDoc, context: { program: Program; ts: typeof tsModule }): SimpleType | undefined {
 	if (jsDoc.tags != null) {
 		const typeJsDocTag = jsDoc.tags.find(t => t.tag === "type");
 
@@ -225,7 +258,7 @@ export function getJsDocType(jsDoc: JsDoc): SimpleType | undefined {
 			const parsedJsDoc = parseJsDocTagString(typeJsDocTag.node?.getText() || "");
 
 			if (parsedJsDoc.type != null) {
-				return parseSimpleJsDocTypeExpression(parsedJsDoc.type);
+				return parseSimpleJsDocTypeExpression(parsedJsDoc.type, context);
 			}
 		}
 	}
@@ -269,7 +302,7 @@ function parseJsDocValue(value: string | undefined): unknown {
 }
 
 /**
- * Parses "@tag {type} name description"
+ * Parses "@tag {type} name description" or "@tag name {type} description"
  * @param str
  */
 function parseJsDocTagString(str: string): JsDocTagParsed {
@@ -289,86 +322,105 @@ function parseJsDocTagString(str: string): JsDocTagParsed {
 		return quotedStr.replace(/^['"](.+)["']$/, (_, match) => match);
 	};
 
-	// Match tag
-	// Example: "  @mytag"
-	const tagResult = str.match(/^(\s*@(\S+))/);
-	if (tagResult == null) {
-		return jsDocTag;
-	} else {
-		// Move string to the end of the match
-		// Example: "  @mytag|"
-		moveStr(tagResult[1]);
-		jsDocTag.tag = tagResult[2];
-	}
-
-	// Match type
-	// Example: "   {MyType}"
-	const typeResult = str.match(/^(\s*{([\s\S]*)})/);
-	if (typeResult != null) {
-		// Move string to the end of the match
-		// Example: "  {MyType}|"
-		moveStr(typeResult[1]);
-		jsDocTag.type = typeResult[2];
-	}
-
-	// Match optional name
-	// Example: "  [myname=mydefault]"
-	const defaultNameResult = str.match(/^(\s*\[([\s\S]+)\])/);
-	if (defaultNameResult != null) {
-		// Move string to the end of the match
-		// Example: "  [myname=mydefault]|"
-		moveStr(defaultNameResult[1]);
-
-		// Using [...] means that this doc is optional
-		jsDocTag.optional = true;
-
-		// Split the inner content between [...] into parts
-		// Example:  "myname=mydefault" => "myname", "mydefault"
-		const parts = defaultNameResult[2].split("=");
-		if (parts.length === 2) {
-			// Both name and default were given
-			jsDocTag.name = unqouteStr(parts[0]);
-			jsDocTag.default = parseJsDocValue(parts[1]);
-		} else if (parts.length !== 0) {
-			// No default was given
-			jsDocTag.name = unqouteStr(parts[0]);
+	const matchTag = () => {
+		// Match tag
+		// Example: "  @mytag"
+		const tagResult = str.match(/^(\s*@(\S+))/);
+		if (tagResult == null) {
+			return jsDocTag;
+		} else {
+			// Move string to the end of the match
+			// Example: "  @mytag|"
+			moveStr(tagResult[1]);
+			jsDocTag.tag = tagResult[2];
 		}
-	} else {
-		// else, match required name
-		// Example: "   myname"
+	};
 
-		// A name is needed some jsdoc tags making it possible to include omit "-"
-		// Therefore we don't look for "-" or line end if the name is required - in that case we only need to eat the first word to find the name.
-		const regex = JSDOC_TAGS_WITH_REQUIRED_NAME.includes(jsDocTag.tag) ? /^(\s*(\S+))/ : /^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/;
-		const nameResult = str.match(regex);
-		if (nameResult != null) {
-			// Move string to end of match
-			// Example: "   myname|"
-			moveStr(nameResult[1]);
-			jsDocTag.name = unqouteStr(nameResult[2].trim());
+	const matchType = () => {
+		// Match type
+		// Example: "   {MyType}"
+		const typeResult = str.match(/^(\s*{([\s\S]*)})/);
+		if (typeResult != null) {
+			// Move string to the end of the match
+			// Example: "  {MyType}|"
+			moveStr(typeResult[1]);
+			jsDocTag.type = typeResult[2];
 		}
-	}
+	};
 
-	// Match comment
-	if (str.length > 0) {
-		// The rest of the string is parsed as comment. Remove "-" if needed.
-		jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
-	}
+	const matchName = () => {
+		// Match optional name
+		// Example: "  [myname=mydefault]"
+		const defaultNameResult = str.match(/^(\s*\[([\s\S]+)\])/);
+		if (defaultNameResult != null) {
+			// Move string to the end of the match
+			// Example: "  [myname=mydefault]|"
+			moveStr(defaultNameResult[1]);
 
-	// Expand the name based on namespace and classname
-	if (jsDocTag.name != null) {
-		/**
-		 * The name could look like this, so we need to parse and the remove the class name and namespace from the name
-		 *   InputSwitch#[CustomEvent]input-switch-check-changed
-		 *   InputSwitch#input-switch-check-changed
-		 */
-		const match = jsDocTag.name.match(/(.*)#(\[.*\])?(.*)/);
-		if (match != null) {
-			jsDocTag.className = match[1];
-			jsDocTag.namespace = match[2];
-			jsDocTag.name = match[3];
+			// Using [...] means that this doc is optional
+			jsDocTag.optional = true;
+
+			// Split the inner content between [...] into parts
+			// Example:  "myname=mydefault" => "myname", "mydefault"
+			const parts = defaultNameResult[2].split("=");
+			if (parts.length === 2) {
+				// Both name and default were given
+				jsDocTag.name = unqouteStr(parts[0]);
+				jsDocTag.default = parseJsDocValue(parts[1]);
+			} else if (parts.length !== 0) {
+				// No default was given
+				jsDocTag.name = unqouteStr(parts[0]);
+			}
+		} else {
+			// else, match required name
+			// Example: "   myname"
+
+			// A name is needed some jsdoc tags making it possible to include omit "-"
+			// Therefore we don't look for "-" or line end if the name is required - in that case we only need to eat the first word to find the name.
+			const regex = JSDOC_TAGS_WITH_REQUIRED_NAME.includes(jsDocTag.tag) ? /^(\s*(\S+))/ : /^(\s*(\S+))((\s*-[\s\S]+)|\s*)($|[\r\n])/;
+			const nameResult = str.match(regex);
+			if (nameResult != null) {
+				// Move string to end of match
+				// Example: "   myname|"
+				moveStr(nameResult[1]);
+				jsDocTag.name = unqouteStr(nameResult[2].trim());
+			}
 		}
+	};
+
+	const matchComment = () => {
+		// Match comment
+		if (str.length > 0) {
+			// The rest of the string is parsed as comment. Remove "-" if needed.
+			jsDocTag.description = str.replace(/^\s*-\s*/, "").trim() || undefined;
+		}
+
+		// Expand the name based on namespace and classname
+		if (jsDocTag.name != null) {
+			/**
+			 * The name could look like this, so we need to parse and the remove the class name and namespace from the name
+			 *   InputSwitch#[CustomEvent]input-switch-check-changed
+			 *   InputSwitch#input-switch-check-changed
+			 */
+			const match = jsDocTag.name.match(/(.*)#(\[.*\])?(.*)/);
+			if (match != null) {
+				jsDocTag.className = match[1];
+				jsDocTag.namespace = match[2];
+				jsDocTag.name = match[3];
+			}
+		}
+	};
+
+	matchTag();
+	matchType();
+	matchName();
+
+	// Type can come both before and after "name"
+	if (jsDocTag.type == null) {
+		matchType();
 	}
+
+	matchComment();
 
 	return jsDocTag;
 }

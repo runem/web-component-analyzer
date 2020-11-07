@@ -1,6 +1,5 @@
-import { SimpleTypeKind } from "ts-simple-type";
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 tsTest("Discovers elements defined JSX.IntrinsicElements", t => {
@@ -23,7 +22,7 @@ tsTest("Discovers elements defined JSX.IntrinsicElements", t => {
 	t.is(componentDefinitions.length, 1);
 	t.is(componentDefinitions[0].tagName, "my-element");
 
-	const { members } = componentDefinitions[0].declaration();
+	const { members } = componentDefinitions[0].declaration;
 
 	assertHasMembers(
 		members,

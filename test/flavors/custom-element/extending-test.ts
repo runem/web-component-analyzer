@@ -1,5 +1,5 @@
-import { tsTest } from "../../helpers/ts-test";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
+import { tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
 
 tsTest("Correctly extends interface with interface from different file", t => {
@@ -30,7 +30,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -67,7 +67,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -101,7 +101,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -129,7 +129,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));
@@ -157,7 +157,7 @@ declare global {
 		}
 	]);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	t.is(1, members.length);
 	t.truthy(getComponentProp(members, "checked"));

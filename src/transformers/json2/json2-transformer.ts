@@ -1,4 +1,5 @@
 import { basename, relative } from "path";
+import { isSimpleType, toSimpleType } from "ts-simple-type";
 import * as tsModule from "typescript";
 import { Node, Program, SourceFile, Type, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
@@ -112,11 +113,21 @@ function getFunctionDocsFromAnalyzerResult(result: AnalyzerResult, context: Tran
 }
 
 function getDefinitionDocsFromAnalyzerResult(result: AnalyzerResult, context: TransformerContext): CustomElementDefinitionDoc[] {
-	return result.componentDefinitions.map(definition => ({
-		kind: "definition",
-		name: definition.tagName,
-		declaration: getReferenceForNode(definition.declaration().node, context)
-	}));
+	return arrayDefined(
+		result.componentDefinitions.map(definition => {
+			// It's not possible right now to model a tag name where the
+			//   declaration couldn't be resolved because the "declaration" is required
+			if (definition.declaration == null) {
+				return undefined;
+			}
+
+			return {
+				kind: "definition",
+				name: definition.tagName,
+				declaration: getReferenceForNode(definition.declaration.node, context)
+			};
+		})
+	);
 }
 
 /**
@@ -219,7 +230,7 @@ function getExportsDocFromDeclaration(
 	};
 
 	// Find the first corresponding custom element definition for this declaration
-	const definition = result.componentDefinitions.find(def => def.declaration().node === declaration.node);
+	const definition = result.componentDefinitions.find(def => def.declaration?.node === declaration.node);
 
 	if (definition != null) {
 		const events = getEventDocsFromDeclaration(declaration, context);
@@ -251,14 +262,21 @@ function getExportsDocFromDeclaration(
  * @param context
  */
 function getEventDocsFromDeclaration(declaration: ComponentDeclaration, context: TransformerContext): EventDoc[] {
-	return filterVisibility(context.config.visibility, declaration.events).map(event => ({
-		description: event.jsDoc?.description,
-		name: event.name,
-		detailType: getTypeHintFromType(event.typeHint || event.type?.(), context.checker, context.config),
-		type: "Event",
-		inheritedFrom: getInheritedFromReference(declaration, event, context)
-		// TODO: missing "type"
-	}));
+	return filterVisibility(context.config.visibility, declaration.events).map(event => {
+		const type = event.type?.() || { kind: "ANY" };
+		const simpleType = isSimpleType(type) ? type : toSimpleType(type, context.checker);
+
+		const typeName = simpleType.kind === "GENERIC_ARGUMENTS" ? simpleType.target.name : simpleType.name;
+		const customEventDetailType = typeName === "CustomEvent" && simpleType.kind === "GENERIC_ARGUMENTS" ? simpleType.typeArguments[0] : undefined;
+
+		return {
+			description: event.jsDoc?.description,
+			name: event.name,
+			inheritedFrom: getInheritedFromReference(declaration, event, context),
+			type: typeName == null || simpleType.kind === "ANY" ? "Event" : typeName,
+			detailType: customEventDetailType != null ? getTypeHintFromType(customEventDetailType, context.checker, context.config) : undefined
+		};
+	});
 }
 
 /**

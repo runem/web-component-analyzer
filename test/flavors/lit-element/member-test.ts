@@ -1,4 +1,3 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
@@ -25,7 +24,7 @@ tsTest("LitElement: Discovers properties from 'static get properties'", t => {
 	 }
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,
@@ -71,7 +70,7 @@ tsTest("LitElement: Discovers properties from '@property'", t => {
 	 }
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,
@@ -141,7 +140,7 @@ tsTest("LitElement: Discovers properties from '@internalProperty'", t => {
 	 }
 	 `);
 
-	const { members } = result.componentDefinitions[0]?.declaration();
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
 	assertHasMembers(
 		members,

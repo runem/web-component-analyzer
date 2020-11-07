@@ -21,11 +21,12 @@ export function makeContextFromConfig(options: AnalyzerOptions): AnalyzerVisitCo
 	// Create context
 	return {
 		checker,
+		program: options.program,
 		ts,
 		flavors,
 		cache: {
 			featureCollection: DEFAULT_FEATURE_COLLECTION_CACHE,
-			componentDeclarationInSourceFile: DEFAULT_COMPONENT_DECLARATION_CACHE,
+			componentDeclarationCache: DEFAULT_COMPONENT_DECLARATION_CACHE,
 			general: new Map()
 		},
 		config: {

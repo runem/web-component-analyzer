@@ -6,7 +6,7 @@ import { ComponentFeatureBase } from "./component-feature";
 export interface ComponentEvent extends ComponentFeatureBase {
 	name: string;
 	node: Node;
-	type: () => SimpleType | Type;
+	type?: () => SimpleType | Type;
 	typeHint?: string;
 	visibility?: VisibilityKind;
 	deprecated?: boolean | string;
