@@ -5,11 +5,7 @@ import { resolveNodeValue } from "../../util/resolve-node-value";
 
 export type LitElementPropertyDecoratorKind = "property" | "internalProperty" | "state";
 
-export const LIT_ELEMENT_PROPERTY_DECORATOR_KINDS: LitElementPropertyDecoratorKind[] = [
-	"property",
-	"internalProperty",
-	"state"
-];
+export const LIT_ELEMENT_PROPERTY_DECORATOR_KINDS: LitElementPropertyDecoratorKind[] = ["property", "internalProperty", "state"];
 
 /**
  * Returns a potential lit element property decorator.
