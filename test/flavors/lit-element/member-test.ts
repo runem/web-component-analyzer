@@ -158,7 +158,8 @@ tsTest("LitElement: Discovers properties from '@internalProperty'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
 				}
 			},
 			{
@@ -171,7 +172,8 @@ tsTest("LitElement: Discovers properties from '@internalProperty'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
 				}
 			}
 		],
@@ -216,7 +218,8 @@ tsTest("LitElement: Discovers properties from '@state'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
 				}
 			},
 			{
@@ -229,7 +232,8 @@ tsTest("LitElement: Discovers properties from '@state'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
 				}
 			}
 		],
