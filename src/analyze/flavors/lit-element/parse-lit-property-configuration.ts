@@ -61,6 +61,7 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 			case "internalProperty":
 			case "state":
 				config.attribute = false;
+				config.state = true;
 				break;
 		}
 
@@ -109,6 +110,10 @@ export function parseLitPropertyOption(
 
 		case "reflect": {
 			return { ...config, reflect: resolveNodeValue(initializer, context)?.value === true };
+		}
+
+		case "state": {
+			return { ...config, state: resolveNodeValue(initializer, context)?.value === true };
 		}
 
 		case "attribute": {
