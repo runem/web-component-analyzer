@@ -158,7 +158,8 @@ tsTest("LitElement: Discovers properties from '@internalProperty'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
 				}
 			},
 			{
@@ -171,7 +172,68 @@ tsTest("LitElement: Discovers properties from '@internalProperty'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {
-					attribute: false
+					attribute: false,
+					state: true
+				}
+			}
+		],
+		t,
+		checker
+	);
+});
+
+tsTest("LitElement: Discovers properties from '@state'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule(`
+	/**
+	 * @element
+	 */
+	 class MyElement extends HTMLElement {
+	    /**
+	     * This is a comment
+	     */
+	    @state() myProp: string = "hello";
+
+	    @state() private myProp2: number!;
+	 }
+	 `);
+
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				attrName: undefined,
+				jsDoc: {
+					description: "This is a comment"
+				},
+				default: "hello",
+				type: () => ({ kind: "STRING" }),
+				visibility: "public",
+				deprecated: undefined,
+				required: undefined,
+				meta: {
+					attribute: false,
+					state: true
+				}
+			},
+			{
+				kind: "property",
+				propName: "myProp2",
+				attrName: undefined,
+				default: undefined,
+				type: () => ({ kind: "NUMBER" }),
+				visibility: "private",
+				deprecated: undefined,
+				required: undefined,
+				meta: {
+					attribute: false,
+					state: true
 				}
 			}
 		],

@@ -12,4 +12,5 @@ export interface LitElementPropertyConfig {
 	hasConverter?: boolean;
 	default?: unknown;
 	reflect?: boolean;
+	state?: boolean;
 }

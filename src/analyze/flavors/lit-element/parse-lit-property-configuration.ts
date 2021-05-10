@@ -3,9 +3,9 @@ import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 
-export type LitElementPropertyDecoratorKind = "property" | "internalProperty";
+export type LitElementPropertyDecoratorKind = "property" | "internalProperty" | "state";
 
-export const LIT_ELEMENT_PROPERTY_DECORATOR_KINDS: LitElementPropertyDecoratorKind[] = ["property", "internalProperty"];
+export const LIT_ELEMENT_PROPERTY_DECORATOR_KINDS: LitElementPropertyDecoratorKind[] = ["property", "internalProperty", "state"];
 
 /**
  * Returns a potential lit element property decorator.
@@ -55,7 +55,9 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 		// Apply specific config based on the decorator kind
 		switch (decorator.kind) {
 			case "internalProperty":
+			case "state":
 				config.attribute = false;
+				config.state = true;
 				break;
 		}
 
@@ -104,6 +106,10 @@ export function parseLitPropertyOption(
 
 		case "reflect": {
 			return { ...config, reflect: resolveNodeValue(initializer, context)?.value === true };
+		}
+
+		case "state": {
+			return { ...config, state: resolveNodeValue(initializer, context)?.value === true };
 		}
 
 		case "attribute": {
