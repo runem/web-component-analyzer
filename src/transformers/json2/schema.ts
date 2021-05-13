@@ -1,26 +1,54 @@
 /**
- * This file comes from the following PR with a proposed JSON schema:
- * https://github.com/webcomponents/custom-elements-json/pull/9
+ * @license
+ * Copyright (c) 2019 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
 /**
- * The top-level interface of a custom-elements.json file.
+ * The top-level interface of a custom elements manifest file.
  *
- * custom-elements.json documents all the elements in a single npm package,
- * across all modules within the package. Elements may be exported from multiple
- * modules with re-exports, but as a rule, elements in this file should be
- * included once in the "canonical" module that they're exported from.
+ * Because custom elements are JavaScript classes, describing a custom element
+ * may require describing arbitrary JavaScript concepts like modules, classes,
+ * functions, etc. So custom elements manifests are capable of documenting
+ * the elements in a package, as well as those JavaScript concepts.
+ *
+ * The modules described in a package should be the public entrypoints that
+ * other packages may import from. Multiple modules may export the same object
+ * via re-exports, but in most cases a package should document the single
+ * canonical export that should be used.
  */
-export interface PackageDoc {
-	version: string;
+export interface Package {
+	/**
+	 * The version of the schema used in this file.
+	 */
+	schemaVersion: string;
+
+	/**
+	 * The Markdown to use for the main readme of this package.
+	 *
+	 * This can be used to override the readme used by Github or npm if that
+	 * file contains information irrelevant to custom element catalogs and
+	 * documentation viewers.
+	 */
+	readme?: string;
 
 	/**
 	 * An array of the modules this package contains.
 	 */
-	modules: Array<ModuleDoc>;
+	modules: Array<Module>;
 }
 
-export interface ModuleDoc {
+// This type may expand in the future to include JSON, CSS, or HTML
+// modules.
+export type Module = JavaScriptModule;
+
+export interface JavaScriptModule {
+	kind: "javascript-module";
+
 	path: string;
 
 	/**
@@ -33,16 +61,81 @@ export interface ModuleDoc {
 	 */
 	description?: string;
 
-	exports?: Array<ExportDoc>;
+	/**
+	 * The declarations of a module.
+	 *
+	 * For documentation purposes, all declarations that are reachable from
+	 * exports should be described here. Ie, functions and objects that may be
+	 * properties of exported objects, or passed as arguments to functions.
+	 */
+	declarations: Array<Declaration>;
+
+	/**
+	 * The exports of a module. This includes JavaScript exports and
+	 * custom element definitions.
+	 */
+	exports?: Array<Export>;
 }
 
-export type ExportDoc = ClassDoc | FunctionDoc | VariableDoc | CustomElementDefinitionDoc;
+export type Export = JavaScriptExport | CustomElementExport;
+
+export interface JavaScriptExport {
+	kind: "js";
+
+	/**
+	 * The name of the exported symbol.
+	 *
+	 * JavaScript has a number of ways to export objects which determine the
+	 * correct name to use.
+	 *
+	 * - Default exports must use the name "default".
+	 * - Named exports use the name that is exported. If the export is renamed
+	 *   with the "as" clause, use the exported name.
+	 * - Aggregating exports (`* from`) should use the name `*`
+	 */
+	name: string;
+
+	/**
+	 * A reference to the exported declaration.
+	 *
+	 * In the case of aggregating exports, the reference's `module` field must be
+	 * defined and the `name` field must be `"*"`.
+	 */
+	declaration: Reference;
+}
+
+/**
+ * A global custom element defintion, ie the result of a
+ * `customElements.define()` call.
+ *
+ * This is represented as an export because a definition makes the element
+ * available outside of the module it's defined it.
+ */
+export interface CustomElementExport {
+	kind: "custom-element-definition";
+
+	/**
+	 * The tag name of the custom element.
+	 */
+	name: string;
+
+	/**
+	 * A reference to the class or other declaration that implements the
+	 * custom element.
+	 */
+	declaration: Reference;
+}
+
+export type Declaration = ClassDeclaration | FunctionDeclaration | MixinDeclaration | VariableDeclaration | CustomElement;
 
 /**
  * A reference to an export of a module.
  *
  * All references are required to be publically accessible, so the canonical
- * representation of a refernce it the export it's available from.
+ * representation of a reference is the export it's available from.
+ *
+ * Referrences to global symbols like `Array`, `HTMLElement`, or `Event`
+ *
  */
 export interface Reference {
 	name: string;
@@ -50,48 +143,77 @@ export interface Reference {
 	module?: string;
 }
 
-export interface CustomElementDoc extends ClassDoc {
-	tagName: string;
+/**
+ * Description of a custom element class.
+ *
+ * Custom elements are JavaScript classes, so this extends from
+ * `ClassDeclaration` and adds custom-element-specific features like
+ * attributes, events, and slots.
+ *
+ * Note that `tagName` in this interface is optional. Tag names are not
+ * neccessarily part of a custom element class, but belong to the definition
+ * (often called the "registration") or the `customElements.define()` call.
+ *
+ * Because classes and tag anmes can only be registered once, there's a
+ * one-to-one relationship between classes and tag names. For ease of use,
+ * we allow the tag name here.
+ *
+ * Some packages define and register custom elements in separate modules. In
+ * these cases one `Module` should contain the `CustomElement` without a
+ * tagName, and another `Module` should contain the
+ * `CustomElement`.
+ */
+export interface CustomElement extends ClassDeclaration {
+	/**
+	 * An optional tag name that should be specified if this is a
+	 * self-registering element.
+	 *
+	 * Self-registering elements must also include a CustomElementExport
+	 * in the module's exports.
+	 */
+	tagName?: string;
+
 	/**
 	 * The attributes that this element is known to understand.
 	 */
-	attributes?: AttributeDoc[];
+	attributes?: Attribute[];
 
-	/** The events that this element fires. */
-	events?: EventDoc[];
+	/**
+	 * The events that this element fires.
+	 */
+	events?: Event[];
 
 	/**
 	 * The shadow dom content slots that this element accepts.
 	 */
-	slots?: SlotDoc[];
+	slots?: Slot[];
 
-	cssProperties?: CSSPropertyDoc[];
+	parts?: CssPart[];
 
-	cssParts?: CSSPartDoc[];
+	cssProperties?: CssCustomProperty[];
 
 	demos?: Demo[];
 }
 
-export interface CustomElementDefinitionDoc {
-	kind: "definition";
-
-	name: string;
-
-	declaration: Reference;
-}
-
-export interface AttributeDoc {
+export interface Attribute {
 	name: string;
 
 	/**
-	 * A markdown description for the attribute.
+	 * A markdown summary suitable for display in a listing.
+	 */
+	summary?: string;
+
+	/**
+	 * A markdown description.
 	 */
 	description?: string;
+
+	inheritedFrom?: Reference;
 
 	/**
 	 * The type that the attribute will be serialized/deserialized as.
 	 */
-	type?: string;
+	type?: Type;
 
 	/**
 	 * The default value of the attribute, if any.
@@ -105,92 +227,123 @@ export interface AttributeDoc {
 	 * The name of the field this attribute is associated with, if any.
 	 */
 	fieldName?: string;
-
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
-	inheritedFrom?: Reference;
 }
 
-export interface EventDoc {
+export interface Event {
 	name: string;
 
 	/**
-	 * A markdown description of the event.
+	 * A markdown summary suitable for display in a listing.
+	 */
+	summary?: string;
+
+	/**
+	 * A markdown description.
 	 */
 	description?: string;
 
 	/**
 	 * The type of the event object that's fired.
-	 *
-	 * If the event type is built-in, this is a string, e.g. `Event`,
-	 * `CustomEvent`, `KeyboardEvent`. If the event type is an event class defined
-	 * in a module, the reference to it.
 	 */
-	type?: Reference | string;
+	type: Type;
 
-	/**
-	 * If the event is a CustomEvent, the type of `detail` field.
-	 */
-	detailType?: string;
-
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
 	inheritedFrom?: Reference;
 }
 
-export interface SlotDoc {
+export interface Slot {
 	/**
 	 * The slot name, or the empty string for an unnamed slot.
 	 */
 	name: string;
 
 	/**
-	 * A markdown description of the slot.
+	 * A markdown summary suitable for display in a listing.
 	 */
-	description?: string;
+	summary?: string;
 
 	/**
-	 * A reference to the class or mixin that declared this property.
+	 * A markdown description.
 	 */
-	inheritedFrom?: Reference;
+	description?: string;
 }
 
-export interface CSSPropertyDoc {
+/**
+ * The description of a CSS Part
+ */
+export interface CssPart {
 	name: string;
-	description?: string;
-	type?: string;
-	default?: string;
-
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
-	inheritedFrom?: Reference;
-}
-
-export interface CSSPartDoc {
-	name: string;
-	description?: string;
-
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
-	inheritedFrom?: Reference;
-}
-
-export interface ClassDoc {
-	kind: "class";
-
-	/**
-	 * The class name, or `undefined` if the class is anonymous.
-	 */
-	name?: string;
 
 	/**
 	 * A markdown summary suitable for display in a listing.
-	 * TODO: restrictions on markdown/markup. ie, no headings, only inline
-	 *       formatting?
+	 */
+	summary?: string;
+
+	/**
+	 * A markdown description.
+	 */
+	description?: string;
+}
+
+export interface CssCustomProperty {
+	/**
+	 * The name of the property, including leading `--`.
+	 */
+	name: string;
+
+	defaultValue?: string;
+
+	/**
+	 * A markdown summary suitable for display in a listing.
+	 */
+	summary?: string;
+
+	/**
+	 * A markdown description.
+	 */
+	description?: string;
+}
+
+export interface Type {
+	/**
+	 * The full string representation of the type, in whatever type syntax is
+	 * used, such as JSDoc, Closure, or TypeScript.
+	 */
+	type: string;
+
+	/**
+	 * An array of references to the types in the type string.
+	 *
+	 * These references have optional indices into the type string so that tools
+	 * can understand the references in the type string independently of the type
+	 * system and syntax. For example, a documentation viewer could display the
+	 * type `Array<FooElement | BarElement>` with cross-references to `FooElement`
+	 * and `BarElement` without understanding arrays, generics, or union types.
+	 */
+	references?: TypeReference[];
+}
+
+/**
+ * A reference that is associated with a type string and optionally a range
+ * within the string.
+ *
+ * Start and end must both be present or not present. If they're present, they
+ * are indices into the associated type string. If they are missing, the entire
+ * type string is the symbol referenced and the name should match the type
+ * string.
+ */
+export interface TypeReference extends Reference {
+	start?: number;
+	end?: number;
+}
+
+/**
+ * The common interface of classes and mixins.
+ */
+export interface ClassLike {
+	name: string;
+
+	/**
+	 * A markdown summary suitable for display in a listing.
 	 */
 	summary?: string;
 
@@ -203,17 +356,21 @@ export interface ClassDoc {
 	members?: Array<ClassMember>;
 }
 
-export type ClassMember = FieldDoc | MethodDoc;
+export interface ClassDeclaration extends ClassLike {
+	kind: "class";
+}
 
-export interface FieldDoc {
-	kind: "field";
+export type ClassMember = ClassField | ClassMethod;
+
+/**
+ * The common interface of variables, class fields, and function
+ * parameters.
+ */
+export interface PropertyLike {
 	name: string;
-	static?: boolean;
 
 	/**
 	 * A markdown summary suitable for display in a listing.
-	 * TODO: restrictions on markdown/markup. ie, no headings, only inline
-	 *       formatting?
 	 */
 	summary?: string;
 
@@ -221,60 +378,46 @@ export interface FieldDoc {
 	 * A markdown description of the field.
 	 */
 	description?: string;
-	default?: string; // TODO: make this a Type type or a Reference
-	privacy?: Privacy;
-	type?: string;
 
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
+	type?: Type;
+
+	default?: string;
+}
+
+export interface ClassField extends PropertyLike {
+	kind: "field";
+	static?: boolean;
+	privacy?: Privacy;
 	inheritedFrom?: Reference;
 }
 
-export interface MethodDoc extends FunctionLike {
+export interface ClassMethod extends FunctionLike {
 	kind: "method";
-
 	static?: boolean;
-
-	/**
-	 * A reference to the class or mixin that declared this property.
-	 */
+	privacy?: Privacy;
 	inheritedFrom?: Reference;
 }
 
 /**
- * TODO: tighter definition of mixin:
- *  - Should it only accept a single argument?
- *  - Should it not extend ClassDoc so it doesn't has a superclass?
- *  - What's TypeScript's exact definition?
+ *
  */
-export interface MixinDoc extends ClassDoc {}
-
-export interface VariableDoc {
-	kind: "variable";
-
-	name: string;
-
-	/**
-	 * A markdown summary suitable for display in a listing.
-	 */
-	summary?: string;
-
-	/**
-	 * A markdown description of the class.
-	 */
-	description?: string;
-	type?: string;
+export interface MixinDeclaration extends ClassLike, FunctionLike {
+	kind: "mixin";
 }
 
-export interface FunctionDoc extends FunctionLike {
+export interface VariableDeclaration extends PropertyLike {
+	kind: "variable";
+}
+
+export interface FunctionDeclaration extends FunctionLike {
 	kind: "function";
 }
 
-export interface Parameter {
-	name: string;
-	type?: string;
-	description?: string;
+export interface Parameter extends PropertyLike {
+	/**
+	 * Whether the parameter is optional. Undefined implies non-optional.
+	 */
+	optional?: boolean;
 }
 
 export interface FunctionLike {
@@ -286,19 +429,16 @@ export interface FunctionLike {
 	summary?: string;
 
 	/**
-	 * A markdown description of the class.
+	 * A markdown description.
 	 */
 	description?: string;
 
-	parameters?: Array<Parameter>;
+	parameters?: Parameter[];
 
 	return?: {
-		type?: string;
+		type?: Type;
 		description?: string;
 	};
-
-	privacy?: Privacy;
-	type?: string;
 }
 
 export type Privacy = "public" | "private" | "protected";
