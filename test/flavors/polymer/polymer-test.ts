@@ -26,7 +26,7 @@ tsTest("Polymer components are correctly picked up", t => {
 		customElements.define('x-custom', XCustom);
 	 `);
 
-	const { members } = result.componentDefinitions[0].declaration;
+	const { members } = result.componentDefinitions[0].declaration!;
 
 	t.is(members.length, 3);
 

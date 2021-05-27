@@ -9,7 +9,7 @@ import { parseJsDocForNode } from "../js-doc/parse-js-doc-for-node";
 
 type ComponentRef = { tagName: string };
 
-const LWCCACHE = Symbol("LWC Compoeent");
+const LWCCACHE = Symbol("LWC Component");
 export function isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRef | undefined {
 	const { ts } = context;
 	if (ts.isClassDeclaration(node)) {

@@ -1,6 +1,6 @@
-import ts from "@wessberg/rollup-plugin-ts";
-import resolve from "rollup-plugin-node-resolve";
-import replace from "rollup-plugin-replace";
+import ts from "@rollup/plugin-typescript";
+import resolve from "@rollup/plugin-node-resolve";
+import replace from "@rollup/plugin-replace";
 
 const { dirname } = require("path");
 const pkg = require("./package.json");
@@ -11,7 +11,9 @@ const plugins = [
 		VERSION: pkg.version,
 		delimiters: ["<@", "@>"]
 	}),
-	ts(),
+	ts({
+		module: "esnext"
+	}),
 	resolve()
 ];
 
@@ -23,14 +25,14 @@ export default [
 		},
 		output: [
 			{
-				dir: dirname(pkg.main),
+				dir: "lib/",
 				format: "cjs",
-				chunkFileNames: "chunk-[name]-[hash].js"
+				chunkFileNames: "cjs/chunk-[name]-[hash].js"
 			},
 			{
-				dir: dirname(pkg.module),
+				dir: "lib/",
 				format: "esm",
-				chunkFileNames: "chunk-[name]-[hash].js"
+				chunkFileNames: "esm/chunk-[name]-[hash].js"
 			}
 		],
 		plugins,

@@ -7,9 +7,9 @@ tsTest("Discovers elements defined using customElements.define", t => {
 	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
-		
+
 		customElements.define("my-element", MyElement);
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -23,9 +23,9 @@ tsTest("Discovers elements defined using window.customElements.define", t => {
 	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
-		
+
 		window.customElements.define("my-element", MyElement);
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -39,18 +39,18 @@ tsTest("Discovers only one element defined using multiple customElements.define"
 	} = analyzeTextWithCurrentTsModule(`
 		class MyElement extends HTMLElement {
 		}
-		
+
 		customElements.define("my-element", MyElement);
 		customElements.define("my-element", MyElement);
 		customElements.define("my-element", MyElement);
 		customElements.define("my-element", MyElement);
 		customElements.define("my-element", MyElement);
 		declare global {
-		  interface HTMLElementTagNameMap {
-			"my-element": MyElement;
-		  }
+			interface HTMLElementTagNameMap {
+				"my-element": MyElement;
+			}
 		}
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -63,12 +63,12 @@ tsTest("Does not discover elements defined using custom define function", t => {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
 		function define (tagName: string, elem: any) {}
-		
+
 		class MyElement extends HTMLElement {
 		}
-		
+
 		define("my-element", MyElement);
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -82,11 +82,11 @@ tsTest("Discovers elements defined using customElements.define without string li
 		class MyElement extends HTMLElement {
 			static get tag() {
 				return "my-element";
-	        }
+			}
 		}
-		
+
 		customElements.define(MyElement.tag, MyElement);
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -99,7 +99,7 @@ tsTest("Doesn't crash when encountering component declaration nodes that can't b
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
 		customElements.define("my-element", MyElement);
-	 `);
+	`);
 
 	const { componentDefinitions } = result;
 
@@ -116,19 +116,19 @@ tsTest("Discovers declaration in other file", t => {
 			analyze: true,
 			fileName: "def.ts",
 			text: `
-			import {MyElement} from "./decl";
-			customElements.define("my-element", MyElement);
-	 `
+				import {MyElement} from "./decl";
+				customElements.define("my-element", MyElement);
+			`
 		},
 		{
 			fileName: "decl.ts",
 			text: `
-		/**
-		 * hello
-		 */
-		export class MyElement extends HTMLElement {
-		}
-	 `
+				/**
+				 * hello
+				 */
+				export class MyElement extends HTMLElement {
+				}
+			`
 		}
 	]);
 
@@ -145,14 +145,14 @@ tsTest("Correctly discovers multiple declarations", t => {
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "test.d.ts",
 		text: `
-		interface MyElement extends HTMLElement {
-		}
-		var MyElement: {
-			prototype: MyElement;
-			new (): MyElement;
-		};	
-		customElements.define("my-element", MyElement);
-	 `
+			interface MyElement extends HTMLElement {
+			}
+			var MyElement: {
+				prototype: MyElement;
+				new (): MyElement;
+			};
+			customElements.define("my-element", MyElement);
+		`
 	});
 
 	const { componentDefinitions } = result;
@@ -167,4 +167,29 @@ tsTest("Correctly discovers multiple declarations", t => {
 		componentDefinitions[0].declaration?.methods?.some(m => m.name === "new"),
 		false
 	);
+});
+
+tsTest("Discovers elements using typescript >=4.3 syntax", t => {
+	const {
+		results: [result]
+	} = analyzeTextWithCurrentTsModule(`
+		class BaseElement extends HTMLElement {
+			connectedCallback() {
+				console.log(808);
+			}
+		}
+
+		class MyElement extends BaseElement {
+			override connectedCallback() {
+				super.connectedCallback();
+			}
+		}
+
+		customElements.define("my-element", MyElement);
+	`);
+
+	const { componentDefinitions } = result;
+
+	t.is(componentDefinitions.length, 1);
+	t.is(componentDefinitions[0].tagName, "my-element");
 });

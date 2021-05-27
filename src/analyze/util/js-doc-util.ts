@@ -84,10 +84,12 @@ export function getJsDoc(node: Node, ts: typeof tsModule, tagNames?: string[]): 
 										node.comment || ""
 								  }`;
 
+							const comment = typeof node.comment === "string" ? node.comment.replace(/^\s*-\s*/, "").trim() : "";
+
 							return {
 								node,
 								tag,
-								comment: node.comment?.replace(/^\s*-\s*/, "").trim(),
+								comment,
 								parsed: lazy(() => parseJsDocTagString(fullComment))
 							};
 						})
