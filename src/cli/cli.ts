@@ -50,7 +50,7 @@ o {tagname}: The element's tag name`,
 		})
 		.option("format", {
 			describe: `Specify output format`,
-			choices: ["md", "markdown", "json", "json2", "vscode"],
+			choices: ["md", "markdown", "json", "json2", "vscode", "custom-elements-manifest"],
 			nargs: 1,
 			alias: "f"
 		})
