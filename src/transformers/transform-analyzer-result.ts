@@ -17,7 +17,7 @@ const transformerFunctionMap: Record<TransformerKind, TransformerFunction> = {
 	markdown: markdownTransformer,
 	md: markdownTransformer,
 	vscode: vscodeTransformer,
-	customElementsManifest: customElementsTransformer
+	"custom-elements-manifest": customElementsTransformer
 };
 
 /**

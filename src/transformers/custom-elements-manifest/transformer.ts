@@ -85,21 +85,10 @@ function getExportsFromResult(result: AnalyzerResult, context: TransformerContex
 function getDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): schema.Declaration[] {
 	return [
 		...getClassesFromResult(result, context),
-		...getFunctionsFromResult(result, context),
-		...getVariablesFromResult(result, context)
+		...getExportedSymbolsFromResult(result, context)
 		// TODO (43081j):
 		// ...getCustomElementsFromResult(result, context)
 	];
-}
-
-/**
- * Returns functions in an analyzer result
- * @param result
- * @param context
- */
-function getFunctionsFromResult(result: AnalyzerResult, context: TransformerContext): schema.FunctionDeclaration[] {
-	// TODO: support function exports
-	return [];
 }
 
 function* getCustomElementExportsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.CustomElementExport> {
@@ -123,7 +112,7 @@ function* getCustomElementExportsFromResult(result: AnalyzerResult, context: Tra
  * @param result
  * @param context
  */
-function* getVariablesFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.VariableDeclaration> {
+function* getExportedSymbolsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
 	// Get all export symbols in the source file
 	const symbol = context.checker.getSymbolAtLocation(result.sourceFile);
 	if (symbol == null) {
@@ -134,11 +123,11 @@ function* getVariablesFromResult(result: AnalyzerResult, context: TransformerCon
 
 	// Convert all export variables to VariableDocs
 	for (const exp of exports) {
+		const node = exp.valueDeclaration;
+
 		switch (exp.flags) {
 			case tsModule.SymbolFlags.BlockScopedVariable:
 			case tsModule.SymbolFlags.Variable: {
-				const node = exp.valueDeclaration;
-
 				if (tsModule.isVariableDeclaration(node)) {
 					// Get the nearest variable statement in order to read the jsdoc
 					const variableStatement = findParent(node, tsModule.isVariableStatement) || node;
@@ -150,6 +139,46 @@ function* getVariablesFromResult(result: AnalyzerResult, context: TransformerCon
 						description: jsDoc?.description,
 						type: typeToSchemaType(context, context.checker.getTypeAtLocation(node)),
 						summary: getSummaryFromJsDoc(jsDoc)
+					};
+				}
+				break;
+			}
+			case tsModule.SymbolFlags.Function: {
+				if (tsModule.isFunctionDeclaration(node) && node.name) {
+					const jsDoc = getJsDoc(node, tsModule);
+					const parameters: schema.Parameter[] = [];
+					let returnType: Type | undefined = undefined;
+
+					for (const param of node.parameters) {
+						const name = param.name.getText();
+						const { description, typeHint } = getParameterFromJsDoc(name, jsDoc);
+						const type = typeToSchemaType(context, typeHint || (param.type != null ? context.checker.getTypeAtLocation(param.type) : undefined));
+
+						parameters.push({
+							name,
+							type,
+							description,
+							optional: param.questionToken !== undefined
+						});
+					}
+
+					const signature = context.checker.getSignatureFromDeclaration(node);
+					if (signature != null) {
+						returnType = context.checker.getReturnTypeOfSignature(signature);
+					}
+
+					const { description: returnDescription, typeHint: returnTypeHint } = getReturnFromJsDoc(jsDoc);
+
+					yield {
+						kind: "function",
+						name: node.name.getText(),
+						description: jsDoc?.description,
+						summary: getSummaryFromJsDoc(jsDoc),
+						parameters,
+						return: {
+							type: typeToSchemaType(context, returnTypeHint || returnType),
+							description: returnDescription
+						}
 					};
 				}
 				break;
