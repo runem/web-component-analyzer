@@ -74,7 +74,7 @@ function resultToModule(result: AnalyzerResult, context: TransformerContext): sc
  * @param context
  */
 function getExportsFromResult(result: AnalyzerResult, context: TransformerContext): schema.Export[] {
-	return [...getCustomElementExportsFromResult(result, context)];
+	return [...getCustomElementExportsFromResult(result, context), ...getExportedNamesFromResult(result, context)];
 }
 
 /**
@@ -85,7 +85,7 @@ function getExportsFromResult(result: AnalyzerResult, context: TransformerContex
 function getDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): schema.Declaration[] {
 	return [
 		...getClassesFromResult(result, context),
-		...getExportedSymbolsFromResult(result, context)
+		...getExportedDeclarationsFromResult(result, context)
 		// TODO (43081j):
 		// ...getCustomElementsFromResult(result, context)
 	];
@@ -107,12 +107,29 @@ function* getCustomElementExportsFromResult(result: AnalyzerResult, context: Tra
 	}
 }
 
+function* getExportedNamesFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.JavaScriptExport> {
+	const symbol = context.checker.getSymbolAtLocation(result.sourceFile);
+	if (symbol == null) {
+		return;
+	}
+
+	const exports = context.checker.getExportsOfModule(symbol);
+
+	for (const exp of exports) {
+		yield {
+			kind: "js",
+			name: exp.name,
+			declaration: getReferenceForNode(exp.valueDeclaration, context)
+		};
+	}
+}
+
 /**
  * Returns variables in an analyzer result
  * @param result
  * @param context
  */
-function* getExportedSymbolsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
+function* getExportedDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
 	// Get all export symbols in the source file
 	const symbol = context.checker.getSymbolAtLocation(result.sourceFile);
 	if (symbol == null) {
