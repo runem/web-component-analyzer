@@ -9,7 +9,6 @@ import { JsDoc } from "../../analyze/types/js-doc";
 import { findParent, getNodeName, resolveDeclarations } from "../../analyze/util/ast-util";
 import { getMixinHeritageClauses, getSuperclassHeritageClause, visitAllHeritageClauses } from "../../analyze/util/component-declaration-util";
 import { getJsDoc } from "../../analyze/util/js-doc-util";
-import { arrayDefined } from "../../util/array-util";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { filterVisibility } from "../../util/model-util";
 import { TransformerConfig } from "../transformer-config";
@@ -83,12 +82,58 @@ function getExportsFromResult(result: AnalyzerResult, context: TransformerContex
  * @param context
  */
 function getDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): schema.Declaration[] {
-	return [
-		...getClassesFromResult(result, context),
-		...getExportedDeclarationsFromResult(result, context)
-		// TODO (43081j):
-		// ...getCustomElementsFromResult(result, context)
-	];
+	return [...getExportedDeclarationsFromResult(result, context), ...getDeclarationsForResult(result, context)];
+}
+
+function* getDeclarationsForResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
+	if (result.declarations) {
+		for (const decl of result.declarations) {
+			const schemaDecl = getDeclarationForComponentDeclaration(decl, result, context);
+			if (schemaDecl) {
+				yield schemaDecl;
+			}
+		}
+	}
+}
+
+function getDeclarationForComponentDeclaration(
+	declaration: ComponentDeclaration,
+	result: AnalyzerResult,
+	context: TransformerContext
+): schema.Declaration | undefined {
+	if (declaration.kind === "interface") {
+		return undefined;
+	}
+
+	const superClassClause = getSuperclassHeritageClause(declaration);
+	const superClass = superClassClause ? getReferenceFromHeritageClause(superClassClause, context) : undefined;
+	const definition = result.componentDefinitions.find(def => def.declaration?.node === declaration.node);
+	const mixinClauses = getMixinHeritageClauses(declaration);
+	const mixins = mixinClauses.map(c => getReferenceFromHeritageClause(c, context)).filter((c): c is schema.Reference => c !== undefined);
+	const members = getClassMembersForDeclaration(declaration, context);
+	const name = declaration.symbol?.name ?? getNodeName(declaration.node, { ts: tsModule });
+
+	if (!name) {
+		return undefined;
+	}
+
+	const classDecl: schema.ClassDeclaration = {
+		kind: "class",
+		name,
+		superclass: superClass,
+		mixins: mixins.length > 0 ? mixins : undefined,
+		description: declaration.jsDoc?.description,
+		members: members.length > 0 ? members : undefined,
+		summary: getSummaryFromJsDoc(declaration.jsDoc)
+	};
+
+	if (!definition) {
+		return classDecl;
+	}
+
+	// TODO (43081j); compute remaining extra properties for when this is a
+	// custom element class
+	return classDecl;
 }
 
 function* getCustomElementExportsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.CustomElementExport> {
@@ -202,60 +247,6 @@ function* getExportedDeclarationsFromResult(result: AnalyzerResult, context: Tra
 			}
 		}
 	}
-}
-
-/**
- * Returns classes in an analyzer result
- * @param result
- * @param context
- */
-function* getClassesFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
-	if (result.declarations) {
-		for (const decl of result.declarations) {
-			const doc = getDeclarationFromDeclaration(decl, result, context);
-			if (doc) {
-				yield doc;
-			}
-		}
-	}
-}
-
-/**
- * Converts a component declaration to schema declaration
- * @param declaration
- * @param result
- * @param context
- */
-function getDeclarationFromDeclaration(
-	declaration: ComponentDeclaration,
-	result: AnalyzerResult,
-	context: TransformerContext
-): schema.Declaration | undefined {
-	if (declaration.kind === "interface") {
-		return undefined;
-	}
-
-	// Get the superclass of this declaration
-	const superclassHeritage = getSuperclassHeritageClause(declaration);
-	const superclassRef = superclassHeritage === undefined ? undefined : getReferenceFromHeritageClause(superclassHeritage, context);
-
-	// Get all mixins
-	const mixinHeritage = getMixinHeritageClauses(declaration);
-	const mixinRefs = arrayDefined(mixinHeritage.map(h => getReferenceFromHeritageClause(h, context)));
-
-	const members = getClassMembersForDeclaration(declaration, context);
-
-	const classDecl: schema.ClassDeclaration = {
-		kind: "class",
-		superclass: superclassRef,
-		mixins: mixinRefs.length > 0 ? mixinRefs : undefined,
-		description: declaration.jsDoc?.description,
-		name: declaration.symbol?.name || getNodeName(declaration.node, { ts: tsModule }) || "",
-		members: members.length > 0 ? members : undefined,
-		summary: getSummaryFromJsDoc(declaration.jsDoc)
-	};
-
-	return classDecl;
 }
 
 /**
