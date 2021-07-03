@@ -1,7 +1,7 @@
 import { basename, relative } from "path";
 import { isSimpleType, toSimpleType } from "ts-simple-type";
 import * as tsModule from "typescript";
-import { Node, Program, SourceFile, Type, TypeChecker } from "typescript";
+import { Node, Program, SourceFile, Type } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDeclaration, ComponentHeritageClause } from "../../analyze/types/component-declaration";
 import { ComponentFeatureBase } from "../../analyze/types/features/component-feature";
@@ -36,13 +36,7 @@ import {
 	SlotDoc,
 	VariableDoc
 } from "./schema";
-
-interface TransformerContext {
-	config: TransformerConfig;
-	checker: TypeChecker;
-	program: Program;
-	ts: typeof tsModule;
-}
+import { TransformerContext } from "../transformer-context";
 
 /**
  * Transforms results to json using the schema found in the PR at https://github.com/webcomponents/custom-elements-json/pull/9

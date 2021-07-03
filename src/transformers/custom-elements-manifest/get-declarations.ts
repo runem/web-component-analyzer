@@ -7,7 +7,7 @@ import { getJsDoc } from "../../analyze/util/js-doc-util";
 import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import * as schema from "./schema";
-import { TransformerContext } from "./context";
+import { TransformerContext } from "../transformer-context";
 import {
 	typeToSchemaType,
 	getSummaryFromJsDoc,

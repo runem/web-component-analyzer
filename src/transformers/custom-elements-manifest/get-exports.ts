@@ -1,5 +1,5 @@
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
-import { TransformerContext } from "./context";
+import { TransformerContext } from "../transformer-context";
 import * as schema from "./schema";
 import { getReferenceForNode } from "./utils";
 
