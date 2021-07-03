@@ -95,7 +95,7 @@ export interface JavaScriptExport {
 	 *
 	 * - Default exports must use the name "default".
 	 * - Named exports use the name that is exported. If the export is renamed
-	 *	 with the "as" clause, use the exported name.
+	 *   with the "as" clause, use the exported name.
 	 * - Aggregating exports (`* from`) should use the name `*`
 	 */
 	name: string;
@@ -131,7 +131,13 @@ export interface CustomElementExport {
 	declaration: Reference;
 }
 
-export type Declaration = ClassDeclaration | FunctionDeclaration | MixinDeclaration | VariableDeclaration | CustomElementDeclaration;
+export type Declaration =
+	| ClassDeclaration
+	| FunctionDeclaration
+	| MixinDeclaration
+	| VariableDeclaration
+	| CustomElementDeclaration
+	| CustomElementMixinDeclaration;
 
 /**
  * A reference to an export of a module.
@@ -173,16 +179,16 @@ export interface SourceReference {
  * neccessarily part of a custom element class, but belong to the definition
  * (often called the "registration") or the `customElements.define()` call.
  *
- * Because classes and tag anmes can only be registered once, there's a
+ * Because classes and tag names can only be registered once, there's a
  * one-to-one relationship between classes and tag names. For ease of use,
  * we allow the tag name here.
  *
  * Some packages define and register custom elements in separate modules. In
  * these cases one `Module` should contain the `CustomElement` without a
  * tagName, and another `Module` should contain the
- * `CustomElement`.
+ * `CustomElementExport`.
  */
-export interface CustomElementDeclaration extends ClassDeclaration {}
+export interface CustomElementDeclaration extends ClassDeclaration, CustomElement {}
 
 /**
  * The additional fields that a custom element adds to classes and mixins.
@@ -217,6 +223,12 @@ export interface CustomElement extends ClassLike {
 	cssProperties?: CssCustomProperty[];
 
 	demos?: Demo[];
+
+	/**
+	 * Distinguishes a regular JavaScript class from a
+	 * custom element class
+	 */
+	customElement: true;
 }
 
 export interface Attribute {
@@ -314,6 +326,21 @@ export interface CssCustomProperty {
 	 */
 	name: string;
 
+	/**
+	 * The expected syntax of the defined property. Defaults to "*".
+	 *
+	 * The syntax must be a valid CSS [syntax string](https://developer.mozilla.org/en-US/docs/Web/CSS/@property/syntax)
+	 * as defined in the CSS Properties and Values API.
+	 *
+	 * Examples:
+	 *
+	 * "<color>": accepts a color
+	 * "<length> | <percentage>": accepts lengths or percentages but not calc expressions with a combination of the two
+	 * "small | medium | large": accepts one of these values set as custom idents.
+	 * "*": any valid token
+	 */
+	syntax?: string;
+
 	default?: string;
 
 	/**
@@ -408,18 +435,18 @@ export interface ClassLike {
 	 * is described by:
 	 * ```json
 	 * {
-	 *	 "kind": "class",
-	 *	 "superclass": {
-	 *		 "name": "S"
-	 *	 },
-	 *	 "mixins": [
-	 *		 {
-	 *			 "name": "A"
-	 *		 },
-	 *		 {
-	 *			 "name": "B"
-	 *		 },
-	 *	 ]
+	 *   "kind": "class",
+	 *   "superclass": {
+	 *     "name": "S"
+	 *   },
+	 *   "mixins": [
+	 *     {
+	 *       "name": "A"
+	 *     },
+	 *     {
+	 *       "name": "B"
+	 *     },
+	 *   ]
 	 * }
 	 * ```
 	 */
@@ -502,32 +529,37 @@ export interface ClassMethod extends FunctionLike {
  * This JavaScript mixin declaration:
  * ```javascript
  * const MyMixin = (base) => class extends base {
- *	 foo() { ... }
+ *   foo() { ... }
  * }
  * ```
  *
  * Is described by this JSON:
  * ```json
  * {
- *	 "kind": "mixin",
- *	 "name": "MyMixin",
- *	 "parameters": [
- *		 {
- *			 "name": "base",
- *		 }
- *	 ],
- *	 "members": [
- *		 {
- *			 "kind": "method",
- *			 "name": "foo",
- *		 }
- *	 ]
+ *   "kind": "mixin",
+ *   "name": "MyMixin",
+ *   "parameters": [
+ *     {
+ *       "name": "base",
+ *     }
+ *   ],
+ *   "members": [
+ *     {
+ *       "kind": "method",
+ *       "name": "foo",
+ *     }
+ *   ]
  * }
  * ```
  */
-export interface MixinDeclaration extends CustomElement, FunctionLike {
+export interface MixinDeclaration extends ClassLike, FunctionLike {
 	kind: "mixin";
 }
+
+/**
+ * A class mixin that also adds custom element related properties.
+ */
+export interface CustomElementMixinDeclaration extends MixinDeclaration, CustomElement {}
 
 export interface VariableDeclaration extends PropertyLike {
 	kind: "variable";
