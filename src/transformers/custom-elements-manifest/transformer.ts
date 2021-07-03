@@ -6,7 +6,7 @@ import { visitAllHeritageClauses } from "../../analyze/util/component-declaratio
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
 import * as schema from "./schema";
-import { TransformerContext } from "./context";
+import { TransformerContext } from "../transformer-context";
 import { getExportsFromResult } from "./get-exports";
 import { getDeclarationsFromResult } from "./get-declarations";
 import { getRelativePath } from "./utils";

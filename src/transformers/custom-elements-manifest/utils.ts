@@ -1,7 +1,7 @@
 import { basename, relative } from "path";
 import { SimpleType } from "ts-simple-type";
 import { Node, SourceFile, Type } from "typescript";
-import { TransformerContext } from "./context";
+import { TransformerContext } from "../transformer-context";
 import { JsDoc } from "../../analyze/types/js-doc";
 import * as schema from "./schema";
 import { getNodeName, resolveDeclarations } from "../../analyze/util/ast-util";
