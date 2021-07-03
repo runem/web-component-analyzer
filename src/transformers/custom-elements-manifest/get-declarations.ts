@@ -304,10 +304,19 @@ function getDeclarationForComponentDeclaration(
 	return customElementDoc;
 }
 
-function* getDeclarationsForResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
+function* getComponentDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): IterableIterator<schema.Declaration> {
 	if (result.declarations) {
 		for (const decl of result.declarations) {
 			const schemaDecl = getDeclarationForComponentDeclaration(decl, result, context);
+			if (schemaDecl) {
+				yield schemaDecl;
+			}
+		}
+	}
+
+	for (const definition of result.componentDefinitions) {
+		if (definition.declaration) {
+			const schemaDecl = getDeclarationForComponentDeclaration(definition.declaration, result, context);
 			if (schemaDecl) {
 				yield schemaDecl;
 			}
@@ -321,5 +330,5 @@ function* getDeclarationsForResult(result: AnalyzerResult, context: TransformerC
  * @param context
  */
 export function getDeclarationsFromResult(result: AnalyzerResult, context: TransformerContext): schema.Declaration[] {
-	return [...getExportedDeclarationsFromResult(result, context), ...getDeclarationsForResult(result, context)];
+	return [...getExportedDeclarationsFromResult(result, context), ...getComponentDeclarationsFromResult(result, context)];
 }
