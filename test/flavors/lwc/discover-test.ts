@@ -9,8 +9,7 @@ import { tsTest } from "../../helpers/ts-test";
 
 tsTest("LWC: Simple c-my-element ", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/c/myElement/myElement.js",
 		text: `
@@ -26,8 +25,7 @@ tsTest("LWC: Simple c-my-element ", t => {
 
 tsTest("LWC: Simple custom-my-element ", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/custom/myElement/myElement.js",
 		text: `
@@ -43,8 +41,7 @@ tsTest("LWC: Simple custom-my-element ", t => {
 
 tsTest("LWC: c-my-element ignores classname", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/c/myElement/myElement.js",
 		text: `
@@ -59,65 +56,54 @@ tsTest("LWC: c-my-element ignores classname", t => {
 });
 
 tsTest("LWC: From file convention", t => {
-	const fileName = path.join(__dirname,"comp/c0/c0.js");
+	const fileName = path.join(__dirname, "comp/c0/c0.js");
 	const {
-		results: [result],
-		checker
-	} = analyzeTextWithCurrentTsModule(
-		{
-			fileName: fileName,
-			text: fs.readFileSync(fileName, "utf8")
-		}
-	);
+		results: [result]
+	} = analyzeTextWithCurrentTsModule({
+		fileName: fileName,
+		text: fs.readFileSync(fileName, "utf8")
+	});
 
-const componentDefinitions = result.componentDefinitions || [];
+	const componentDefinitions = result.componentDefinitions || [];
 
 	t.is(componentDefinitions.length, 1);
 	t.is(componentDefinitions[0].tagName, "comp-c0");
 });
 
 tsTest("LWC: Invalid template but Lighting Element inheritance", t => {
-	const fileName = path.join(__dirname,"comp/c1/c1.js");
+	const fileName = path.join(__dirname, "comp/c1/c1.js");
 	const {
-		results: [result],
-		checker
-	} = analyzeTextWithCurrentTsModule(
-		{
-			fileName: fileName,
-			text: fs.readFileSync(fileName, "utf8")
-		}
-	);
+		results: [result]
+	} = analyzeTextWithCurrentTsModule({
+		fileName: fileName,
+		text: fs.readFileSync(fileName, "utf8")
+	});
 
 	const componentDefinitions = result.componentDefinitions || [];
 
 	t.is(componentDefinitions.length, 1);
- 	t.is(componentDefinitions[0].tagName, "comp-c1");
+	t.is(componentDefinitions[0].tagName, "comp-c1");
 });
 
 tsTest("LWC: Invalid template No Lighting Element inheritance", t => {
-	const fileName = path.join(__dirname,"comp/c2/c2.js");
+	const fileName = path.join(__dirname, "comp/c2/c2.js");
 	const {
-		results: [result],
-		checker
-	} = analyzeTextWithCurrentTsModule(
-		{
-			fileName: fileName,
-			text: fs.readFileSync(fileName, "utf8")
-		}
-	);
+		results: [result]
+	} = analyzeTextWithCurrentTsModule({
+		fileName: fileName,
+		text: fs.readFileSync(fileName, "utf8")
+	});
 
 	const componentDefinitions = result.componentDefinitions || [];
 
 	t.is(componentDefinitions.length, 0);
 });
 
-
 // PHIL: does not work reliably
 //
 tsTest("LWC: discover with JS tag ", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/c/your/anElement.js",
 		text: `
@@ -135,8 +121,7 @@ tsTest("LWC: discover with JS tag ", t => {
 });
 tsTest("LWC: discover with JS tag with tag name", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/c/your/anElement.js",
 		text: `

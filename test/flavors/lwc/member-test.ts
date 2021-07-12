@@ -1,11 +1,9 @@
-import { SimpleTypeKind } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 import { assertHasMembers } from "../../helpers/util";
 
 // To run the test:
 //    yarn ava --ext ts test/flavors/lwc/member-test.ts
-
 
 tsTest("LWC: Discovers properties from '@api'", t => {
 	const {
@@ -19,7 +17,8 @@ tsTest("LWC: Discovers properties from '@api'", t => {
 			@api
 			myProp = "hello 123";
 		}
-	`});
+	`
+	});
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 	assertHasMembers(
@@ -54,7 +53,8 @@ tsTest("LWC: Discovers properties without @api'", t => {
 		class MyElement extends LightningElement {
 			myProp = "hello 123";
 		}
-	`});
+	`
+	});
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
@@ -91,7 +91,8 @@ tsTest("LWC: Discovers properties from '@track'", t => {
 		class MyElement extends LightningElement {
 			myProp = "hello 123";
 		}
-	`});
+	`
+	});
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
@@ -117,11 +118,9 @@ tsTest("LWC: Discovers properties from '@track'", t => {
 	//t.is(members.length, 0);
 });
 
-
 tsTest("LWC: Does not discover method", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/custom/myElement/myElement.js",
 		text: `
@@ -131,14 +130,13 @@ tsTest("LWC: Does not discover method", t => {
 		 myProp(){}
 	}`
 	});
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members } = result.componentDefinitions[0]!.declaration!;
 	t.is(members.length, 0);
 });
 
 tsTest("LWC: Discover method with @api", t => {
 	const {
-		results: [result],
-		checker
+		results: [result]
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/custom/myElement/myElement.js",
 		text: `
@@ -148,7 +146,7 @@ tsTest("LWC: Discover method with @api", t => {
 		 @api myProp(){}
 	}`
 	});
-	const { members } = result.componentDefinitions[0]?.declaration;
+	const { members } = result.componentDefinitions[0]!.declaration!;
 	t.is(members.length, 0);
 });
 
@@ -158,7 +156,7 @@ tsTest("LWC: Discovers properties. all in one'", t => {
 		checker
 	} = analyzeTextWithCurrentTsModule({
 		fileName: "modules/c/myElement/myElement.js",
-		text:`
+		text: `
 			/**
 			 */
 			import { api, LightningElement } from 'lwc';
@@ -190,7 +188,8 @@ tsTest("LWC: Discovers properties. all in one'", t => {
 				
 				m() {}
 			}
-		`});
+		`
+	});
 
 	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
 
@@ -208,8 +207,8 @@ tsTest("LWC: Discovers properties. all in one'", t => {
 				type: () => ({ kind: "STRING" }),
 				visibility: "public",
 				deprecated: undefined,
-				required: undefined,
-			 },
+				required: undefined
+			},
 			{
 				kind: "property",
 				propName: "myProp2",
@@ -299,9 +298,9 @@ tsTest("LWC: Discovers properties. all in one'", t => {
 				visibility: "protected",
 				deprecated: undefined,
 				required: undefined
-			},
+			}
 		],
 		t,
 		checker
 	);
-})
+});

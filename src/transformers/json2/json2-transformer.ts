@@ -153,7 +153,7 @@ function getVariableDocsFromAnalyzerResult(result: AnalyzerResult, context: Tran
 			case tsModule.SymbolFlags.Variable: {
 				const node = exp.valueDeclaration;
 
-				if (tsModule.isVariableDeclaration(node)) {
+				if (node && tsModule.isVariableDeclaration(node)) {
 					// Get the nearest variable statement in order to read the jsdoc
 					const variableStatement = findParent(node, tsModule.isVariableStatement) || node;
 					const jsDoc = getJsDoc(variableStatement, tsModule);
