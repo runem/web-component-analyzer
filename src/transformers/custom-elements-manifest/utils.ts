@@ -1,13 +1,16 @@
-import { basename, relative } from "path";
-import { SimpleType } from "ts-simple-type";
-import { Node, SourceFile, Type } from "typescript";
-import { TransformerContext } from "../transformer-context";
-import { JsDoc } from "../../analyze/types/js-doc";
-import * as schema from "./schema";
-import { getNodeName, resolveDeclarations } from "../../analyze/util/ast-util";
-import { ComponentDeclaration, ComponentHeritageClause } from "../../analyze/types/component-declaration";
-import { ComponentFeatureBase } from "../../analyze/types/features/component-feature";
-import { getTypeHintFromType } from "../../util/get-type-hint-from-type";
+import {basename, relative} from 'path';
+import {SimpleType} from 'ts-simple-type';
+import {Node, SourceFile, Type} from 'typescript';
+import {TransformerContext} from '../transformer-context';
+import {JsDoc} from '../../analyze/types/js-doc';
+import * as schema from 'custom-elements-manifest';
+import {getNodeName, resolveDeclarations} from '../../analyze/util/ast-util';
+import {
+	ComponentDeclaration,
+	ComponentHeritageClause
+} from '../../analyze/types/component-declaration';
+import {ComponentFeatureBase} from '../../analyze/types/features/component-feature';
+import {getTypeHintFromType} from '../../util/get-type-hint-from-type';
 
 /**
  * Returns a Reference to a node
@@ -20,7 +23,8 @@ export function getReferenceForNode(node: Node, context: TransformerContext): sc
 
 	// Test if the source file is from a typescript lib
 	// TODO: Find a better way of checking this
-	const isLib = sourceFile.isDeclarationFile && sourceFile.fileName.match(/typescript\/lib.*\.d\.ts$/) != null;
+	const isLib =
+		sourceFile.isDeclarationFile && sourceFile.fileName.match(/typescript\/lib.*\.d\.ts$/) != null;
 	if (isLib) {
 		// Only return the name of the declaration if it's from lib
 		return {
@@ -63,7 +67,9 @@ export function getInheritedFromReference(
  * @param context
  */
 export function getRelativePath(fullPath: string, context: TransformerContext): string {
-	return context.config.cwd != null ? `./${relative(context.config.cwd, fullPath)}` : basename(fullPath);
+	return context.config.cwd != null
+		? `./${relative(context.config.cwd, fullPath)}`
+		: basename(fullPath);
 }
 
 /**
@@ -88,7 +94,10 @@ export function getPackageName(sourceFile: SourceFile): string | undefined {
  * @param name
  * @param jsDoc
  */
-export function getParameterFromJsDoc(name: string, jsDoc: JsDoc | undefined): { description?: string; typeHint?: string } {
+export function getParameterFromJsDoc(
+	name: string,
+	jsDoc: JsDoc | undefined
+): {description?: string; typeHint?: string} {
 	if (jsDoc?.tags == undefined) {
 		return {};
 	}
@@ -96,8 +105,8 @@ export function getParameterFromJsDoc(name: string, jsDoc: JsDoc | undefined): {
 	for (const tag of jsDoc.tags) {
 		const parsed = tag.parsed();
 
-		if (parsed.tag === "param" && parsed.name === name) {
-			return { description: parsed.description, typeHint: parsed.type };
+		if (parsed.tag === 'param' && parsed.name === name) {
+			return {description: parsed.description, typeHint: parsed.type};
 		}
 	}
 
@@ -108,15 +117,17 @@ export function getParameterFromJsDoc(name: string, jsDoc: JsDoc | undefined): {
  * Get return description and return typeHint from jsdoc
  * @param jsDoc
  */
-export function getReturnFromJsDoc(jsDoc: JsDoc | undefined): { description?: string; typeHint?: string } {
-	const tag = jsDoc?.tags?.find(tag => ["returns", "return"].includes(tag.tag));
+export function getReturnFromJsDoc(
+	jsDoc: JsDoc | undefined
+): {description?: string; typeHint?: string} {
+	const tag = jsDoc?.tags?.find((tag) => ['returns', 'return'].includes(tag.tag));
 
 	if (tag == null) {
 		return {};
 	}
 
 	const parsed = tag.parsed();
-	return { description: parsed.description, typeHint: parsed.type };
+	return {description: parsed.description, typeHint: parsed.type};
 }
 
 /**
@@ -124,7 +135,10 @@ export function getReturnFromJsDoc(jsDoc: JsDoc | undefined): { description?: st
  * @param context
  * @param type
  */
-export function typeToSchemaType(context: TransformerContext, type: string | Type | SimpleType | undefined): schema.Type | undefined {
+export function typeToSchemaType(
+	context: TransformerContext,
+	type: string | Type | SimpleType | undefined
+): schema.Type | undefined {
 	const hint = getTypeHintFromType(type, context.checker, context.config);
 
 	if (!hint) {
@@ -141,7 +155,7 @@ export function typeToSchemaType(context: TransformerContext, type: string | Typ
  * @param jsDoc
  */
 export function getSummaryFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
-	const summaryTag = jsDoc?.tags?.find(tag => tag.tag === "summary");
+	const summaryTag = jsDoc?.tags?.find((tag) => tag.tag === 'summary');
 
 	if (summaryTag == null) {
 		return undefined;
@@ -155,7 +169,10 @@ export function getSummaryFromJsDoc(jsDoc: JsDoc | undefined): string | undefine
  * @param heritage
  * @param context
  */
-export function getReferenceFromHeritageClause(heritage: ComponentHeritageClause, context: TransformerContext): schema.Reference | undefined {
+export function getReferenceFromHeritageClause(
+	heritage: ComponentHeritageClause,
+	context: TransformerContext
+): schema.Reference | undefined {
 	const node = heritage.declaration?.node;
 	const identifier = heritage.identifier;
 
@@ -173,7 +190,7 @@ export function getReferenceFromHeritageClause(heritage: ComponentHeritageClause
 	// Just return the name of the reference if nothing could be resolved
 	const name = getNodeName(identifier, context);
 	if (name != null) {
-		return { name };
+		return {name};
 	}
 
 	return undefined;

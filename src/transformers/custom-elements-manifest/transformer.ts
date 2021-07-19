@@ -1,15 +1,15 @@
-import * as tsModule from "typescript";
-import { Program, SourceFile } from "typescript";
-import { AnalyzerResult } from "../../analyze/types/analyzer-result";
-import { ComponentDeclaration } from "../../analyze/types/component-declaration";
-import { visitAllHeritageClauses } from "../../analyze/util/component-declaration-util";
-import { TransformerConfig } from "../transformer-config";
-import { TransformerFunction } from "../transformer-function";
-import * as schema from "./schema";
-import { TransformerContext } from "../transformer-context";
-import { getExportsFromResult } from "./get-exports";
-import { getDeclarationsFromResult } from "./get-declarations";
-import { getRelativePath } from "./utils";
+import * as tsModule from 'typescript';
+import {Program, SourceFile} from 'typescript';
+import {AnalyzerResult} from '../../analyze/types/analyzer-result';
+import {ComponentDeclaration} from '../../analyze/types/component-declaration';
+import {visitAllHeritageClauses} from '../../analyze/util/component-declaration-util';
+import {TransformerConfig} from '../transformer-config';
+import {TransformerFunction} from '../transformer-function';
+import * as schema from './schema';
+import {TransformerContext} from '../transformer-context';
+import {getExportsFromResult} from './get-exports';
+import {getDeclarationsFromResult} from './get-declarations';
+import {getRelativePath} from './utils';
 
 /**
  * Transforms results to a custom elements manifest
@@ -17,7 +17,11 @@ import { getRelativePath } from "./utils";
  * @param program
  * @param config
  */
-export const transformer: TransformerFunction = (results: AnalyzerResult[], program: Program, config: TransformerConfig): string => {
+export const transformer: TransformerFunction = (
+	results: AnalyzerResult[],
+	program: Program,
+	config: TransformerConfig
+): string => {
 	const context: TransformerContext = {
 		config,
 		checker: program.getTypeChecker(),
@@ -29,10 +33,10 @@ export const transformer: TransformerFunction = (results: AnalyzerResult[], prog
 	const flattenedAnalyzerResults = flattenAnalyzerResults(results);
 
 	// Transform all analyzer results into modules
-	const modules = flattenedAnalyzerResults.map(result => resultToModule(result, context));
+	const modules = flattenedAnalyzerResults.map((result) => resultToModule(result, context));
 
 	const manifest: schema.Package = {
-		schemaVersion: "1.0.0",
+		schemaVersion: '1.0.0',
 		modules
 	};
 
@@ -44,12 +48,15 @@ export const transformer: TransformerFunction = (results: AnalyzerResult[], prog
  * @param result
  * @param context
  */
-function resultToModule(result: AnalyzerResult, context: TransformerContext): schema.JavaScriptModule {
-	const exports = getExportsFromResult(result, context);
-	const declarations = getDeclarationsFromResult(result, context);
+function resultToModule(
+	result: AnalyzerResult,
+	context: TransformerContext
+): schema.JavaScriptModule {
+	const exports = [...getExportsFromResult(result, context)];
+	const declarations = [...getDeclarationsFromResult(result, context)];
 
 	return {
-		kind: "javascript-module",
+		kind: 'javascript-module',
 		path: getRelativePath(result.sourceFile.fileName, context),
 		declarations: declarations.length === 0 ? undefined : declarations,
 		exports: exports.length === 0 ? undefined : exports
@@ -85,7 +92,7 @@ function flattenAnalyzerResults(results: AnalyzerResult[]): AnalyzerResult[] {
 			// Add all existing declarations to the map
 			addDeclarationToMap(decl);
 
-			visitAllHeritageClauses(decl, clause => {
+			visitAllHeritageClauses(decl, (clause) => {
 				// Flatten all component declarations
 				if (clause.declaration != null) {
 					addDeclarationToMap(clause.declaration);
@@ -95,7 +102,7 @@ function flattenAnalyzerResults(results: AnalyzerResult[]): AnalyzerResult[] {
 	}
 
 	// Return new results with flattened declarations
-	return results.map(result => {
+	return results.map((result) => {
 		const declarations = declarationMap.get(result.sourceFile);
 
 		return {
