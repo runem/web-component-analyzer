@@ -1,16 +1,16 @@
-import {basename, relative} from 'path';
-import {SimpleType} from 'ts-simple-type';
-import {Node, SourceFile, Type} from 'typescript';
-import {TransformerContext} from '../transformer-context';
-import {JsDoc} from '../../analyze/types/js-doc';
-import * as schema from 'custom-elements-manifest';
-import {getNodeName, resolveDeclarations} from '../../analyze/util/ast-util';
+import {basename, relative} from "path";
+import {SimpleType} from "ts-simple-type";
+import {Node, SourceFile, Type} from "typescript";
+import {TransformerContext} from "../transformer-context";
+import {JsDoc} from "../../analyze/types/js-doc";
+import * as schema from "custom-elements-manifest";
+import {getNodeName, resolveDeclarations} from "../../analyze/util/ast-util";
 import {
 	ComponentDeclaration,
 	ComponentHeritageClause
-} from '../../analyze/types/component-declaration';
-import {ComponentFeatureBase} from '../../analyze/types/features/component-feature';
-import {getTypeHintFromType} from '../../util/get-type-hint-from-type';
+} from "../../analyze/types/component-declaration";
+import {ComponentFeatureBase} from "../../analyze/types/features/component-feature";
+import {getTypeHintFromType} from "../../util/get-type-hint-from-type";
 
 /**
  * Returns a Reference to a node
@@ -105,7 +105,7 @@ export function getParameterFromJsDoc(
 	for (const tag of jsDoc.tags) {
 		const parsed = tag.parsed();
 
-		if (parsed.tag === 'param' && parsed.name === name) {
+		if (parsed.tag === "param" && parsed.name === name) {
 			return {description: parsed.description, typeHint: parsed.type};
 		}
 	}
@@ -120,7 +120,7 @@ export function getParameterFromJsDoc(
 export function getReturnFromJsDoc(
 	jsDoc: JsDoc | undefined
 ): {description?: string; typeHint?: string} {
-	const tag = jsDoc?.tags?.find((tag) => ['returns', 'return'].includes(tag.tag));
+	const tag = jsDoc?.tags?.find((tag) => tag.tag === "returns" || tag.tag === "return");
 
 	if (tag == null) {
 		return {};
@@ -155,7 +155,7 @@ export function typeToSchemaType(
  * @param jsDoc
  */
 export function getSummaryFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
-	const summaryTag = jsDoc?.tags?.find((tag) => tag.tag === 'summary');
+	const summaryTag = jsDoc?.tags?.find((tag) => tag.tag === "summary");
 
 	if (summaryTag == null) {
 		return undefined;

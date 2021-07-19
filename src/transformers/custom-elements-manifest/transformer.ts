@@ -1,15 +1,15 @@
-import * as tsModule from 'typescript';
-import {Program, SourceFile} from 'typescript';
-import {AnalyzerResult} from '../../analyze/types/analyzer-result';
-import {ComponentDeclaration} from '../../analyze/types/component-declaration';
-import {visitAllHeritageClauses} from '../../analyze/util/component-declaration-util';
-import {TransformerConfig} from '../transformer-config';
-import {TransformerFunction} from '../transformer-function';
-import * as schema from './schema';
-import {TransformerContext} from '../transformer-context';
-import {getExportsFromResult} from './get-exports';
-import {getDeclarationsFromResult} from './get-declarations';
-import {getRelativePath} from './utils';
+import * as tsModule from "typescript";
+import {Program, SourceFile} from "typescript";
+import {AnalyzerResult} from "../../analyze/types/analyzer-result";
+import {ComponentDeclaration} from "../../analyze/types/component-declaration";
+import {visitAllHeritageClauses} from "../../analyze/util/component-declaration-util";
+import {TransformerConfig} from "../transformer-config";
+import {TransformerFunction} from "../transformer-function";
+import * as schema from "./schema";
+import {TransformerContext} from "../transformer-context";
+import {getExportsFromResult} from "./get-exports";
+import {getDeclarationsFromResult} from "./get-declarations";
+import {getRelativePath} from "./utils";
 
 /**
  * Transforms results to a custom elements manifest
@@ -36,7 +36,7 @@ export const transformer: TransformerFunction = (
 	const modules = flattenedAnalyzerResults.map((result) => resultToModule(result, context));
 
 	const manifest: schema.Package = {
-		schemaVersion: '1.0.0',
+		schemaVersion: "1.0.0",
 		modules
 	};
 
@@ -56,7 +56,7 @@ function resultToModule(
 	const declarations = [...getDeclarationsFromResult(result, context)];
 
 	return {
-		kind: 'javascript-module',
+		kind: "javascript-module",
 		path: getRelativePath(result.sourceFile.fileName, context),
 		declarations: declarations.length === 0 ? undefined : declarations,
 		exports: exports.length === 0 ? undefined : exports

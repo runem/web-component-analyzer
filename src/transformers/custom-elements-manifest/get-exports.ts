@@ -1,7 +1,7 @@
-import {AnalyzerResult} from '../../analyze/types/analyzer-result';
-import {TransformerContext} from '../transformer-context';
-import * as schema from './schema';
-import {getReferenceForNode} from './utils';
+import {AnalyzerResult} from "../../analyze/types/analyzer-result";
+import {TransformerContext} from "../transformer-context";
+import * as schema from "./schema";
+import {getReferenceForNode} from "./utils";
 
 function* getCustomElementExportsFromResult(
 	result: AnalyzerResult,
@@ -15,7 +15,7 @@ function* getCustomElementExportsFromResult(
 		}
 
 		yield {
-			kind: 'custom-element-definition',
+			kind: "custom-element-definition",
 			name: definition.tagName,
 			declaration: getReferenceForNode(definition.declaration.node, context)
 		};
@@ -35,7 +35,7 @@ function* getExportedNamesFromResult(
 
 	for (const exp of exports) {
 		yield {
-			kind: 'js',
+			kind: "js",
 			name: exp.name,
 			declaration: getReferenceForNode(exp.valueDeclaration, context)
 		};

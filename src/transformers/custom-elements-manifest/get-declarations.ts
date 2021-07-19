@@ -8,19 +8,19 @@
  *
  * For example, mapping known exports into a list of manifest declarations.
  */
-import * as tsModule from 'typescript';
-import {isSimpleType, toSimpleType} from 'ts-simple-type';
-import {ComponentDeclaration} from '../../analyze/types/component-declaration';
+import * as tsModule from "typescript";
+import {isSimpleType, toSimpleType} from "ts-simple-type";
+import {ComponentDeclaration} from "../../analyze/types/component-declaration";
 import {
 	getMixinHeritageClauses,
 	getSuperclassHeritageClause
-} from '../../analyze/util/component-declaration-util';
-import {findParent, getNodeName} from '../../analyze/util/ast-util';
-import {getJsDoc} from '../../analyze/util/js-doc-util';
-import {getTypeHintFromType} from '../../util/get-type-hint-from-type';
-import {AnalyzerResult} from '../../analyze/types/analyzer-result';
-import * as schema from 'custom-elements-manifest';
-import {TransformerContext} from '../transformer-context';
+} from "../../analyze/util/component-declaration-util";
+import {findParent, getNodeName} from "../../analyze/util/ast-util";
+import {getJsDoc} from "../../analyze/util/js-doc-util";
+import {getTypeHintFromType} from "../../util/get-type-hint-from-type";
+import {AnalyzerResult} from "../../analyze/types/analyzer-result";
+import * as schema from "custom-elements-manifest";
+import {TransformerContext} from "../transformer-context";
 import {
 	typeToSchemaType,
 	getSummaryFromJsDoc,
@@ -28,7 +28,7 @@ import {
 	getReturnFromJsDoc,
 	getReferenceFromHeritageClause,
 	getInheritedFromReference
-} from './utils';
+} from "./utils";
 
 /**
  * Computes the exported symbols of a result (e.g. variables, functions, etc.)
@@ -60,7 +60,7 @@ function* getExportedDeclarationsFromResult(
 			const jsDoc = getJsDoc(variableStatement, tsModule);
 
 			yield {
-				kind: 'variable',
+				kind: "variable",
 				name: node.name.getText(),
 				description: jsDoc?.description,
 				type: typeToSchemaType(context, context.checker.getTypeAtLocation(node)),
@@ -101,7 +101,7 @@ function* getExportedDeclarationsFromResult(
 			const {description: returnDescription, typeHint: returnTypeHint} = getReturnFromJsDoc(jsDoc);
 
 			yield {
-				kind: 'function',
+				kind: "function",
 				name: node.name.getText(),
 				description: jsDoc?.description,
 				summary: getSummaryFromJsDoc(jsDoc),
@@ -124,11 +124,11 @@ function* getClassFieldsForComponent(
 	declaration: ComponentDeclaration,
 	context: TransformerContext
 ): IterableIterator<schema.ClassField> {
-	const visibility = context.config.visibility ?? 'public';
+	const visibility = context.config.visibility ?? "public";
 	for (const member of declaration.members) {
 		if (member.visibility === visibility && member.propName != null) {
 			yield {
-				kind: 'field',
+				kind: "field",
 				name: member.propName,
 				privacy: member.visibility,
 				description: member.jsDoc?.description,
@@ -151,7 +151,7 @@ function* getMethodsForComponent(
 	declaration: ComponentDeclaration,
 	context: TransformerContext
 ): IterableIterator<schema.ClassMethod> {
-	const visibility = context.config.visibility ?? 'public';
+	const visibility = context.config.visibility ?? "public";
 	for (const method of declaration.methods) {
 		const parameters: schema.Parameter[] = [];
 		const node = method.node;
@@ -190,7 +190,7 @@ function* getMethodsForComponent(
 		);
 
 		yield {
-			kind: 'method',
+			kind: "method",
 			name: method.name,
 			privacy: method.visibility,
 			description: method.jsDoc?.description,
@@ -228,20 +228,20 @@ function* getEventsFromComponent(
 	declaration: ComponentDeclaration,
 	context: TransformerContext
 ): IterableIterator<schema.Event> {
-	const visibility = context.config.visibility ?? 'public';
+	const visibility = context.config.visibility ?? "public";
 	for (const event of declaration.events) {
 		if (event.visibility === visibility) {
-			const type = event.type?.() ?? {kind: 'ANY'};
+			const type = event.type?.() ?? {kind: "ANY"};
 			const simpleType = isSimpleType(type) ? type : toSimpleType(type, context.checker);
 			const typeName =
-				simpleType.kind === 'GENERIC_ARGUMENTS' ? simpleType.target.name : simpleType.name;
+				simpleType.kind === "GENERIC_ARGUMENTS" ? simpleType.target.name : simpleType.name;
 			yield {
 				description: event.jsDoc?.description,
 				name: event.name,
 				inheritedFrom: getInheritedFromReference(declaration, event, context),
 				type:
-					typeName === null || typeName === undefined || simpleType.kind === 'ANY'
-						? {text: 'Event'}
+					typeName === null || typeName === undefined || simpleType.kind === "ANY"
+						? {text: "Event"}
 						: {text: typeName}
 			};
 		}
@@ -260,7 +260,7 @@ function* getSlotsFromComponent(
 	for (const slot of declaration.slots) {
 		yield {
 			description: slot.jsDoc?.description,
-			name: slot.name ?? ''
+			name: slot.name ?? ""
 		};
 	}
 }
@@ -274,7 +274,7 @@ function* getAttributesFromComponent(
 	declaration: ComponentDeclaration,
 	context: TransformerContext
 ): IterableIterator<schema.Attribute> {
-	const visibility = context.config.visibility ?? 'public';
+	const visibility = context.config.visibility ?? "public";
 	for (const member of declaration.members) {
 		if (member.visibility === visibility && member.attrName) {
 			const type = getTypeHintFromType(
@@ -341,7 +341,7 @@ function getDeclarationForComponent(
 	result: AnalyzerResult,
 	context: TransformerContext
 ): schema.Declaration | undefined {
-	if (declaration.kind === 'interface') {
+	if (declaration.kind === "interface") {
 		return undefined;
 	}
 
@@ -364,7 +364,7 @@ function getDeclarationForComponent(
 	}
 
 	const classDecl: schema.ClassDeclaration = {
-		kind: 'class',
+		kind: "class",
 		name,
 		superclass: superClass,
 		mixins: mixins.length > 0 ? mixins : undefined,
