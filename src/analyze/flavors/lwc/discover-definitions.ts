@@ -1,12 +1,12 @@
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { DefinitionNodeResult } from "../analyzer-flavor";
-import { isLwcComponent } from "./utils";
+import { getLwcComponent } from "./utils";
 
 export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): DefinitionNodeResult[] | undefined {
 	const { ts } = context;
 	if (ts.isClassDeclaration(node)) {
-		const lwc = isLwcComponent(node, context);
+		const lwc = getLwcComponent(node, context);
 		if (lwc) {
 			return [
 				{
