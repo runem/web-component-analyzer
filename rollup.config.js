@@ -26,7 +26,9 @@ export default [
 				VERSION: pkg.version,
 				delimiters: ["<@", "@>"]
 			}),
-			ts(),
+			ts({
+				module: "ES2020"
+			}),
 			resolve()
 		],
 		external,
