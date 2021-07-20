@@ -6,18 +6,9 @@ const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };
 const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type", "yargs"];
-const plugins = [
-	replace({
-		VERSION: pkg.version,
-		delimiters: ["<@", "@>"]
-	}),
-	ts({
-		module: "esnext"
-	}),
-	resolve()
-];
 
 export default [
+	// Standard module config
 	{
 		input: {
 			api: "src/api.ts",
@@ -25,17 +16,45 @@ export default [
 		},
 		output: [
 			{
-				dir: "lib/",
-				format: "cjs",
-				chunkFileNames: "cjs/chunk-[name]-[hash].js"
-			},
-			{
-				dir: "lib/",
+				dir: dirname(pkg.module),
 				format: "esm",
-				chunkFileNames: "esm/chunk-[name]-[hash].js"
+				chunkFileNames: "chunk-[name]-[hash].js"
 			}
 		],
-		plugins,
+		plugins: [
+			replace({
+				VERSION: pkg.version,
+				delimiters: ["<@", "@>"]
+			}),
+			ts(),
+			resolve()
+		],
+		external,
+		watch
+	},
+	// CommonJS config
+	{
+		input: {
+			api: "src/api.ts",
+			cli: "src/cli.ts"
+		},
+		output: [
+			{
+				dir: dirname(pkg.main),
+				format: "cjs",
+				chunkFileNames: "chunk-[name]-[hash].js"
+			}
+		],
+		plugins: [
+			replace({
+				VERSION: pkg.version,
+				delimiters: ["<@", "@>"]
+			}),
+			ts({
+				outDir: "./lib/cjs"
+			}),
+			resolve()
+		],
 		external,
 		watch
 	}

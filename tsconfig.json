@@ -1,12 +1,12 @@
 {
 	"include": ["./src/**/*"],
 	"compilerOptions": {
-		"target": "es5",
+		"target": "es2019",
 		"importHelpers": false,
-		"module": "commonjs",
+		"module": "ES2020",
 		"moduleResolution": "node",
 		"lib": ["esnext", "dom"],
-		"outDir": "./lib",
+		"outDir": "./lib/esm",
 		"downlevelIteration": true,
 		"strict": true,
 		"noImplicitAny": true,
