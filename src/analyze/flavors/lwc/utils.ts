@@ -10,14 +10,18 @@ import { parseJsDocForNode } from "../js-doc/parse-js-doc-for-node";
 type ComponentRef = { tagName: string };
 
 const LWCCACHE = Symbol("LWC Component");
-export function isLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRef | undefined {
+interface LwcClassDeclaration extends ClassDeclaration {
+	[LWCCACHE]: ComponentRef | undefined;
+}
+
+export function getLwcComponent(node: Node, context: AnalyzerVisitContext): ComponentRef | undefined {
 	const { ts } = context;
 	if (ts.isClassDeclaration(node)) {
-		if ((node as any)[LWCCACHE]) {
-			return (node as any)[LWCCACHE];
+		if ((node as LwcClassDeclaration)[LWCCACHE]) {
+			return (node as LwcClassDeclaration)[LWCCACHE];
 		}
 		const r = _isLwcComponent(node, context);
-		(node as any)[LWCCACHE] = r;
+		(node as LwcClassDeclaration)[LWCCACHE] = r;
 		return r;
 	}
 	return undefined;
