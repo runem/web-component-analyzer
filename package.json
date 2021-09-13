@@ -9,6 +9,10 @@
 		"/lib/",
 		"cli.js"
 	],
+	"exports": {
+		"import": "./lib/esm/api.js",
+		"require": "./lib/cjs/api.js"
+	},
 	"scripts": {
 		"clean": "rimraf lib",
 		"prepare": "npm run build",
