@@ -6,6 +6,11 @@ const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };
 const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type", "yargs"];
+const replaceVersionConfig = {
+	VERSION: pkg.version,
+	delimiters: ["<@", "@>"],
+	preventAssignment: true
+};
 
 export default [
 	// Standard module config
@@ -21,16 +26,7 @@ export default [
 				chunkFileNames: "chunk-[name]-[hash].js"
 			}
 		],
-		plugins: [
-			replace({
-				VERSION: pkg.version,
-				delimiters: ["<@", "@>"]
-			}),
-			ts({
-				module: "ES2020"
-			}),
-			resolve()
-		],
+		plugins: [replace(replaceVersionConfig), ts(), resolve()],
 		external,
 		watch
 	},
@@ -48,10 +44,7 @@ export default [
 			}
 		],
 		plugins: [
-			replace({
-				VERSION: pkg.version,
-				delimiters: ["<@", "@>"]
-			}),
+			replace(replaceVersionConfig),
 			ts({
 				outDir: "./lib/cjs"
 			}),
