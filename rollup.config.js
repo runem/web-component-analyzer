@@ -1,6 +1,7 @@
 import ts from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
+import copy from "rollup-plugin-copy";
 
 const { dirname } = require("path");
 const pkg = require("./package.json");
@@ -26,7 +27,14 @@ export default [
 				chunkFileNames: "chunk-[name]-[hash].js"
 			}
 		],
-		plugins: [replace(replaceVersionConfig), ts(), resolve()],
+		plugins: [
+			replace(replaceVersionConfig),
+			ts(),
+			resolve(),
+			copy({
+				targets: [{ src: "package-esm.json", dest: "lib/esm", rename: "package.json" }]
+			})
+		],
 		external,
 		watch
 	},
