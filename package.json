@@ -9,6 +9,10 @@
 		"/lib/",
 		"cli.js"
 	],
+	"exports": {
+		"import": "./lib/esm/api.js",
+		"require": "./lib/cjs/api.js"
+	},
 	"scripts": {
 		"clean": "rimraf lib",
 		"prepare": "npm run build",
@@ -68,6 +72,7 @@
 		"prettier": "^2.3.0",
 		"rimraf": "^3.0.2",
 		"rollup": "^2.50.2",
+		"rollup-plugin-copy": "^3.4.0",
 		"ts-node": "^10.0.0",
 		"tslib": "^2.2.0",
 		"typescript-3.5": "npm:typescript@~3.5.3",

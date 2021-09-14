@@ -1,11 +1,17 @@
 import ts from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
+import copy from "rollup-plugin-copy";
 
 const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };
 const external = ["typescript", "fast-glob", "path", "fs", "ts-simple-type", "yargs"];
+const replaceVersionConfig = {
+	VERSION: pkg.version,
+	delimiters: ["<@", "@>"],
+	preventAssignment: true
+};
 
 export default [
 	// Standard module config
@@ -22,14 +28,14 @@ export default [
 			}
 		],
 		plugins: [
-			replace({
-				VERSION: pkg.version,
-				delimiters: ["<@", "@>"]
-			}),
+			replace(replaceVersionConfig),
 			ts({
-				module: "ES2020"
+				module: "es2020"
 			}),
-			resolve()
+			resolve(),
+			copy({
+				targets: [{ src: "package-esm.json", dest: "lib/esm", rename: "package.json" }]
+			})
 		],
 		external,
 		watch
@@ -48,11 +54,9 @@ export default [
 			}
 		],
 		plugins: [
-			replace({
-				VERSION: pkg.version,
-				delimiters: ["<@", "@>"]
-			}),
+			replace(replaceVersionConfig),
 			ts({
+				module: "es2020",
 				outDir: "./lib/cjs"
 			}),
 			resolve()
