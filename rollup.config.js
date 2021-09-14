@@ -29,7 +29,9 @@ export default [
 		],
 		plugins: [
 			replace(replaceVersionConfig),
-			ts(),
+			ts({
+				module: "es2020"
+			}),
 			resolve(),
 			copy({
 				targets: [{ src: "package-esm.json", dest: "lib/esm", rename: "package.json" }]
@@ -54,6 +56,7 @@ export default [
 		plugins: [
 			replace(replaceVersionConfig),
 			ts({
+				module: "es2020",
 				outDir: "./lib/cjs"
 			}),
 			resolve()
