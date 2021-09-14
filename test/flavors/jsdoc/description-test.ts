@@ -28,9 +28,9 @@ tsTest("jsdoc: Correctly discovers the description in the jsdoc", t => {
 		`layout to full document height as follows:
 \`\`\`
 @media screen {
-  html, body {
-    height: 100%;
-  }
+   html, body {
+     height: 100%;
+   }
 }
 \`\`\`
 This is an example`
