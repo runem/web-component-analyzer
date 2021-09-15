@@ -31,7 +31,8 @@ tsTest("analyzeSourceFile on lib.dom.ts returns correct result", t => {
 	t.truthy(scriptDefinition);
 
 	// const properties = scriptDefinition?.declaration?.members.filter(m => m.kind === "property");
-	const srcProperty = scriptDefinition?.declaration?.members.find(m => m.kind === "property" && m.propName === "src");
+	const srcProperty = scriptDefinition!.declaration?.members.find(m => m.kind === "property" && m.propName === "src");
 
-	t.is(srcProperty?.visibility, "public");
+	t.truthy(srcProperty);
+	t.true(srcProperty!.visibility === undefined || srcProperty!.visibility === "public", `srcProperty!.visibility is "${srcProperty!.visibility}"`);
 });
