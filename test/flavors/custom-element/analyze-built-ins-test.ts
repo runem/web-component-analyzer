@@ -15,6 +15,7 @@ tsTest("analyzeSourceFile on lib.dom.ts returns correct result", t => {
 
 	const result = analyzeSourceFile(domLibSourceFile, {
 		program,
+		ts: tsModule,
 		config: {
 			features: ["event", "member", "slot", "csspart", "cssproperty"],
 			analyzeGlobalFeatures: false, // Don't analyze global features in lib.dom.d.ts
