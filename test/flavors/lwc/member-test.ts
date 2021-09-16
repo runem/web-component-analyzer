@@ -42,6 +42,48 @@ tsTest("LWC: Discovers properties from '@api'", t => {
 	);
 });
 
+tsTest("LWC: doesn't process non-LWC element'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule({
+		fileName: "modules/custom/myElement/myElement.ts",
+		text: `
+		// This is defined as an interface to test a regression
+		interface MyElement extends HTMLElement {
+			myProp: string;
+		}
+		declare var MyElement: {
+			prototype: MyElement;
+			new(): MyElement;
+		};
+		interface HTMLElementTagNameMap {
+			'my-element': MyElement,
+		}
+	`
+	});
+
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				default: undefined,
+				typeHint: undefined,
+				type: () => ({ kind: "STRING" }),
+				visibility: "public",
+				reflect: undefined,
+				deprecated: undefined,
+				required: undefined
+			}
+		],
+		t,
+		checker
+	);
+});
+
 tsTest("LWC: Discovers properties without @api'", t => {
 	const {
 		results: [result],

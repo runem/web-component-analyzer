@@ -42,9 +42,9 @@ function isLWCComponent(component: ComponentFeatureBase, context: AnalyzerVisitC
 	if (node) {
 		return !!getLwcComponent(node, context);
 	}
-	// How do we know that we are dealing with LWC components?
-	// Currently assume that it is always the case
-	return true;
+	// You can't assume that everything is a LWC component - that will cause huge
+	// problems with the refinement rules below that switch default visibility to protected!!
+	return false;
 }
 
 export const refineFeature: AnalyzerFlavor["refineFeature"] = {
