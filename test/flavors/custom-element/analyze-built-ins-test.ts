@@ -31,7 +31,6 @@ tsTest("analyzeSourceFile on lib.dom.ts returns correct result", t => {
 	const scriptDefinition = result.componentDefinitions?.find(d => d.tagName === "script");
 	t.truthy(scriptDefinition);
 
-	// const properties = scriptDefinition?.declaration?.members.filter(m => m.kind === "property");
 	const srcProperty = scriptDefinition!.declaration?.members.find(m => m.kind === "property" && m.propName === "src");
 
 	t.truthy(srcProperty);
