@@ -15,6 +15,6 @@ export function makeCliError(message: string): Error {
  * Returns if an error is of kind "CLIError"
  * @param error
  */
-export function isCliError(error: Error): boolean {
-	return error.name === ERROR_NAME;
+export function isCliError(error: unknown): error is Error {
+	return error instanceof Error && error.name === ERROR_NAME;
 }

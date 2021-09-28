@@ -4,6 +4,6 @@ export function ensureDirSync(dir: string): void {
 	try {
 		mkdirSync(dir, { recursive: true });
 	} catch (err) {
-		if (err.code !== "EEXIST") throw err;
+		if ((err as Error & { code: string }).code !== "EEXIST") throw err;
 	}
 }
