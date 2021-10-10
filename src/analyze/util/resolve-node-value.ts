@@ -130,6 +130,18 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 		};
 	}
 
+	if (ts.isTypeAliasDeclaration(node)) {
+		return resolveNodeValue(node.type, { ...context, depth });
+	}
+
+	if (ts.isLiteralTypeNode(node)) {
+		return resolveNodeValue(node.literal, { ...context, depth });
+	}
+
+	if (ts.isTypeReferenceNode(node)) {
+		return resolveNodeValue(node.typeName, { ...context, depth });
+	}
+
 	return undefined;
 }
 
