@@ -7,7 +7,7 @@ import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { camelToDashCase, isNamePrivate } from "../../util/text-util";
 import { AnalyzerDeclarationVisitContext } from "../analyzer-flavor";
-import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, parseLitPropertyOption } from "./parse-lit-property-configuration";
+import { getLitElementPropertyDecoratorConfig, getLitPropertyOptions, getLitPropertyType } from "./parse-lit-property-configuration";
 
 /**
  * Parses lit-related declaration members.
@@ -174,20 +174,18 @@ function parseStaticProperties(returnStatement: ReturnStatement, context: Analyz
 
 			// Parse the lit property config for this property
 			// Treat non-object-literal-expressions like the "type" (to support Polymer specific syntax)
-			const litConfig = ts.isPropertyAssignment(propNode)
-				? ts.isObjectLiteralExpression(propNode.initializer)
-					? getLitPropertyOptions(propNode.initializer, context)
-					: inPolymerFlavorContext(context)
-					? parseLitPropertyOption(
-							{
-								kind: "type",
-								initializer: propNode.initializer,
-								config: {}
-							},
-							context
-					  )
-					: {}
-				: {};
+			let litConfig: LitElementPropertyConfig = {};
+			if (ts.isPropertyAssignment(propNode)) {
+				if (inPolymerFlavorContext(context) && !ts.isObjectLiteralExpression(propNode.initializer)) {
+					litConfig = { type: getLitPropertyType(ts, propNode.initializer) };
+				} else {
+					const resolved = resolveNodeValue(propNode.initializer, context);
+
+					if (resolved) {
+						litConfig = getLitPropertyOptions(resolved.node, resolved.value, context, litConfig);
+					}
+				}
+			}
 
 			// Get attrName based on the litConfig
 			const attrName = getLitAttributeName(propName, litConfig, context);
