@@ -73,10 +73,22 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 	return undefined;
 }
 
+/**
+ * Determines if a given object has the specified property, used
+ * as a type-guard.
+ * @param obj
+ * @param key
+ */
 function hasProperty<T extends string>(obj: object, key: T): obj is { [K in T]: unknown } {
 	return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
+/**
+ * Computes the correct type for a given node for use in lit property
+ * configuration.
+ * @param ts
+ * @param node
+ */
 export function getLitPropertyType(ts: typeof tsModule, node: Node): SimpleType | string {
 	const value = ts.isIdentifier(node) ? node.text : undefined;
 
