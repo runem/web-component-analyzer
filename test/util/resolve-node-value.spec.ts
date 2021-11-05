@@ -35,3 +35,20 @@ const g = a;
 		t.deepEqual(actualValue, expectedResult, `Resolved value for '${name.getText()}' is invalid`);
 	});
 });
+
+test("resolveNodeValue resolves type literals", t => {
+	const {
+		analyzedSourceFiles: [sourceFile],
+		program
+	} = analyzeText(`
+type StringLiteral = "popsicles";
+type AliasedLiteral = StringLiteral;
+	`);
+
+	const checker = program.getTypeChecker();
+
+	findChildren(sourceFile, ts.isTypeAliasDeclaration, ({ name, type }) => {
+		const actualValue = resolveNodeValue(type, { checker, ts })?.value;
+		t.is(actualValue, "popsicles", `Resolved value for '${name.getText()}' is invalid`);
+	});
+});
