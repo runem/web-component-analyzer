@@ -3,7 +3,7 @@ import {SimpleType} from "ts-simple-type";
 import {Node, SourceFile, Type} from "typescript";
 import {TransformerContext} from "../transformer-context";
 import {JsDoc} from "../../analyze/types/js-doc";
-import * as schema from "custom-elements-manifest";
+import * as schema from "custom-elements-manifest/schema";
 import {getNodeName, resolveDeclarations} from "../../analyze/util/ast-util";
 import {
 	ComponentDeclaration,
@@ -82,11 +82,7 @@ export function getPackageName(sourceFile: SourceFile): string | undefined {
 	//  The following approach is very, very naive and is only temporary.
 	const match = sourceFile.fileName.match(/node_modules\/(.*?)\//);
 
-	if (match != null) {
-		return match[1];
-	}
-
-	return undefined;
+	return match?.[1];
 }
 
 /**
@@ -117,9 +113,10 @@ export function getParameterFromJsDoc(
  * Get return description and return typeHint from jsdoc
  * @param jsDoc
  */
-export function getReturnFromJsDoc(
-	jsDoc: JsDoc | undefined
-): {description?: string; typeHint?: string} {
+export function getReturnFromJsDoc(jsDoc: JsDoc | undefined): {
+	description?: string;
+	typeHint?: string;
+} {
 	const tag = jsDoc?.tags?.find((tag) => tag.tag === "returns" || tag.tag === "return");
 
 	if (tag == null) {
@@ -146,6 +143,7 @@ export function typeToSchemaType(
 	}
 
 	return {
+		// TODO (43081j): specify type references here via the `references` property
 		text: hint
 	};
 }
@@ -157,11 +155,7 @@ export function typeToSchemaType(
 export function getSummaryFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	const summaryTag = jsDoc?.tags?.find((tag) => tag.tag === "summary");
 
-	if (summaryTag == null) {
-		return undefined;
-	}
-
-	return summaryTag.comment;
+	return summaryTag?.comment;
 }
 
 /**

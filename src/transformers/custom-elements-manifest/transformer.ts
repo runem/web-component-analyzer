@@ -5,7 +5,7 @@ import {ComponentDeclaration} from "../../analyze/types/component-declaration";
 import {visitAllHeritageClauses} from "../../analyze/util/component-declaration-util";
 import {TransformerConfig} from "../transformer-config";
 import {TransformerFunction} from "../transformer-function";
-import * as schema from "./schema";
+import * as schema from "custom-elements-manifest/schema";
 import {TransformerContext} from "../transformer-context";
 import {getExportsFromResult} from "./get-exports";
 import {getDeclarationsFromResult} from "./get-declarations";

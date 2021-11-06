@@ -19,7 +19,7 @@ import {findParent, getNodeName} from "../../analyze/util/ast-util";
 import {getJsDoc} from "../../analyze/util/js-doc-util";
 import {getTypeHintFromType} from "../../util/get-type-hint-from-type";
 import {AnalyzerResult} from "../../analyze/types/analyzer-result";
-import * as schema from "custom-elements-manifest";
+import * as schema from "custom-elements-manifest/schema";
 import {TransformerContext} from "../transformer-context";
 import {
 	typeToSchemaType,
@@ -70,6 +70,7 @@ function* getExportedDeclarationsFromResult(
 
 		if (
 			exp.flags & tsModule.SymbolFlags.Function &&
+			node &&
 			tsModule.isFunctionDeclaration(node) &&
 			node.name
 		) {
@@ -214,7 +215,7 @@ function* getMethodsForComponent(
 function* getClassMembersForDeclaration(
 	declaration: ComponentDeclaration,
 	context: TransformerContext
-): IterableIterator<schema.ClassMember[]> {
+): IterableIterator<schema.ClassMember> {
 	yield* getClassFieldsForComponent(declaration, context);
 	yield* getMethodsForComponent(declaration, context);
 }
@@ -384,7 +385,9 @@ function getDeclarationForComponent(
 	const cssParts = [...getCSSPartsFromComponent(declaration, context)];
 
 	// Return a custom element doc if a definition was found
-	const customElementDoc: schema.CustomElementDeclaration = {
+	// TODO (43081j): remove the type union once custom-elements-manifest
+	// has a new version published to NPM
+	const customElementDoc: schema.CustomElementDeclaration & schema.CustomElement = {
 		...classDecl,
 		customElement: true,
 		tagName: definition.tagName,
@@ -434,7 +437,7 @@ function* getComponentDeclarationsFromResult(
 export function* getDeclarationsFromResult(
 	result: AnalyzerResult,
 	context: TransformerContext
-): IterableIterator<schema.Declaration[]> {
+): IterableIterator<schema.Declaration> {
 	yield* getExportedDeclarationsFromResult(result, context);
 	yield* getComponentDeclarationsFromResult(result, context);
 }

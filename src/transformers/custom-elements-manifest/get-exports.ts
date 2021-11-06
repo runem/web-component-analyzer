@@ -1,6 +1,6 @@
 import {AnalyzerResult} from "../../analyze/types/analyzer-result";
 import {TransformerContext} from "../transformer-context";
-import * as schema from "./schema";
+import * as schema from "custom-elements-manifest/schema";
 import {getReferenceForNode} from "./utils";
 
 function* getCustomElementExportsFromResult(
@@ -34,11 +34,13 @@ function* getExportedNamesFromResult(
 	const exports = context.checker.getExportsOfModule(symbol);
 
 	for (const exp of exports) {
-		yield {
-			kind: "js",
-			name: exp.name,
-			declaration: getReferenceForNode(exp.valueDeclaration, context)
-		};
+		if (exp.valueDeclaration) {
+			yield {
+				kind: "js",
+				name: exp.name,
+				declaration: getReferenceForNode(exp.valueDeclaration, context)
+			};
+		}
 	}
 }
 
@@ -50,7 +52,7 @@ function* getExportedNamesFromResult(
 export function* getExportsFromResult(
 	result: AnalyzerResult,
 	context: TransformerContext
-): IterableIterator<schema.Export[]> {
+): IterableIterator<schema.Export> {
 	yield* getCustomElementExportsFromResult(result, context);
 	yield* getExportedNamesFromResult(result, context);
 }
