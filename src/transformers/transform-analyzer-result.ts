@@ -8,6 +8,7 @@ import { TransformerConfig } from "./transformer-config";
 import { TransformerFunction } from "./transformer-function";
 import { TransformerKind } from "./transformer-kind";
 import { vscodeTransformer } from "./vscode/vscode-transformer";
+import { webtypesTransformer } from "./webtypes/webtypes-transformer";
 
 const transformerFunctionMap: Record<TransformerKind, TransformerFunction> = {
 	debug: debugJsonTransformer,
@@ -15,7 +16,8 @@ const transformerFunctionMap: Record<TransformerKind, TransformerFunction> = {
 	json2: json2Transformer,
 	markdown: markdownTransformer,
 	md: markdownTransformer,
-	vscode: vscodeTransformer
+	vscode: vscodeTransformer,
+	webtypes: webtypesTransformer
 };
 
 /**

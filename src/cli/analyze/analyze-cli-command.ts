@@ -227,6 +227,7 @@ function formatToExtension(kind: TransformerKind): string {
 	switch (kind) {
 		case "json":
 		case "vscode":
+		case "webtypes":
 			return ".json";
 		case "md":
 		case "markdown":
