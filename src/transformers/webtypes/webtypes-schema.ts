@@ -21,18 +21,22 @@ export type Pattern =
 	  };
 export type NameConverter = "as-is" | "PascalCase" | "camelCase" | "lowercase" | "UPPERCASE" | "kebab-case" | "snake_case";
 export type NameConverters = NameConverter[];
+
+export type Priority = "lowest" | "low" | "normal" | "high" | "highest";
 /**
  * Relative path to icon
  */
 export type Icon = string;
-export type Html = GenericContributionsHost;
+// export type Html = GenericContributionsHost;
 export type GenericContributions = GenericContributionOrProperty[] | GenericContributionOrProperty;
-export type GenericContributionOrProperty = string | number | boolean | GenericContribution;
+export type GenericContributionOrProperty = string | number | boolean | GenericContribution | Source;
 export type GenericContribution = TypedContribution;
-export type TypedContribution = BaseContribution;
-export type BaseContribution = GenericContributionsHost;
+
+export interface TypedContribution extends BaseContribution {
+	type?: Type | Type[];
+}
+
 export type Css = GenericContributionsHost;
-export type Js = GenericContributionsHost;
 
 export interface WebtypesSchema {
 	$schema?: string;
@@ -107,3 +111,88 @@ export interface FrameworkConfig {
 export interface GenericContributionsHost {
 	[k: string]: GenericContributions;
 }
+
+export interface SourceFile {
+	file: string;
+	offset: number;
+}
+
+export interface SourceModule {
+	module: string;
+	symbol: string;
+}
+
+export type Source = SourceFile | SourceModule;
+
+export type Html = HtmlContributionHost;
+
+export interface HtmlElement extends BaseContribution, HtmlContributionHost {}
+
+export interface BaseContribution {
+	// #/definitions/base-contribution
+	// [k: string]: GenericContributions;
+	name?: string;
+	description?: string;
+	// "description-sections"?: ;
+	"doc-url"?: string;
+	icon?: Icon;
+	source?: Source;
+	deprecated?: boolean;
+	experimental?: boolean;
+	priority?: Priority;
+	proximity?: number;
+	virtual?: boolean;
+	abstract?: boolean;
+	extension?: boolean;
+	extends?: Reference;
+	// pattern?: NamePatternRoot;
+	html?: Html;
+	css?: Css;
+	js?: Js;
+	// "exclusive-contributions"?: ;
+}
+
+export interface HtmlContributionHost {
+	elements?: HtmlElement[];
+	attributes?: HtmlAttribute[];
+}
+
+export interface HtmlAttribute extends BaseContribution, HtmlContributionHost {
+	value?: HtmlAttributeValue;
+	default?: string;
+	required?: boolean;
+}
+
+export interface HtmlAttributeValue {
+	type?: Type | Type[];
+	required?: boolean;
+	default?: string;
+	kind?: HtmlAttributeType;
+}
+
+export interface TypeReference {
+	module?: string;
+	name: string;
+}
+
+export type Type = string | TypeReference;
+
+export type HtmlAttributeType = "no-value" | "plain" | "expression";
+
+export type Reference = string | ReferenceWithProps;
+
+export interface ReferenceWithProps {
+	path: string;
+	includeVirtual?: boolean;
+	includeAbstract?: boolean;
+	filter?: string;
+}
+
+export type Js = JsContributionsHost;
+
+export interface JsContributionsHost {
+	events?: GenericJsContribution[];
+	properties?: GenericJsContribution[];
+}
+
+export interface GenericJsContribution extends GenericContribution, JsContributionsHost {}
