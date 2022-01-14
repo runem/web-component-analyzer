@@ -3,11 +3,12 @@ import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
 import { ComponentDefinition } from "../../analyze/types/component-definition";
 import { ComponentEvent } from "../../analyze/types/features/component-event";
+import { ComponentCssProperty } from "../../analyze/types/features/component-css-property";
 import { ComponentMember } from "../../analyze/types/features/component-member";
 import { arrayDefined } from "../../util/array-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
-import { HtmlAttribute, GenericContributionsHost, WebtypesSchema, HtmlElement, BaseContribution, Js } from "./webtypes-schema";
+import { HtmlAttribute, WebtypesSchema, HtmlElement, BaseContribution, Js, GenericJsContribution, CssProperty } from "./webtypes-schema";
 import { getFirst } from "../../util/set-util";
 import { relative } from "path";
 
@@ -26,19 +27,17 @@ export const webtypesTransformer: TransformerFunction = (results: AnalyzerResult
 	// Transform all definitions into "tags"
 	const elements = definitions.map(d => definitionToHTMLElement(d, checker, config));
 
+	const webTypeConfig = config.webTypes;
+
 	const webtypesJson: WebtypesSchema = {
 		$schema: "http://json.schemastore.org/web-types",
-		name: "web-components", // TODO as param
-		version: "experimental",
-		//"default-icon": "icons/lit.png",
-		"js-types-syntax": "typescript", // TODO as param
-		// framework: "lit",
-		// "framework-config": {
-		// 	"enable-when": {
-		// 		"node-packages": ["lit"],
-		// 		"file-extensions": ["ts", "js", "tsx", "jsx"]
-		// 	}
-		// },
+		name: webTypeConfig?.name ?? "",
+		version: webTypeConfig?.version ?? "",
+		...(webTypeConfig?.framework ? { name: webTypeConfig?.framework } : {}),
+		...(webTypeConfig?.["js-types-syntax"] ? { "js-types-syntax": webTypeConfig?.["js-types-syntax"] } : {}),
+		...(webTypeConfig?.["default-icon"] ? { "default-icon": webTypeConfig?.["default-icon"] } : {}),
+		...(webTypeConfig?.["framework-config"] ? { "framework-config": webTypeConfig?.["framework-config"] } : {}),
+		...(webTypeConfig?.["description-markup"] ? { "description-markup": webTypeConfig?.["description-markup"] } : {}),
 		contributions: {
 			html: {
 				elements: elements
@@ -60,7 +59,8 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 	}
 
 	const build: HtmlElement = {
-		name: definition.tagName
+		name: definition.tagName,
+		...(declaration.deprecated !== undefined ? { deprecated: true } : {})
 	};
 
 	// Build description
@@ -94,13 +94,36 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 
 	if (js.properties || js.events) build.js = js;
 
+	// Build css properties
+	const cssProperties = arrayDefined(declaration.cssProperties.map(e => componentCssPropertiesToAttr(e, checker, config)));
+	if (cssProperties.length > 0) {
+		build.css = {
+			properties: cssProperties
+		};
+	}
+
 	return build;
 }
 
-function componentEventToAttr(event: ComponentEvent, checker: TypeChecker, config: TransformerConfig): GenericContributionsHost | undefined {
-	return {
+function componentEventToAttr(event: ComponentEvent, checker: TypeChecker, config: TransformerConfig): GenericJsContribution {
+	// console.log(event);
+	const builtEvent: GenericJsContribution = {
 		name: event.name
 	};
+
+	if (event?.jsDoc?.description) builtEvent.description = event.jsDoc.description;
+
+	return builtEvent;
+}
+
+function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty, checker: TypeChecker, config: TransformerConfig): CssProperty {
+	const builtCssProp: CssProperty = {
+		name: cssProperty.name
+	};
+
+	if (cssProperty?.jsDoc?.description) builtCssProp.description = cssProperty.jsDoc.description;
+
+	return builtCssProp;
 }
 
 function componentMemberToAttr(
@@ -130,7 +153,8 @@ function componentMemberToAttr(
 			type: types,
 			required: new Boolean(member.required).valueOf(),
 			...(member.default !== undefined ? { default: JSON.stringify(member.default) } : {})
-		}
+		},
+		...(member.deprecated !== undefined ? { deprecated: true } : {})
 	};
 
 	if (member?.jsDoc?.description) attr.description = member.jsDoc.description;

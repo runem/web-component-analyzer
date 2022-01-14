@@ -36,8 +36,6 @@ export interface TypedContribution extends BaseContribution {
 	type?: Type | Type[];
 }
 
-export type Css = GenericContributionsHost;
-
 export interface WebtypesSchema {
 	$schema?: string;
 	/**
@@ -196,3 +194,27 @@ export interface JsContributionsHost {
 }
 
 export interface GenericJsContribution extends GenericContribution, JsContributionsHost {}
+
+export type Css = CssContributionsHost;
+
+export interface CssContributionsHost {
+	properties?: CssProperty[];
+	"pseudo-elements"?: CssPseudoElement[];
+	"pseudo-classes"?: CssPseudoClass[];
+	functions?: CssGenericItem[];
+	classes?: CssGenericItem[];
+}
+
+export interface CssProperty extends BaseContribution, CssContributionsHost {
+	values?: string[];
+}
+
+export interface CssPseudoElement extends BaseContribution, CssContributionsHost {
+	arguments?: boolean;
+}
+
+export interface CssPseudoClass extends BaseContribution, CssContributionsHost {
+	arguments?: boolean;
+}
+
+export interface CssGenericItem extends BaseContribution, CssContributionsHost {}

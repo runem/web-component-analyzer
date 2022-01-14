@@ -103,6 +103,10 @@ o {tagname}: The element's tag name`,
 			string: true,
 			hidden: true
 		})
+		.option("webtypes-config", {
+			describe: "WebTypes header configuration",
+			string: true
+		})
 
 		.alias("v", "version")
 		.help("h")

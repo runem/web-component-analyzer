@@ -23,7 +23,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 	const inputGlobs = config.glob || [];
 
 	// Log warning for experimental json format
-	if (config.format === "json" || config.format === "json2" || config.outFile?.endsWith(".json")) {
+	if (config.format === "json" || config.format === "json2" || (config.outFile?.endsWith(".json") && config.format !== "webtypes")) {
 		log(
 			`
 !!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
@@ -35,6 +35,12 @@ Please follow and contribute to the discussion at:
 `,
 			config
 		);
+	}
+
+	if (config.format === "webtypes") {
+		const webTypesConfig = config.webtypesConfig ? JSON.parse(config.webtypesConfig) : null;
+		if (!webTypesConfig.name) throw makeCliError('Missing webtypes-config "name" property');
+		if (!webTypesConfig.version) throw makeCliError('Missing webtypes-config "version" property');
 	}
 
 	// If no "out" is specified, output to console
@@ -124,6 +130,9 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 		markdown: config.markdown,
 		cwd: config.cwd
 	};
+	if (format == "webtypes") {
+		transformerConfig.webTypes = config.webtypesConfig ? JSON.parse(config.webtypesConfig) : null;
+	}
 
 	return transformAnalyzerResult(format, results, program, transformerConfig);
 }
