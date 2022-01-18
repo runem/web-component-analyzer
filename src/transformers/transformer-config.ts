@@ -3,6 +3,7 @@ import { GenericContributions } from "./webtypes/webtypes-schema";
 
 export interface TransformerConfig {
 	cwd?: string;
+	pathAsAbsolute?: boolean;
 	visibility?: VisibilityKind;
 	markdown?: {
 		titleLevel?: number; // deprecated

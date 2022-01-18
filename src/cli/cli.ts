@@ -103,7 +103,12 @@ o {tagname}: The element's tag name`,
 			string: true,
 			hidden: true
 		})
-		.option("webtypes-config", {
+		.option("pathAsAbsolute", {
+			describe: "Consider paths as absolute: don't add './' in front of paths",
+			boolean: true,
+			hidden: true
+		})
+		.option("webtypesConfig", {
 			describe: "WebTypes header configuration",
 			string: true
 		})

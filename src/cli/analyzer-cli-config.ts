@@ -30,6 +30,7 @@ export interface AnalyzerCliConfig {
 
 	ts?: typeof tsModule;
 	cwd?: string;
+	pathAsAbsolute?: boolean;
 
 	webtypesConfig?: string;
 }

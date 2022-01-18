@@ -26,6 +26,7 @@ export const webtypesTransformer: TransformerFunction = (results: AnalyzerResult
 
 	// Transform all definitions into "tags"
 	const elements = definitions.map(d => definitionToHTMLElement(d, checker, config));
+	const cssProperties = definitions.map(d => definitionToCssProperties(d)).reduce((acc, cur) => [...acc, ...cur], []);
 
 	const webTypeConfig = config.webTypes;
 
@@ -33,7 +34,7 @@ export const webtypesTransformer: TransformerFunction = (results: AnalyzerResult
 		$schema: "http://json.schemastore.org/web-types",
 		name: webTypeConfig?.name ?? "",
 		version: webTypeConfig?.version ?? "",
-		...(webTypeConfig?.framework ? { name: webTypeConfig?.framework } : {}),
+		...(webTypeConfig?.framework ? { framework: webTypeConfig?.framework } : {}),
 		...(webTypeConfig?.["js-types-syntax"] ? { "js-types-syntax": webTypeConfig?.["js-types-syntax"] } : {}),
 		...(webTypeConfig?.["default-icon"] ? { "default-icon": webTypeConfig?.["default-icon"] } : {}),
 		...(webTypeConfig?.["framework-config"] ? { "framework-config": webTypeConfig?.["framework-config"] } : {}),
@@ -41,12 +42,21 @@ export const webtypesTransformer: TransformerFunction = (results: AnalyzerResult
 		contributions: {
 			html: {
 				elements: elements
+			},
+			css: {
+				properties: cssProperties
 			}
 		}
 	};
 
 	return JSON.stringify(webtypesJson, null, 4);
 };
+
+function definitionToCssProperties(definition: ComponentDefinition): CssProperty[] {
+	if (!definition.declaration) return [];
+
+	return arrayDefined(definition.declaration.cssProperties.map(e => componentCssPropertiesToAttr(e)));
+}
 
 function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeChecker, config: TransformerConfig): HtmlElement {
 	const declaration = definition.declaration;
@@ -68,8 +78,7 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 
 	// Build source section
 	const node = getFirst(definition.identifierNodes);
-	const fileName = node?.getSourceFile().fileName;
-	const path = fileName != null && config.cwd != null ? `./${relative(config.cwd, fileName)}` : undefined;
+	const path = getRelativePath(node?.getSourceFile().fileName, config);
 
 	if (node?.getText() && path) {
 		build.source = {
@@ -79,13 +88,13 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 	}
 
 	// Build attributes
-	const customElementAttributes = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.attrName, d, checker, config)));
+	const customElementAttributes = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.attrName, true, d, checker, config)));
 	if (customElementAttributes.length > 0) build.attributes = customElementAttributes;
 
 	const js: Js = {};
 
 	// Build properties
-	const customElementProperties = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.propName, d, checker, config)));
+	const customElementProperties = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.propName, false, d, checker, config)));
 	if (customElementProperties.length > 0) js.properties = customElementProperties;
 
 	// Build events
@@ -94,15 +103,11 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 
 	if (js.properties || js.events) build.js = js;
 
-	// Build css properties
-	const cssProperties = arrayDefined(declaration.cssProperties.map(e => componentCssPropertiesToAttr(e, checker, config)));
-	if (cssProperties.length > 0) {
-		build.css = {
-			properties: cssProperties
-		};
-	}
-
 	return build;
+}
+
+function getRelativePath(fileName: string | undefined, config: TransformerConfig): string | undefined {
+	return fileName != null && config.cwd != null ? `${config.pathAsAbsolute ? "" : "./"}${relative(config.cwd, fileName)}` : undefined;
 }
 
 function componentEventToAttr(event: ComponentEvent, checker: TypeChecker, config: TransformerConfig): GenericJsContribution {
@@ -116,7 +121,7 @@ function componentEventToAttr(event: ComponentEvent, checker: TypeChecker, confi
 	return builtEvent;
 }
 
-function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty, checker: TypeChecker, config: TransformerConfig): CssProperty {
+function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty): CssProperty {
 	const builtCssProp: CssProperty = {
 		name: cssProperty.name
 	};
@@ -128,6 +133,7 @@ function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty, checker
 
 function componentMemberToAttr(
 	propName: string | undefined,
+	isAttribute: boolean,
 	member: ComponentMember,
 	checker: TypeChecker,
 	config: TransformerConfig
@@ -136,22 +142,15 @@ function componentMemberToAttr(
 		return undefined;
 	}
 
-	// const isFunction = member.attrName == null;
-
 	const types: string[] | string = getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config)?.split(" | ") ?? [];
-	// if (isFunction) {
-	// 	types = []; // TODO find a way to support function signatures, types includes signature as string
-	// }
-	//
-	// if (types.length == 1) {
-	// 	types = types[0];
-	// }
+	const valueRequired = !(isAttribute && isBoolean(types));
 
 	const attr: HtmlAttribute = {
 		name: propName,
+		required: !!member.required,
 		value: {
-			type: types,
-			required: new Boolean(member.required).valueOf(),
+			type: types && Array.isArray(types) && types.length == 1 ? types[0] : types,
+			required: valueRequired,
 			...(member.default !== undefined ? { default: JSON.stringify(member.default) } : {})
 		},
 		...(member.deprecated !== undefined ? { deprecated: true } : {})
@@ -160,4 +159,10 @@ function componentMemberToAttr(
 	if (member?.jsDoc?.description) attr.description = member.jsDoc.description;
 
 	return attr;
+}
+
+function isBoolean(type: string | string[]): boolean {
+	if (Array.isArray(type)) return type.some(t => t == "boolean");
+
+	return type == "boolean";
 }
