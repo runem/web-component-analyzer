@@ -111,7 +111,6 @@ function getRelativePath(fileName: string | undefined, config: TransformerConfig
 }
 
 function componentEventToAttr(event: ComponentEvent, checker: TypeChecker, config: TransformerConfig): GenericJsContribution {
-	// console.log(event);
 	const builtEvent: GenericJsContribution = {
 		name: event.name
 	};
@@ -148,6 +147,7 @@ function componentMemberToAttr(
 	const attr: HtmlAttribute = {
 		name: propName,
 		required: !!member.required,
+		priority: member.visibility == "private" || member.visibility == "protected" ? "lowest" : "normal",
 		value: {
 			type: types && Array.isArray(types) && types.length == 1 ? types[0] : types,
 			required: valueRequired,
@@ -162,7 +162,7 @@ function componentMemberToAttr(
 }
 
 function isBoolean(type: string | string[]): boolean {
-	if (Array.isArray(type)) return type.some(t => t == "boolean");
+	if (Array.isArray(type)) return type.some(t => t && t.includes("boolean"));
 
-	return type == "boolean";
+	return type ? type.includes("boolean") : false;
 }
