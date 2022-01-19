@@ -107,10 +107,6 @@ wca analyze src --format vscode --outFile vscode-html-custom-data.json
 
 VSCode supports a JSON format called [vscode custom data](https://github.com/microsoft/vscode-custom-data) for the built in html editor which is set using `html.customData` vscode setting. Web Component Analyzer can output this format.
 
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
-
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-to-document-your-components-using-jsdoc)
-
 ### webtypes
 
 <!-- prettier-ignore -->
@@ -121,6 +117,10 @@ wca analyze src --format webtypes --outFile web-types-custom.json --webtypesConf
 Web-types format is a description for IDE completion, see [web-types](https://github.com/JetBrains/web-types/tree/master/packages)
 
 See [web-types dedicated page](./doc/web-types.md) for project setup.
+
+[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
+
+[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-to-document-your-components-using-jsdoc)
 
 ## ➤ How to document your components using JSDoc
 
