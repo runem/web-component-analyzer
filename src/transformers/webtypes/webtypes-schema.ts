@@ -27,7 +27,6 @@ export type Priority = "lowest" | "low" | "normal" | "high" | "highest";
  * Relative path to icon
  */
 export type Icon = string;
-// export type Html = GenericContributionsHost;
 export type GenericContributions = GenericContributionOrProperty[] | GenericContributionOrProperty;
 export type GenericContributionOrProperty = string | number | boolean | GenericContribution | Source;
 export type GenericContribution = TypedContribution;
@@ -106,9 +105,6 @@ export interface FrameworkConfig {
 		[k: string]: NameConverters;
 	};
 }
-export interface GenericContributionsHost {
-	[k: string]: GenericContributions;
-}
 
 export interface SourceFile {
 	file: string;
@@ -127,8 +123,6 @@ export type Html = HtmlContributionHost;
 export interface HtmlElement extends BaseContribution, HtmlContributionHost {}
 
 export interface BaseContribution {
-	// #/definitions/base-contribution
-	// [k: string]: GenericContributions;
 	name?: string;
 	description?: string;
 	// "description-sections"?: ;
