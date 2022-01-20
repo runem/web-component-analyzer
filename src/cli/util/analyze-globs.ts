@@ -47,6 +47,12 @@ export async function analyzeGlobs(
 	// Parse all the files with typescript
 	const { program, files } = compileTypescript(filePaths);
 
+	// Index excluded classes
+	const excludedDeclarationNames: string[] = [];
+	if (config.excludeClasses) {
+		excludedDeclarationNames.push(...config.excludeClasses.split(",").map(s => s.trim()));
+	}
+
 	// Analyze each file with web component analyzer
 	const results: AnalyzerResult[] = [];
 	for (const file of files) {
@@ -60,7 +66,8 @@ export async function analyzeGlobs(
 				analyzeDependencies: config.analyzeDependencies,
 				analyzeDefaultLib: config.analyzeDefaultLibrary,
 				analyzeGlobalFeatures: config.analyzeGlobalFeatures,
-				analyzeAllDeclarations: config.format == "json2" // TODO: find a better way to construct the config
+				analyzeAllDeclarations: config.format == "json2", // TODO: find a better way to construct the config
+				excludedDeclarationNames: excludedDeclarationNames
 			}
 		});
 

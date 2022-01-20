@@ -84,6 +84,10 @@ o {tagname}: The element's tag name`,
 			boolean: true,
 			alias: "d"
 		})
+		.option("excludeClasses", {
+			describe: `List of classes to exclude from parsing, separated by commas`,
+			string: true
+		})
 		.option("verbose", {
 			boolean: true,
 			hidden: true
