@@ -79,7 +79,7 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
  * @param obj
  * @param key
  */
-function hasProperty<T extends string>(obj: object, key: T): obj is { [K in T]: unknown } {
+function hasOwnProperty<T extends string>(obj: object, key: T): obj is { [K in T]: unknown } {
 	return Object.prototype.hasOwnProperty.call(obj, key);
 }
 
@@ -132,23 +132,23 @@ export function getLitPropertyOptions(
 	let typeInitializer: Node | undefined;
 
 	if (typeof object === "object" && object !== null && !Array.isArray(object)) {
-		if (hasProperty(object, "converter") && object.converter !== undefined) {
+		if (hasOwnProperty(object, "converter") && object.converter !== undefined) {
 			result.hasConverter = true;
 		}
 
-		if (hasProperty(object, "reflect") && object.reflect !== undefined) {
+		if (hasOwnProperty(object, "reflect") && object.reflect !== undefined) {
 			result.reflect = object.reflect === true;
 		}
 
-		if (hasProperty(object, "state") && object.state !== undefined) {
+		if (hasOwnProperty(object, "state") && object.state !== undefined) {
 			result.state = object.state === true;
 		}
 
-		if (hasProperty(object, "value")) {
+		if (hasOwnProperty(object, "value")) {
 			result.default = object.value;
 		}
 
-		if (hasProperty(object, "attribute") && (typeof object.attribute === "boolean" || typeof object.attribute === "string")) {
+		if (hasOwnProperty(object, "attribute") && (typeof object.attribute === "boolean" || typeof object.attribute === "string")) {
 			result.attribute = object.attribute;
 
 			if (ts.isObjectLiteralExpression(node)) {
