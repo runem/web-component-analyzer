@@ -45,9 +45,5 @@ This is an example`,
 \`\`\`
 This is an example`
 	]);
-	if (!allowed.has(description)) {
-		t.fail(`Expected ${inspect(description)} to be one of ${inspect(allowed)}`);
-	} else {
-		t.is(2 + 2, 4);
-	}
+	t.true(allowed.has(description), `Expected ${inspect(description)} to be one of ${inspect(allowed)}`);
 });
