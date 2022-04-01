@@ -55,6 +55,7 @@ tsTest("LitElement: Discovers properties from '@property'", t => {
 		results: [result],
 		checker
 	} = analyzeTextWithCurrentTsModule(`
+	const configVariable = {type: Number};
 	/**
 	 * @element
 	 */
@@ -67,6 +68,8 @@ tsTest("LitElement: Discovers properties from '@property'", t => {
 	    @property({attribute: false}) protected myProp2!: number;
 	    
 	    @property() myProp3;
+
+			@property(configVariable) myProp4;
 	 }
 	 `);
 
@@ -115,6 +118,19 @@ tsTest("LitElement: Discovers properties from '@property'", t => {
 				deprecated: undefined,
 				required: undefined,
 				meta: {}
+			},
+			{
+				kind: "property",
+				propName: "myProp4",
+				attrName: "myProp4",
+				default: undefined,
+				type: () => ({ kind: "NUMBER" }),
+				visibility: "public",
+				deprecated: undefined,
+				required: undefined,
+				meta: {
+					type: { kind: "NUMBER" }
+				}
 			}
 		],
 		t,

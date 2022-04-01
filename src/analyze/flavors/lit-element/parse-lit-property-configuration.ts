@@ -1,4 +1,6 @@
-import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
+import { SimpleType } from "ts-simple-type";
+import * as tsModule from "typescript";
+import { CallExpression, Node, PropertyAssignment } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -40,8 +42,6 @@ export function getLitElementPropertyDecorator(
  * @param context
  */
 export function getLitElementPropertyDecoratorConfig(node: Node, context: AnalyzerVisitContext): undefined | LitElementPropertyConfig {
-	const { ts } = context;
-
 	// Get reference to a possible "@property" decorator.
 	const decorator = getLitElementPropertyDecorator(node, context);
 
@@ -61,11 +61,57 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
 				break;
 		}
 
-		// Get lit options from the object literal expression
-		return configNode != null && ts.isObjectLiteralExpression(configNode) ? getLitPropertyOptions(configNode, context, config) : config;
+		if (configNode == null) {
+			return config;
+		}
+
+		const resolved = resolveNodeValue(configNode, context);
+
+		return resolved != null ? getLitPropertyOptions(resolved.node, resolved.value, context, config) : config;
 	}
 
 	return undefined;
+}
+
+/**
+ * Determines if a given object has the specified property, used
+ * as a type-guard.
+ * @param obj
+ * @param key
+ */
+function hasOwnProperty<T extends string>(obj: object, key: T): obj is { [K in T]: unknown } {
+	return Object.prototype.hasOwnProperty.call(obj, key);
+}
+
+/**
+ * Computes the correct type for a given node for use in lit property
+ * configuration.
+ * @param ts
+ * @param node
+ */
+export function getLitPropertyType(ts: typeof tsModule, node: Node): SimpleType | string {
+	const value = ts.isIdentifier(node) ? node.text : undefined;
+
+	switch (value) {
+		case "String":
+		case "StringConstructor":
+			return { kind: "STRING" };
+		case "Number":
+		case "NumberConstructor":
+			return { kind: "NUMBER" };
+		case "Boolean":
+		case "BooleanConstructor":
+			return { kind: "BOOLEAN" };
+		case "Array":
+		case "ArrayConstructor":
+			return { kind: "ARRAY", type: { kind: "ANY" } };
+		case "Object":
+		case "ObjectConstructor":
+			return { kind: "OBJECT", members: [] };
+		default:
+			// This is an unknown type, so set the name as a string
+			return node.getText();
+	}
 }
 
 /**
@@ -75,110 +121,64 @@ export function getLitElementPropertyDecoratorConfig(node: Node, context: Analyz
  * @param context
  */
 export function getLitPropertyOptions(
-	node: ObjectLiteralExpression,
+	node: Node,
+	object: unknown,
 	context: AnalyzerVisitContext,
 	existingConfig: LitElementPropertyConfig = {}
 ): LitElementPropertyConfig {
 	const { ts } = context;
+	const result: LitElementPropertyConfig = { ...existingConfig };
+	let attributeInitializer: Node | undefined;
+	let typeInitializer: Node | undefined;
 
-	// Build up the property configuration by looking at properties in the object literal expression
-	return node.properties.reduce((config, property) => {
-		if (!ts.isPropertyAssignment(property)) return config;
-
-		const initializer = property.initializer;
-		const kind = ts.isIdentifier(property.name) ? property.name.text : undefined;
-
-		return parseLitPropertyOption({ kind, initializer, config }, context);
-	}, existingConfig);
-}
-
-export function parseLitPropertyOption(
-	{ kind, initializer, config }: { kind: string | undefined; initializer: Expression; config: LitElementPropertyConfig },
-	context: AnalyzerVisitContext
-): LitElementPropertyConfig {
-	const { ts, checker } = context;
-
-	// noinspection DuplicateCaseLabelJS
-	switch (kind) {
-		case "converter": {
-			return { ...config, hasConverter: true };
+	if (typeof object === "object" && object !== null && !Array.isArray(object)) {
+		if (hasOwnProperty(object, "converter") && object.converter !== undefined) {
+			result.hasConverter = true;
 		}
 
-		case "reflect": {
-			return { ...config, reflect: resolveNodeValue(initializer, context)?.value === true };
+		if (hasOwnProperty(object, "reflect") && object.reflect !== undefined) {
+			result.reflect = object.reflect === true;
 		}
 
-		case "state": {
-			return { ...config, state: resolveNodeValue(initializer, context)?.value === true };
+		if (hasOwnProperty(object, "state") && object.state !== undefined) {
+			result.state = object.state === true;
 		}
 
-		case "attribute": {
-			let attribute: LitElementPropertyConfig["attribute"] | undefined;
+		if (hasOwnProperty(object, "value")) {
+			result.default = object.value;
+		}
 
-			if (initializer.kind === ts.SyntaxKind.TrueKeyword) {
-				attribute = true;
-			} else if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
-				attribute = false;
-			} else if (ts.isStringLiteral(initializer)) {
-				attribute = initializer.text;
-			}
+		if (hasOwnProperty(object, "attribute") && (typeof object.attribute === "boolean" || typeof object.attribute === "string")) {
+			result.attribute = object.attribute;
 
-			return {
-				...config,
-				attribute,
-				node: {
-					...(config.node || {}),
-					attribute: initializer
+			if (ts.isObjectLiteralExpression(node)) {
+				const prop = node.properties.find(
+					(p): p is PropertyAssignment => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === "attribute"
+				);
+				if (prop) {
+					attributeInitializer = prop.initializer;
 				}
-			};
-		}
-
-		case "type": {
-			let type: LitElementPropertyConfig["type"] | undefined;
-			const value = ts.isIdentifier(initializer) ? initializer.text : undefined;
-
-			switch (value) {
-				case "String":
-				case "StringConstructor":
-					type = { kind: "STRING" };
-					break;
-				case "Number":
-				case "NumberConstructor":
-					type = { kind: "NUMBER" };
-					break;
-				case "Boolean":
-				case "BooleanConstructor":
-					type = { kind: "BOOLEAN" };
-					break;
-				case "Array":
-				case "ArrayConstructor":
-					type = { kind: "ARRAY", type: { kind: "ANY" } };
-					break;
-				case "Object":
-				case "ObjectConstructor":
-					type = { kind: "OBJECT", members: [] };
-					break;
-				default:
-					// This is an unknown type, so set the name as a string
-					type = initializer.getText();
-					break;
 			}
-
-			return {
-				...config,
-				type,
-				node: {
-					...(config.node || {}),
-					type: initializer
-				}
-			};
-		}
-
-		// Polymer specific field
-		case "value": {
-			return { ...config, default: resolveNodeValue(initializer, { ts, checker })?.value };
 		}
 	}
 
-	return config;
+	if (ts.isObjectLiteralExpression(node)) {
+		const typeProp = node.properties.find(
+			(p): p is PropertyAssignment => ts.isPropertyAssignment(p) && ts.isIdentifier(p.name) && p.name.text === "type"
+		);
+
+		if (typeProp) {
+			typeInitializer = typeProp.initializer;
+			result.type = getLitPropertyType(ts, typeProp.initializer);
+		}
+	}
+
+	return {
+		...result,
+		node: {
+			...(result.node || {}),
+			attribute: attributeInitializer,
+			type: typeInitializer
+		}
+	};
 }
