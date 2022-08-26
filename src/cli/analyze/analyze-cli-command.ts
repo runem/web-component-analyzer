@@ -38,30 +38,40 @@ Please follow and contribute to the discussion at:
 	}
 
 	if (config.format === "webtypes") {
+		if (!config.webtypesConfig) throw makeCliError("Missing webtypes-config configuration");
+
 		// Allow object being passed as JSON from command line
+		let cleanedConfiguration;
 		if (typeof config.webtypesConfig === "string") {
-			config.webtypesConfig = JSON.parse(config.webtypesConfig);
+			try {
+				cleanedConfiguration = JSON.parse(config.webtypesConfig);
+			} catch (e) {
+				const message = e instanceof Error ? e.message : e;
+				throw makeCliError("webtypes-config JSON format issue: " + message + "\nReceived value: " + config.webtypesConfig);
+			}
+		} else {
+			cleanedConfiguration = config.webtypesConfig;
 		}
 
-		if (!config?.webtypesConfig) throw makeCliError("Missing webtypes-config configuration");
-
-		if (!config.webtypesConfig.name) {
+		if (!cleanedConfiguration.name) {
 			// Take package name if ran from npm script
 			if (process.env.npm_package_name) {
-				config.webtypesConfig.name = process.env.npm_package_name;
+				cleanedConfiguration.name = process.env.npm_package_name;
 			} else {
 				throw makeCliError('Missing webtypes-config "name" property');
 			}
 		}
 
-		if (!config.webtypesConfig.version) {
+		if (!cleanedConfiguration.version) {
 			// Take package version if ran from npm script
 			if (process.env.npm_package_version) {
-				config.webtypesConfig.version = process.env.npm_package_version;
+				cleanedConfiguration.version = process.env.npm_package_version;
 			} else {
 				throw makeCliError('Missing webtypes-config "version" property');
 			}
 		}
+
+		config.parsedWebtypesConfig = cleanedConfiguration;
 	}
 
 	// If no "out" is specified, output to console
@@ -153,7 +163,7 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 		pathAsAbsolute: config.pathAsAbsolute
 	};
 	if (format == "webtypes") {
-		transformerConfig.webTypes = config.webtypesConfig;
+		transformerConfig.webTypes = config.parsedWebtypesConfig;
 	}
 
 	return transformAnalyzerResult(format, results, program, transformerConfig);
