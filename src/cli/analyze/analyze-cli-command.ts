@@ -38,9 +38,30 @@ Please follow and contribute to the discussion at:
 	}
 
 	if (config.format === "webtypes") {
-		const webTypesConfig = config.webtypesConfig ? JSON.parse(config.webtypesConfig) : null;
-		if (!webTypesConfig.name) throw makeCliError('Missing webtypes-config "name" property');
-		if (!webTypesConfig.version) throw makeCliError('Missing webtypes-config "version" property');
+		// Allow object being passed as JSON from command line
+		if (typeof config.webtypesConfig === "string") {
+			config.webtypesConfig = JSON.parse(config.webtypesConfig);
+		}
+
+		if (!config?.webtypesConfig) throw makeCliError("Missing webtypes-config configuration");
+
+		if (!config.webtypesConfig.name) {
+			// Take package name if ran from npm script
+			if (process.env.npm_package_name) {
+				config.webtypesConfig.name = process.env.npm_package_name;
+			} else {
+				throw makeCliError('Missing webtypes-config "name" property');
+			}
+		}
+
+		if (!config.webtypesConfig.version) {
+			// Take package version if ran from npm script
+			if (process.env.npm_package_version) {
+				config.webtypesConfig.version = process.env.npm_package_version;
+			} else {
+				throw makeCliError('Missing webtypes-config "version" property');
+			}
+		}
 	}
 
 	// If no "out" is specified, output to console
@@ -132,7 +153,7 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 		pathAsAbsolute: config.pathAsAbsolute
 	};
 	if (format == "webtypes") {
-		transformerConfig.webTypes = config.webtypesConfig ? JSON.parse(config.webtypesConfig) : null;
+		transformerConfig.webTypes = config.webtypesConfig;
 	}
 
 	return transformAnalyzerResult(format, results, program, transformerConfig);

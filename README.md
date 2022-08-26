@@ -111,12 +111,28 @@ VSCode supports a JSON format called [vscode custom data](https://github.com/mic
 
 <!-- prettier-ignore -->
 ```bash
-wca analyze src --format webtypes --outFile web-types-custom.json --webtypesConfig='{"name": "web-types-custom", "version": "0.0.1", "description-markup": "markdown"}'
+wca analyze src --format webtypes --outFile web-types-custom.json
+```
+
+To configure web-types (name, version, etc.) add this section to your `package.json`. `name` and `version` fields are required if wca is not ran from npm `package.json` `scripts` section.
+Otherwise it will take `package.json` project `name` and `version`.
+
+You can use the `wca-config` section to configure other options as well.
+
+```json
+"wca": {
+  "webtypesConfig": {
+    "name": "your-project-name",
+    "version": "0.0.1",
+    "framework": "lit",
+    "description-markup": "markdown"
+  }
+}
 ```
 
 Web-types format is a description for IDE completion, see [web-types](https://github.com/JetBrains/web-types/tree/master/packages)
 
-See [web-types dedicated page](./doc/web-types.md) for project setup.
+See [web-component-analyzer web-types dedicated page](./doc/web-types.md) for project setup.
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
 

@@ -107,7 +107,9 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 }
 
 function getRelativePath(fileName: string | undefined, config: TransformerConfig): string | undefined {
-	return fileName != null && config.cwd != null ? `${config.pathAsAbsolute ? "" : "./"}${relative(config.cwd, fileName)}` : undefined;
+	return fileName != null && config.cwd != null
+		? `${config.pathAsAbsolute ? "" : "./"}${relative(config.cwd, fileName)}`.replaceAll("\\", "/")
+		: undefined;
 }
 
 function componentEventToAttr(event: ComponentEvent): GenericJsContribution {
