@@ -148,5 +148,6 @@ Available parameters:
 | description-markup | See [http://json.schemastore.org/web-types](http://json.schemastore.org/web-types) description-markup section |
 | framework-config   | See [http://json.schemastore.org/web-types](http://json.schemastore.org/web-types) framework-config section   |
 | default-icon       | See [http://json.schemastore.org/web-types](http://json.schemastore.org/web-types) default-icon section       |
+| path-as-absolute   | Consider paths as absolute: don't add './' in front of paths                                                  |
 
 See [web-types project:](https://github.com/JetBrains/web-types) for more info.

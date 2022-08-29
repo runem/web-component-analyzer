@@ -159,8 +159,7 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 		inlineTypes: config.inlineTypes ?? false,
 		visibility: config.visibility ?? "public",
 		markdown: config.markdown,
-		cwd: config.cwd,
-		pathAsAbsolute: config.pathAsAbsolute
+		cwd: config.cwd
 	};
 	if (format == "webtypes") {
 		transformerConfig.webTypes = config.parsedWebtypesConfig;
