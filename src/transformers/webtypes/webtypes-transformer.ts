@@ -144,7 +144,6 @@ function componentMemberToAttr(
 	}
 
 	const types: string[] | string = getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config)?.split(" | ") ?? [];
-	const valueRequired = !(isAttribute && isBoolean(types));
 
 	const attr: HtmlAttribute = {
 		name: propName,
@@ -152,7 +151,7 @@ function componentMemberToAttr(
 		priority: member.visibility == "private" || member.visibility == "protected" ? "lowest" : "normal",
 		value: {
 			type: types && Array.isArray(types) && types.length == 1 ? types[0] : types,
-			required: valueRequired,
+			required: !isBoolean(types),
 			...(member.default !== undefined ? { default: JSON.stringify(member.default) } : {})
 		},
 		...(member.deprecated !== undefined ? { deprecated: true } : {})
@@ -164,7 +163,7 @@ function componentMemberToAttr(
 }
 
 function isBoolean(type: string | string[]): boolean {
-	if (Array.isArray(type)) return type.some(t => t && t.includes("boolean"));
+	if (Array.isArray(type)) return type.some(t => t && t.toLowerCase().includes("boolean"));
 
-	return type ? type.includes("boolean") : false;
+	return type ? type.toLowerCase().includes("boolean") : false;
 }
