@@ -28,7 +28,7 @@ export type Priority = "lowest" | "low" | "normal" | "high" | "highest";
  */
 export type Icon = string;
 export type GenericContributions = GenericContributionOrProperty[] | GenericContributionOrProperty;
-export type GenericContributionOrProperty = string | number | boolean | GenericContribution | Source;
+export type GenericContributionOrProperty = string | number | boolean | object | GenericContribution | Source;
 export type GenericContribution = TypedContribution;
 
 export interface TypedContribution extends BaseContribution {
@@ -187,7 +187,11 @@ export interface JsContributionsHost {
 	properties?: GenericJsContribution[];
 }
 
-export interface GenericJsContribution extends GenericContribution, JsContributionsHost {}
+export interface GenericJsContribution extends GenericContribution, JsContributionsHost {
+	value?: HtmlAttributeValue;
+	default?: string;
+	required?: boolean;
+}
 
 export type Css = CssContributionsHost;
 

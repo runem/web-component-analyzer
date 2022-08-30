@@ -73,7 +73,7 @@ Generate your components descriptions with wca
 
 <!-- prettier-ignore -->
 ```bash
-npm web-types
+npm run web-types
 ```
 
 If your web-types is not named `web-types.json` and placed at root of your project, you need to declare it in your `package.json`
@@ -120,7 +120,7 @@ Generate your components descriptions with wca
 
 <!-- prettier-ignore -->
 ```bash
-npm web-types
+npm run web-types
 ```
 
 If your web-types is not named `web-types.json` and placed at root of your project, you need to declare it in your `package.json`
