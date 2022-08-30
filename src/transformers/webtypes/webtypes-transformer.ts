@@ -8,7 +8,16 @@ import { ComponentMember } from "../../analyze/types/features/component-member";
 import { arrayDefined } from "../../util/array-util";
 import { TransformerConfig } from "../transformer-config";
 import { TransformerFunction } from "../transformer-function";
-import { HtmlAttribute, WebtypesSchema, HtmlElement, BaseContribution, Js, GenericJsContribution, CssProperty } from "./webtypes-schema";
+import {
+	HtmlAttribute,
+	WebtypesSchema,
+	HtmlElement,
+	BaseContribution,
+	Js,
+	GenericJsContribution,
+	CssProperty,
+	HtmlAttributeValue
+} from "./webtypes-schema";
 import { getFirst } from "../../util/set-util";
 import { relative } from "path";
 
@@ -144,13 +153,22 @@ function componentMemberToAttr(
 	}
 
 	const types: string[] | string = getTypeHintFromType(member.typeHint ?? member.type?.(), checker, config)?.split(" | ") ?? [];
+	const isPlainEnum = types.every(t => t == "null" || t == "undefined" || t.trim().match(/^["'].*["']$/));
+	const typeValues: Partial<HtmlAttributeValue> = isPlainEnum
+		? {
+				kind: "plain",
+				type: types.join(" | ")
+		  }
+		: {
+				type: types && Array.isArray(types) && types.length == 1 ? types[0] : types
+		  };
 
 	const attr: HtmlAttribute = {
 		name: propName,
 		required: !!member.required,
 		priority: member.visibility == "private" || member.visibility == "protected" ? "lowest" : "normal",
 		value: {
-			type: types && Array.isArray(types) && types.length == 1 ? types[0] : types,
+			...typeValues,
 			required: !isBoolean(types),
 			...(member.default !== undefined ? { default: JSON.stringify(member.default) } : {})
 		},

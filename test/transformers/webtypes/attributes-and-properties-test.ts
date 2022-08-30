@@ -101,3 +101,35 @@ tsTest("Transformer: Webtypes: Boolean value not required", t => {
 	t.false(prop2?.value?.required);
 	t.is(prop2?.value?.default, "false");
 });
+
+tsTest("Transformer: Webtypes: Enum values", t => {
+	const res = runAndParseWebtypesBuild(`
+	@customElement('my-element')
+	class MyElement extends HTMLElement {
+		/**
+		 * @type {'foo' | 'bar'}
+		 */
+		@property({type: String, attribute: "my-prop"}) myProp = "foo";
+ 	}
+ 	`);
+
+	const myElement = findHtmlElementOfName(res, "my-element");
+	t.truthy(myElement);
+
+	t.is(myElement?.attributes?.length, 1);
+	t.is(myElement?.js?.properties?.length, 1);
+	const att1 = findAttributeOfName(myElement, "my-prop");
+	const prop1 = findPropertyOfName(myElement, "myProp");
+
+	t.is(att1?.value?.type, "'foo' | 'bar'");
+	t.false(att1?.required);
+	t.is(att1?.value?.kind, "plain");
+	t.true(att1?.value?.required);
+	t.is(att1?.value?.default, '"foo"');
+
+	t.is(prop1?.value?.type, "'foo' | 'bar'");
+	t.false(prop1?.required);
+	t.is(prop1?.value?.kind, "plain");
+	t.true(prop1?.value?.required);
+	t.is(prop1?.value?.default, '"foo"');
+});
