@@ -41,11 +41,11 @@ in `webtypesConfig`, this will take package `name` and `version` by default.
 
 ### For Lit
 
-Generated web-types are working with the generic `lit-web-types` library. You need to add it on your project.
+Generated web-types are working with the generic `@web-types/lit` library. You need to add it on your project.
 
 <!-- prettier-ignore -->
 ```bash
-npm i lit-web-types -D
+npm i @web-types/lit -D
 ```
 
 Add `wca` section in your `package.json`:
