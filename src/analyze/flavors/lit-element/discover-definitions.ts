@@ -1,4 +1,4 @@
-import { Node } from "typescript";
+import { Decorator, Node, NodeArray } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { getNodeIdentifier } from "../../util/ast-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
@@ -15,8 +15,20 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 
 	// @customElement("my-element")
 	if (ts.isClassDeclaration(node)) {
+		// As of TypeScript 4.8 decorators have been moved from the `decorators`
+		// property into `modifiers`. For compatibility with both, we manually check
+		// use both here rather than using the new `getDecorators` function.
+		//
+		// https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/#decorators-are-placed-on-modifiers-on-typescripts-syntax-trees
+		const decorators = Array.from((node.decorators ?? []) as NodeArray<Decorator>);
+		for (const modifier of node.modifiers ?? []) {
+			if (ts.isDecorator(modifier)) {
+				decorators.push(modifier);
+			}
+		}
+
 		// Visit all decorators on the class
-		for (const decorator of node.decorators || []) {
+		for (const decorator of decorators) {
 			const callExpression = decorator.expression;
 
 			// Find "@customElement"
