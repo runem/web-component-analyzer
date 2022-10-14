@@ -2,9 +2,11 @@ import { isAssignableToSimpleTypeKind } from "ts-simple-type";
 import * as tsModule from "typescript";
 import {
 	Declaration,
+	Decorator,
 	Identifier,
 	InterfaceDeclaration,
 	Node,
+	NodeArray,
 	PropertyDeclaration,
 	PropertySignature,
 	SetAccessorDeclaration,
@@ -346,4 +348,26 @@ export function getNodeIdentifier(node: Node, context: { ts: typeof tsModule }):
 	}
 
 	return undefined;
+}
+
+/**
+ * Returns all decorators in either the node's `decorators` or `modifiers`.
+ * @param node
+ * @param context
+ */
+export function getDecorators(node: Node, context: { ts: typeof tsModule }): ReadonlyArray<Decorator> {
+	const { ts } = context;
+
+	// As of TypeScript 4.8 decorators have been moved from the `decorators`
+	// property into `modifiers`. For compatibility with both, we manually check
+	// use both here rather than using the new `getDecorators` function.
+	//
+	// https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/#decorators-are-placed-on-modifiers-on-typescripts-syntax-trees
+	const decorators = Array.from((node.decorators ?? []) as NodeArray<Decorator>);
+	for (const modifier of node.modifiers ?? []) {
+		if (ts.isDecorator(modifier)) {
+			decorators.push(modifier);
+		}
+	}
+	return decorators;
 }
