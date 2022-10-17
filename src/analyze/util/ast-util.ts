@@ -359,10 +359,31 @@ export function getDecorators(node: Node, context: { ts: typeof tsModule }): Rea
 	const { ts } = context;
 
 	// As of TypeScript 4.8 decorators have been moved from the `decorators`
-	// property into `modifiers`. For compatibility with both, we manually check
-	// both here rather than using the new `getDecorators` function.
+	// property into `modifiers`. For compatibility with versions on both sides of
+	// this change, this function first attempts to use the new utility functions
+	// from TS 4.8+, otherwise it combines and filters all decorators found in
+	// either `decorators` or `modifiers`.
 	//
 	// https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/#decorators-are-placed-on-modifiers-on-typescripts-syntax-trees
+
+	// Declare enough of the TS 4.8 API to let us check for and use these
+	// functions despite compiling with an earlier version of TS.
+	interface HasDecorators extends Node {
+		_sentinel: never;
+	}
+	type TSModuleExports = typeof tsModule;
+	interface TS_4_8 extends TSModuleExports {
+		canHaveDecorators: (node: Node) => node is HasDecorators;
+		getDecorators: (node: HasDecorators) => ReadonlyArray<Decorator> | undefined;
+	}
+
+	// Use TS 4.8 functions if available.
+	const isTS_4_8 = (ts: typeof tsModule): ts is TS_4_8 => typeof (ts as any).canHaveDecorators === "function";
+	if (isTS_4_8(ts)) {
+		return ts.canHaveDecorators(node) ? ts.getDecorators(node) ?? [] : [];
+	}
+
+	// Fall back to manually checking `decorators` and `modifiers`.
 	const decorators = Array.from((node.decorators ?? []) as NodeArray<Decorator>);
 	for (const modifier of node.modifiers ?? []) {
 		if (ts.isDecorator(modifier)) {
