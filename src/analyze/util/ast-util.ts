@@ -360,7 +360,7 @@ export function getDecorators(node: Node, context: { ts: typeof tsModule }): Rea
 
 	// As of TypeScript 4.8 decorators have been moved from the `decorators`
 	// property into `modifiers`. For compatibility with both, we manually check
-	// use both here rather than using the new `getDecorators` function.
+	// both here rather than using the new `getDecorators` function.
 	//
 	// https://devblogs.microsoft.com/typescript/announcing-typescript-4-8/#decorators-are-placed-on-modifiers-on-typescripts-syntax-trees
 	const decorators = Array.from((node.decorators ?? []) as NodeArray<Decorator>);
