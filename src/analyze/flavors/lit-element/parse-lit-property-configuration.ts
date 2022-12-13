@@ -1,6 +1,7 @@
 import { CallExpression, Expression, Node, ObjectLiteralExpression } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
+import { getDecorators } from "../../util/ast-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 
 export type LitElementPropertyDecoratorKind = "property" | "internalProperty";
@@ -16,11 +17,10 @@ export function getLitElementPropertyDecorator(
 	node: Node,
 	context: AnalyzerVisitContext
 ): { expression: CallExpression; kind: LitElementPropertyDecoratorKind } | undefined {
-	if (node.decorators == null) return undefined;
 	const { ts } = context;
 
 	// Find a decorator with "property" name.
-	for (const decorator of node.decorators) {
+	for (const decorator of getDecorators(node, context)) {
 		const expression = decorator.expression;
 
 		// We find the first decorator calling specific identifier name (found in LIT_ELEMENT_PROPERTY_DECORATOR_KINDS)
@@ -32,6 +32,8 @@ export function getLitElementPropertyDecorator(
 			}
 		}
 	}
+
+	return undefined;
 }
 
 /**
