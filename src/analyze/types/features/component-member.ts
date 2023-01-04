@@ -3,6 +3,7 @@ import { Node, Type } from "typescript";
 import { PriorityKind } from "../../flavors/analyzer-flavor";
 import { ModifierKind } from "../modifier-kind";
 import { VisibilityKind } from "../visibility-kind";
+import { ComponentDeclaration } from "../component-declaration";
 import { ComponentFeatureBase } from "./component-feature";
 import { LitElementPropertyConfig } from "./lit-element-property-config";
 
@@ -16,7 +17,12 @@ export interface ComponentMemberBase extends ComponentFeatureBase {
 	priority?: PriorityKind;
 
 	typeHint?: string;
-	type: undefined | (() => Type | SimpleType);
+	/**
+	 * @param {ComponentDeclaration} descendant - The component declaration for
+	 * which this member's type is being retrieved, which may vary if there are
+	 * generic types in that component's inheritance chain.
+	 */
+	type: undefined | ((descendant?: ComponentDeclaration) => Type | SimpleType);
 
 	meta?: LitElementPropertyConfig;
 

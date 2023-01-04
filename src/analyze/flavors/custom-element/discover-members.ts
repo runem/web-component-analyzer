@@ -1,5 +1,6 @@
 import { toSimpleType } from "ts-simple-type";
 import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
+import { ComponentDeclaration } from "../../types/component-declaration";
 import { ComponentMember } from "../../types/features/component-member";
 import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
@@ -74,7 +75,30 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 					kind: "property",
 					jsDoc: getJsDoc(node, ts),
 					propName: name.text,
-					type: lazy(() => checker.getTypeAtLocation(node)),
+					// If no `descendant` declaration is given, use the declaration that
+					// generated this member instead. If there are free type parameters in
+					// the used declaration's type, those type parameters will remain free
+					// in the type returned here.
+					type: (descendant: ComponentDeclaration = context.getDeclaration()) => {
+						const memberNode = context.getDeclaration().node;
+
+						const ancestorType = descendant.ancestorDeclarationNodeToType.get(memberNode);
+						if (!ancestorType) {
+							return checker.getTypeAtLocation(node);
+						}
+
+						const property = ancestorType.getProperty(name.text);
+						if (!property) {
+							return checker.getTypeAtLocation(node);
+						}
+
+						const type = checker.getTypeOfSymbolAtLocation(property, memberNode);
+						if (!type) {
+							return checker.getTypeAtLocation(node);
+						}
+
+						return type;
+					},
 					default: def,
 					visibility: getMemberVisibilityFromNode(node, ts),
 					modifiers: getModifiersFromNode(node, ts)

@@ -1,4 +1,4 @@
-import { Node, SourceFile, Symbol } from "typescript";
+import { Node, SourceFile, Symbol, Type } from "typescript";
 import { ComponentCssPart } from "./features/component-css-part";
 import { ComponentCssProperty } from "./features/component-css-property";
 import { ComponentEvent } from "./features/component-event";
@@ -36,4 +36,10 @@ export interface ComponentDeclaration extends ComponentFeatures {
 	symbol?: Symbol;
 	deprecated?: boolean | string;
 	heritageClauses: ComponentHeritageClause[];
+	/**
+	 * A map from declaration nodes of this declarations's ancestors to the types
+	 * they generate in the base type tree of this component's type (i.e. with any
+	 * known type arguments resolved).
+	 */
+	ancestorDeclarationNodeToType: Map<Node, Type>;
 }
