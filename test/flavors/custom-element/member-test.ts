@@ -1,7 +1,11 @@
-import { isAssignableToType, toSimpleType } from "ts-simple-type";
+import { SimpleType, isAssignableToType, toSimpleType } from "ts-simple-type";
 import { analyzeTextWithCurrentTsModule } from "../../helpers/analyze-text-with-current-ts-module";
 import { tsTest } from "../../helpers/ts-test";
 import { getComponentProp } from "../../helpers/util";
+
+const optional = (type: SimpleType): SimpleType => {
+	return { kind: "UNION", types: [{ kind: "UNDEFINED" }, type] };
+};
 
 tsTest("Member types can be retrieved", t => {
 	const {
@@ -28,10 +32,10 @@ tsTest("Member types can be retrieved", t => {
 
 	t.is(1, members.length);
 	const type = getComponentProp(members, "prop")!.type!();
-	t.truthy(isAssignableToType(toSimpleType(type, checker), { kind: "NUMBER" }));
+	t.truthy(isAssignableToType({ kind: "NUMBER" }, toSimpleType(type, checker)));
 });
 
-tsTest("Member types are specialized if a descendant declaration is provided", t => {
+tsTest("Property declaration member types are specialized", t => {
 	const {
 		results: [result],
 		checker
@@ -59,11 +63,9 @@ tsTest("Member types are specialized if a descendant declaration is provided", t
 
 	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
 	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
-	t.truthy(isAssignableToType(toSimpleType(numberElementPropType, checker), { kind: "NUMBER" }));
-	t.truthy(isAssignableToType(toSimpleType(numberElementPropType, checker), { kind: "NUMBER_LITERAL", value: 123 }));
+	t.truthy(isAssignableToType(optional({ kind: "NUMBER" }), toSimpleType(numberElementPropType, checker)));
 
 	const booleanElementDecl = result.componentDefinitions.find(x => x.tagName === "boolean-prop-element")!.declaration!;
 	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
-	t.truthy(isAssignableToType(toSimpleType(booleanElementPropType, checker), { kind: "BOOLEAN" }));
-	t.truthy(isAssignableToType(toSimpleType(booleanElementPropType, checker), { kind: "BOOLEAN_LITERAL", value: false }));
+	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
 });
