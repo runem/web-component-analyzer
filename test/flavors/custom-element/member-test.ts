@@ -69,3 +69,81 @@ tsTest("Property declaration member types are specialized", t => {
 	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
 	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
 });
+
+tsTest("Getter member types are specialized", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule([
+		{
+			fileName: "main.ts",
+			text: `
+				class GenericPropElement<T> extends HTMLElement {
+					storage?: T;
+
+					get prop(): T | undefined {
+						return this.storage;
+					}
+				}
+
+				class NumberPropElement extends GenericPropElement<number> {}
+
+				class BooleanPropElement extends GenericPropElement<boolean> {}
+
+				declare global {
+					interface HTMLElementTagNameMap {
+						"number-prop-element": NumberPropElement;
+						"boolean-prop-element": BooleanPropElement;
+					}
+				}
+			`
+		}
+	]);
+
+	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
+	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "NUMBER" }), toSimpleType(numberElementPropType, checker)));
+
+	const booleanElementDecl = result.componentDefinitions.find(x => x.tagName === "boolean-prop-element")!.declaration!;
+	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
+});
+
+tsTest("Setter member types are specialized", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule([
+		{
+			fileName: "main.ts",
+			text: `
+				class GenericPropElement<T> extends HTMLElement {
+					storage?: T;
+
+					set prop(value: T) {
+						this.storage = value;
+					}
+				}
+
+				class NumberPropElement extends GenericPropElement<number> {}
+
+				class BooleanPropElement extends GenericPropElement<boolean> {}
+
+				declare global {
+					interface HTMLElementTagNameMap {
+						"number-prop-element": NumberPropElement;
+						"boolean-prop-element": BooleanPropElement;
+					}
+				}
+			`
+		}
+	]);
+
+	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
+	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "NUMBER" }), toSimpleType(numberElementPropType, checker)));
+
+	const booleanElementDecl = result.componentDefinitions.find(x => x.tagName === "boolean-prop-element")!.declaration!;
+	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
+});
