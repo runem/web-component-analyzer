@@ -157,7 +157,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 							propName,
 							default: def,
 							type: (descendant?: ComponentDeclaration) =>
-								relaxType(toSimpleType(getMemberType(propName, descendant) ?? checker.getTypeAtLocation(right), checker)),
+								getMemberType(propName, descendant) ?? relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
 							jsDoc: getJsDoc(assignment.parent, ts),
 							visibility: isNamePrivate(propName) ? "private" : undefined
 						});

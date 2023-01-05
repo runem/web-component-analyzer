@@ -207,3 +207,65 @@ tsTest("Constructor declaration member types are specialized", t => {
 	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
 	t.truthy(isAssignableToType({ kind: "BOOLEAN" }, toSimpleType(booleanElementPropType, checker)));
 });
+
+tsTest("Constructor declaration member types specialized with literals maintain their strictness", t => {
+	const analyzeResult = analyzeTextWithCurrentTsModule([
+		// tsc only allows JS to implicitly define members using assignment in the
+		// constructor.
+		{
+			fileName: "GenericPropElement.js",
+			text: `
+				/**
+				 * @template T
+				 */
+				export class GenericPropElement extends HTMLElement {
+					/**
+					 * @param {T} value
+					 */
+					constructor(value) {
+						super();
+						this.prop = value;
+					}
+				}
+			`
+		},
+		{
+			fileName: "main.ts",
+			text: `
+				import {GenericPropElement} from "./GenericPropElement";
+
+				class NumberPropElement extends GenericPropElement<number> {
+					constructor() {
+						super(123);
+					}
+				}
+
+				class NumberLiteralPropElement extends GenericPropElement<456> {
+					constructor() {
+						super(456);
+					}
+				}
+
+				declare global {
+					interface HTMLElementTagNameMap {
+						"number-prop-element": NumberPropElement;
+						"number-literal-prop-element": NumberLiteralPropElement;
+					}
+				}
+			`
+		}
+	]);
+	const { results, checker } = analyzeResult;
+	const result = results.find(x => x.sourceFile.fileName === "main.ts")!;
+
+	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
+	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
+	t.truthy(isAssignableToType(toSimpleType(numberElementPropType, checker), { kind: "NUMBER" }));
+	t.truthy(isAssignableToType(toSimpleType(numberElementPropType, checker), { kind: "NUMBER_LITERAL", value: 123 }));
+
+	const numberLiteralElementDecl = result.componentDefinitions.find(x => x.tagName === "number-literal-prop-element")!.declaration!;
+	const numberLiteralElementPropType = getComponentProp(numberLiteralElementDecl.members, "prop")!.type!(numberLiteralElementDecl);
+	t.falsy(isAssignableToType(toSimpleType(numberLiteralElementPropType, checker), { kind: "NUMBER" }));
+	t.falsy(isAssignableToType(toSimpleType(numberLiteralElementPropType, checker), { kind: "NUMBER_LITERAL", value: 123 }));
+	t.truthy(isAssignableToType(toSimpleType(numberLiteralElementPropType, checker), { kind: "NUMBER_LITERAL", value: 456 }));
+});
