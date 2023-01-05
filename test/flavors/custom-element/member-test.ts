@@ -35,7 +35,7 @@ tsTest("Member types can be retrieved", t => {
 	t.truthy(isAssignableToType({ kind: "NUMBER" }, toSimpleType(type, checker)));
 });
 
-tsTest("Property declaration member types are specialized", t => {
+tsTest("Property declaration member types are specialized (classes)", t => {
 	const {
 		results: [result],
 		checker
@@ -50,6 +50,41 @@ tsTest("Property declaration member types are specialized", t => {
 				class NumberPropElement extends GenericPropElement<number> {}
 
 				class BooleanPropElement extends GenericPropElement<boolean> {}
+
+				declare global {
+					interface HTMLElementTagNameMap {
+						"number-prop-element": NumberPropElement;
+						"boolean-prop-element": BooleanPropElement;
+					}
+				}
+			`
+		}
+	]);
+
+	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
+	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "NUMBER" }), toSimpleType(numberElementPropType, checker)));
+
+	const booleanElementDecl = result.componentDefinitions.find(x => x.tagName === "boolean-prop-element")!.declaration!;
+	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
+	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
+});
+
+tsTest("Property declaration member types are specialized (mixins)", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule([
+		{
+			fileName: "main.ts",
+			text: `
+				const SomeMixin = <T, C>(Base: C) => class extends Base {
+					prop?: T;
+				};
+
+				class NumberPropElement extends SomeMixin<number>(HTMLElement) {}
+
+				class BooleanPropElement extends SomeMixin<boolean>(HTMLElement) {}
 
 				declare global {
 					interface HTMLElementTagNameMap {
