@@ -80,9 +80,9 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 					// the used declaration's type, those type parameters will remain free
 					// in the type returned here.
 					type: (descendant: ComponentDeclaration = context.getDeclaration()) => {
-						const memberNode = context.getDeclaration().node;
+						const declarationNode = context.getDeclaration().node;
 
-						const ancestorType = descendant.ancestorDeclarationNodeToType.get(memberNode);
+						const ancestorType = descendant.ancestorDeclarationNodeToType.get(declarationNode);
 						if (!ancestorType) {
 							return checker.getTypeAtLocation(node);
 						}
@@ -92,7 +92,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 							return checker.getTypeAtLocation(node);
 						}
 
-						const type = checker.getTypeOfSymbolAtLocation(property, memberNode);
+						const type = checker.getTypeOfSymbolAtLocation(property, declarationNode);
 						if (!type) {
 							return checker.getTypeAtLocation(node);
 						}
