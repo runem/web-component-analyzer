@@ -147,3 +147,63 @@ tsTest("Setter member types are specialized", t => {
 	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
 	t.truthy(isAssignableToType(optional({ kind: "BOOLEAN" }), toSimpleType(booleanElementPropType, checker)));
 });
+
+tsTest("Constructor declaration member types are specialized", t => {
+	const analyzeResult = analyzeTextWithCurrentTsModule([
+		// tsc only allows JS to implicitly define members using assignment in the
+		// constructor. In TS, `prop` would require a declaration on the class
+		// itself (i.e. `prop: T;`).
+		{
+			fileName: "GenericPropElement.js",
+			text: `
+				/**
+				 * @template T
+				 */
+				export class GenericPropElement extends HTMLElement {
+					/**
+					 * @param {T} value
+					 */
+					constructor(value) {
+						super();
+						this.prop = value;
+					}
+				}
+			`
+		},
+		{
+			fileName: "main.ts",
+			text: `
+				import {GenericPropElement} from "./GenericPropElement";
+
+				class NumberPropElement extends GenericPropElement<number> {
+					constructor() {
+						super(123);
+					}
+				}
+
+				class BooleanPropElement extends GenericPropElement<boolean> {
+					constructor() {
+						super(false);
+					}
+				}
+
+				declare global {
+					interface HTMLElementTagNameMap {
+						"number-prop-element": NumberPropElement;
+						"boolean-prop-element": BooleanPropElement;
+					}
+				}
+			`
+		}
+	]);
+	const { results, checker } = analyzeResult;
+	const result = results.find(x => x.sourceFile.fileName === "main.ts")!;
+
+	const numberElementDecl = result.componentDefinitions.find(x => x.tagName === "number-prop-element")!.declaration!;
+	const numberElementPropType = getComponentProp(numberElementDecl.members, "prop")!.type!(numberElementDecl);
+	t.truthy(isAssignableToType({ kind: "NUMBER" }, toSimpleType(numberElementPropType, checker)));
+
+	const booleanElementDecl = result.componentDefinitions.find(x => x.tagName === "boolean-prop-element")!.declaration!;
+	const booleanElementPropType = getComponentProp(booleanElementDecl.members, "prop")!.type!(booleanElementDecl);
+	t.truthy(isAssignableToType({ kind: "BOOLEAN" }, toSimpleType(booleanElementPropType, checker)));
+});
