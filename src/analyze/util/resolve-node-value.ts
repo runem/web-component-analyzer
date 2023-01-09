@@ -107,7 +107,7 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	//  - "my-value" as string
 	//  - <any>"my-value"
 	//  - ("my-value")
-	else if (ts.isAsExpression(node) || ts.isTypeAssertion(node) || ts.isParenthesizedExpression(node)) {
+	else if (ts.isAsExpression(node) || (ts.isTypeAssertionExpression ?? ts.isTypeAssertion)(node) || ts.isParenthesizedExpression(node)) {
 		return resolveNodeValue(node.expression, { ...context, depth });
 	}
 
