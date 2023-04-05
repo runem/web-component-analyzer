@@ -6,13 +6,9 @@ tsTest("jsdoc: Correctly discovers the description in the jsdoc", t => {
 		results: [result]
 	} = analyzeTextWithCurrentTsModule(`
 	/**
-	 * layout to full document height as follows:
+	 * This CSS makes text in \`<p>\` tags red.
 	 * \`\`\`
-	 * \\@media screen {
-	 *   html, body {
-	 *     height: 100%;
-	 *   }
-	 * }
+	 * p { color: red; }
 	 * \`\`\`
 	 * This is an example
 	 * @element
@@ -25,13 +21,9 @@ tsTest("jsdoc: Correctly discovers the description in the jsdoc", t => {
 
 	t.is(
 		declaration.jsDoc?.description,
-		`layout to full document height as follows:
+		`This CSS makes text in \`<p>\` tags red.
 \`\`\`
-@media screen {
-   html, body {
-     height: 100%;
-   }
-}
+p { color: red; }
 \`\`\`
 This is an example`
 	);
