@@ -16,7 +16,7 @@ tsTest("analyzeHTMLElement returns correct result", t => {
 	// Test that the node extends some of the interfaces
 	t.truthy(ext.has("EventTarget"));
 	t.truthy(ext.has("Node"));
-	t.truthy(ext.has("DocumentAndElementEventHandlers"));
+	t.truthy(ext.has("HTMLOrSVGElement"));
 	t.truthy(ext.has("ElementContentEditable"));
 
 	// From ElementContentEditable interface
