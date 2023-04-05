@@ -73,7 +73,8 @@
 		"typescript-3.5": "npm:typescript@~3.5.3",
 		"typescript-3.6": "npm:typescript@~3.6.4",
 		"typescript-3.7": "npm:typescript@~3.7.4",
-		"typescript-3.8": "npm:typescript@~3.8.0"
+		"typescript-3.8": "npm:typescript@~3.8.0",
+		"typescript-5.0": "npm:typescript@~5.0"
 	},
 	"ava": {
 		"snapshotDir": "test/snapshots/results",
