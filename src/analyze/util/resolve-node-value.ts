@@ -9,6 +9,10 @@ export interface Context {
 	strict?: boolean;
 }
 
+interface TSMaybeWithIsTypeAssertionExpression {
+	isTypeAssertionExpression?: typeof tsModule.isTypeAssertion;
+}
+
 /**
  * Takes a node and tries to resolve a constant value from it.
  * Returns undefined if no constant value can be resolved.
@@ -107,7 +111,11 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 	//  - "my-value" as string
 	//  - <any>"my-value"
 	//  - ("my-value")
-	else if (ts.isAsExpression(node) || ts.isTypeAssertion(node) || ts.isParenthesizedExpression(node)) {
+	else if (
+		ts.isAsExpression(node) ||
+		((ts as TSMaybeWithIsTypeAssertionExpression).isTypeAssertionExpression ?? ts.isTypeAssertion)(node) ||
+		ts.isParenthesizedExpression(node)
+	) {
 		return resolveNodeValue(node.expression, { ...context, depth });
 	}
 

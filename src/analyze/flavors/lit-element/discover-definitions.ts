@@ -1,6 +1,6 @@
 import { Node } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
-import { getNodeIdentifier } from "../../util/ast-util";
+import { getDecorators, getNodeIdentifier } from "../../util/ast-util";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { DefinitionNodeResult } from "../analyzer-flavor";
 
@@ -16,7 +16,7 @@ export function discoverDefinitions(node: Node, context: AnalyzerVisitContext): 
 	// @customElement("my-element")
 	if (ts.isClassDeclaration(node)) {
 		// Visit all decorators on the class
-		for (const decorator of node.decorators || []) {
+		for (const decorator of getDecorators(node, context)) {
 			const callExpression = decorator.expression;
 
 			// Find "@customElement"
