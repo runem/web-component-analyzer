@@ -21,6 +21,11 @@ import {
 import { getFirst } from "../../util/set-util";
 import { relative } from "path";
 
+interface SourceDescription {
+	module: string;
+	className: string;
+}
+
 /**
  * Transforms results to json.
  * @param results
@@ -89,21 +94,30 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 	const node = getFirst(definition.identifierNodes);
 	const path = getRelativePath(node?.getSourceFile().fileName, config);
 
+	let sourceDescription: SourceDescription | null = null;
 	if (node?.getText() && path) {
 		build.source = {
 			module: path,
 			symbol: node.getText()
 		};
+		sourceDescription = {
+			module: path,
+			className: node.getText()
+		};
 	}
 
 	// Build attributes
-	const customElementAttributes = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.attrName, true, d, checker, config)));
+	const customElementAttributes = arrayDefined(
+		declaration.members.map(d => componentMemberToAttr(d.attrName, d, sourceDescription, checker, config))
+	);
 	if (customElementAttributes.length > 0) build.attributes = customElementAttributes;
 
 	const js: Js = {};
 
 	// Build properties
-	const customElementProperties = arrayDefined(declaration.members.map(d => componentMemberToAttr(d.propName, false, d, checker, config)));
+	const customElementProperties = arrayDefined(
+		declaration.members.map(d => componentMemberToAttr(d.propName, d, sourceDescription, checker, config))
+	);
 	if (customElementProperties.length > 0) js.properties = customElementProperties;
 
 	// Build events
@@ -143,8 +157,8 @@ function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty): CssPro
 
 function componentMemberToAttr(
 	propName: string | undefined,
-	isAttribute: boolean,
 	member: ComponentMember,
+	sourceDescription: SourceDescription | null,
 	checker: TypeChecker,
 	config: TransformerConfig
 ): BaseContribution | undefined {
@@ -176,6 +190,13 @@ function componentMemberToAttr(
 	};
 
 	if (member?.jsDoc?.description) attr.description = member.jsDoc.description;
+
+	if (sourceDescription !== null) {
+		attr.source = {
+			module: sourceDescription.module,
+			symbol: sourceDescription.className + "." + member.propName
+		};
+	}
 
 	return attr;
 }
