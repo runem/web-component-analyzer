@@ -1,6 +1,6 @@
 {
 	"name": "web-component-analyzer",
-	"version": "2.0.0-next.4",
+	"version": "2.0.0-next.5",
 	"description": "CLI that analyzes web components",
 	"main": "lib/cjs/api.js",
 	"module": "lib/esm/api.js",
