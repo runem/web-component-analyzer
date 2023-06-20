@@ -4,11 +4,11 @@ import * as tsModule from "typescript";
 
 type TestFunction = (title: string, implementation: Implementation) => void;
 
-type TsModuleKind = "current" | "4.0" | "4.5" | "4.8" | "5.0";
+type TsModuleKind = "current" | "4.0" | "4.5" | "4.8" | "5.0" | "5.1";
 
-const TS_MODULES_ALL: TsModuleKind[] = ["current", "4.0", "4.5", "4.8", "5.0"];
+const TS_MODULES_ALL: TsModuleKind[] = ["current", "4.0", "4.5", "4.8", "5.0", "5.1"];
 
-const TS_MODULES_DEFAULT: TsModuleKind[] = ["4.0", "4.5", "4.8", "5.0"];
+const TS_MODULES_DEFAULT: TsModuleKind[] = ["4.0", "4.5", "4.8", "5.0", "5.1"];
 
 /**
  * Returns the name of the module to require for a specific ts module kind
@@ -21,6 +21,7 @@ function getTsModuleNameWithKind(kind: TsModuleKind | undefined): string {
 		case "4.5":
 		case "4.8":
 		case "5.0":
+		case "5.1":
 			return `typescript-${kind}`;
 		case "current":
 		case undefined:
