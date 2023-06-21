@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        node: [10, 12]
+        node: [18, 20]
 
     steps:
       - name: Checkout code
@@ -53,7 +53,8 @@ jobs:
 
       - name: Install Dev
         if: steps.cache-dev.outputs.cache-hit != 'true'
-        run: npm ci --cwd './dev' --prefix './dev'
+        run: npm ci
+        working-directory: 'dev'
 
       - name: Test
         run: npm run test:all
