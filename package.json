@@ -50,6 +50,7 @@
 	},
 	"homepage": "https://github.com/runem/web-component-analyzer#readme",
 	"dependencies": {
+		"custom-elements-manifest": "^1.0.0",
 		"fast-glob": "^3.2.2",
 		"ts-simple-type": "2.0.0-next.0",
 		"typescript": "~4.4.3",

@@ -28,7 +28,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 			`
 !!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
 The custom-elements.json format is for experimental purposes. You can expect changes to this format.
-Please follow and contribute to the discussion at:		
+Please follow and contribute to the discussion at:
   - https://github.com/webcomponents/custom-elements-json
   - https://github.com/w3c/webcomponents/issues/776
 !!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
@@ -42,6 +42,7 @@ Please follow and contribute to the discussion at:
 		if (config.outDir == null && config.outFile == null && config.outFiles == null) {
 			switch (config.format) {
 				case "json2":
+				case "custom-elements-manifest":
 					// "json2" will need to output everything at once
 					return "console_bulk";
 				default:
