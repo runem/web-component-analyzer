@@ -6,7 +6,7 @@ type TestFunction = (title: string, implementation: Implementation) => void;
 
 const TS_MODULES_ALL = ["current", "4.8", "4.9", "5.0", "5.1"] as const;
 
-type TsModuleKind = typeof TS_MODULES_ALL[number];
+type TsModuleKind = (typeof TS_MODULES_ALL)[number];
 
 const TS_MODULES_DEFAULT: readonly TsModuleKind[] = TS_MODULES_ALL;
 
