@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"clean": "rimraf lib",
-		"prepare": "npm run build",
+		"prepare": "npm run build && husky install",
 		"build": "npm run clean & rollup -c",
 		"watch": "rollup -c --watch",
 		"pretest": "cd dev && npm i",
@@ -67,7 +67,7 @@
 		"cross-env": "^7.0.2",
 		"eslint": "^8.51.0",
 		"eslint-config-prettier": "^9.0.0",
-		"husky": "^8.0.3",
+		"husky": "^8.0.0",
 		"lint-staged": "^14.0.1",
 		"prettier": "^3.0.3",
 		"rimraf": "^3.0.2",
