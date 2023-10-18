@@ -4,11 +4,11 @@ import * as tsModule from "typescript";
 
 type TestFunction = (title: string, implementation: Implementation) => void;
 
-type TsModuleKind = "current" | "4.0" | "4.5" | "4.8" | "5.0" | "5.1";
+const TS_MODULES_ALL = ["current", "4.8", "4.9", "5.0", "5.1"] as const;
 
-const TS_MODULES_ALL: TsModuleKind[] = ["current", "4.0", "4.5", "4.8", "5.0", "5.1"];
+type TsModuleKind = (typeof TS_MODULES_ALL)[number];
 
-const TS_MODULES_DEFAULT: TsModuleKind[] = ["4.0", "4.5", "4.8", "5.0", "5.1"];
+const TS_MODULES_DEFAULT: readonly TsModuleKind[] = TS_MODULES_ALL;
 
 /**
  * Returns the name of the module to require for a specific ts module kind
@@ -17,9 +17,12 @@ const TS_MODULES_DEFAULT: TsModuleKind[] = ["4.0", "4.5", "4.8", "5.0", "5.1"];
 function getTsModuleNameWithKind(kind: TsModuleKind | undefined): string {
 	// Return the corresponding ts module
 	switch (kind) {
-		case "4.0":
-		case "4.5":
+		default: {
+			const never: never = kind;
+			throw new Error(`Unknown ts module "${never}"`);
+		}
 		case "4.8":
+		case "4.9":
 		case "5.0":
 		case "5.1":
 			return `typescript-${kind}`;
@@ -28,8 +31,6 @@ function getTsModuleNameWithKind(kind: TsModuleKind | undefined): string {
 		case null:
 			// Fall back to "default"
 			return "typescript";
-		default:
-			throw new Error(`Unknown ts module "${kind}"`);
 	}
 }
 
@@ -112,7 +113,7 @@ function setupTest(testFunction: TestFunction, tsModuleKind: TsModuleKind | unde
  */
 function setupTests(testFunction: (title: string, implementation: Implementation) => void, title: string, cb: Implementation) {
 	// Find the user specified TS_MODULE at setup time
-	const moduleKinds: TsModuleKind[] = (() => {
+	const moduleKinds: readonly TsModuleKind[] = (() => {
 		const currentTsModuleKind = getCurrentTsModuleKind();
 
 		// Default to running all ts modules if TS_MODULE is not set

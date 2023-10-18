@@ -54,7 +54,7 @@ jobs:
       - name: Install Dev
         if: steps.cache-dev.outputs.cache-hit != 'true'
         run: npm ci
-        working-directory: 'dev'
+        working-directory: "dev"
 
       - name: Test
         run: npm run test:all

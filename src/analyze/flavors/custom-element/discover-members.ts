@@ -23,7 +23,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 	}
 
 	// static get observedAttributes() { return ['c', 'l']; }
-	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		if (node.name.getText() === "observedAttributes" && node.body != null) {
 			const members: ComponentMember[] = [];
 
@@ -55,7 +55,12 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 
 	// class { myProp = "hello"; }
 	else if (ts.isPropertyDeclaration(node) || ts.isPropertySignature(node)) {
-		const { name, initializer } = node;
+		const { name, initializer } = (() => {
+			if (ts.isPropertySignature(node)) {
+				return { name: node.name, initializer: undefined };
+			}
+			return node;
+		})();
 
 		if (ts.isIdentifier(name) || ts.isStringLiteralLike(name)) {
 			// Always ignore the "prototype" property

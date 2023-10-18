@@ -15,7 +15,7 @@
 	},
 	"scripts": {
 		"clean": "rimraf lib",
-		"prepare": "npm run build",
+		"prepare": "npm run build && husky install",
 		"build": "npm run clean & rollup -c",
 		"watch": "rollup -c --watch",
 		"pretest": "cd dev && npm i",
@@ -52,32 +52,31 @@
 	"dependencies": {
 		"fast-glob": "^3.2.2",
 		"ts-simple-type": "2.0.0-next.0",
-		"typescript": "~4.4.3",
-		"yargs": "^15.3.1"
+		"typescript": "~5.2.0",
+		"yargs": "^17.7.2"
 	},
 	"devDependencies": {
-		"@rollup/plugin-node-resolve": "^13.0.0",
-		"@rollup/plugin-replace": "^2.4.2",
-		"@rollup/plugin-typescript": "^8.2.1",
-		"@types/node": "^14.0.13",
-		"@types/yargs": "^15.0.5",
-		"@typescript-eslint/eslint-plugin": "^4.28.4",
-		"@typescript-eslint/parser": "^4.28.4",
+		"@rollup/plugin-node-resolve": "^15.2.3",
+		"@rollup/plugin-replace": "^5.0.3",
+		"@rollup/plugin-typescript": "^11.1.5",
+		"@types/node": "^18.0.13",
+		"@types/yargs": "^17.0.28",
+		"@typescript-eslint/eslint-plugin": "^6.7.5",
+		"@typescript-eslint/parser": "^6.7.5",
 		"ava": "^3.15.0",
 		"cross-env": "^7.0.2",
-		"eslint": "^7.31.0",
-		"eslint-config-prettier": "^8.3.0",
-		"husky": "^4.2.5",
-		"lint-staged": "^10.2.10",
-		"prettier": "^2.3.0",
+		"eslint": "^8.51.0",
+		"eslint-config-prettier": "^9.0.0",
+		"husky": "^8.0.0",
+		"lint-staged": "^14.0.1",
+		"prettier": "^3.0.3",
 		"rimraf": "^3.0.2",
-		"rollup": "^2.50.2",
-		"rollup-plugin-copy": "^3.4.0",
-		"ts-node": "^10.0.0",
-		"tslib": "^2.2.0",
-		"typescript-4.0": "npm:typescript@~4.0.0",
-		"typescript-4.5": "npm:typescript@~4.5.0",
+		"rollup": "^4.0.2",
+		"rollup-plugin-copy": "^3.5.0",
+		"ts-node": "^10.9.1",
+		"tslib": "^2.6.2",
 		"typescript-4.8": "npm:typescript@~4.8.0",
+		"typescript-4.9": "npm:typescript@~4.9.0",
 		"typescript-5.0": "npm:typescript@~5.0.0",
 		"typescript-5.1": "npm:typescript@~5.1.0"
 	},
@@ -94,15 +93,6 @@
 			"!test/{helpers,snapshots}/**/*"
 		],
 		"timeout": "2m"
-	},
-	"husky": {
-		"hooks": {
-			"pre-commit": "lint-staged"
-		}
-	},
-	"lint-staged": {
-		"*.{ts,js}": "eslint --fix",
-		"*.{ts,js,md,json}": "prettier --write"
 	},
 	"bin": {
 		"wca": "cli.js",
