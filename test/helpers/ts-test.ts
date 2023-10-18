@@ -17,6 +17,10 @@ const TS_MODULES_DEFAULT: readonly TsModuleKind[] = TS_MODULES_ALL;
 function getTsModuleNameWithKind(kind: TsModuleKind | undefined): string {
 	// Return the corresponding ts module
 	switch (kind) {
+		default: {
+			const never: never = kind;
+			throw new Error(`Unknown ts module "${never}"`);
+		}
 		case "4.8":
 		case "4.9":
 		case "5.0":
@@ -27,8 +31,6 @@ function getTsModuleNameWithKind(kind: TsModuleKind | undefined): string {
 		case null:
 			// Fall back to "default"
 			return "typescript";
-		default:
-			throw new Error(`Unknown ts module "${kind}"`);
 	}
 }
 
