@@ -10,9 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/)
 <!-- ### Removed -->
 <!-- ### Fixed -->
 
-## [2.0.0] - 2023-06-12
+## [2.0.0] - 2023-10-18
 
-- Drop support for TypeScript pre-4.4. Testing with versions:
+- Drop support for TypeScript pre-4.8. Testing with versions:
   4.8, 4.9, 5.0, 5.1, 5.2
 
 ## [2.0.0-next.5] - 2023-06-12
