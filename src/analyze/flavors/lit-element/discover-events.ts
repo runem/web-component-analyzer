@@ -21,7 +21,7 @@ export function discoverEvents(node: Node, context: AnalyzerDeclarationVisitCont
 	// Polymer notify on properties
 	// static get properties() { return { myProp: {notify: true} } }
 	// https://polymer-library.polymer-project.org/3.0/docs/devguide/data-system#change-events
-	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		const name = node.name.getText();
 		if (name === "properties" && node.body != null) {
 			const returnStatement = node.body.statements.find<ReturnStatement>(ts.isReturnStatement.bind(ts));
