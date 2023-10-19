@@ -165,6 +165,8 @@ export interface HtmlAttributeValue {
 
 export interface SlotAttribute extends BaseContribution {}
 
+export interface CssPartAttribute extends BaseContribution {}
+
 export interface TypeReference {
 	module?: string;
 	name: string;
@@ -204,6 +206,7 @@ export interface CssContributionsHost {
 	"pseudo-classes"?: CssPseudoClass[];
 	functions?: CssGenericItem[];
 	classes?: CssGenericItem[];
+	parts?: CssPartAttribute[];
 }
 
 export interface CssProperty extends BaseContribution, CssContributionsHost {

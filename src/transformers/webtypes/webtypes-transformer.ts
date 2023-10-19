@@ -17,7 +17,8 @@ import {
 	GenericJsContribution,
 	CssProperty,
 	HtmlAttributeValue,
-	SlotAttribute
+	SlotAttribute,
+	CssContributionsHost
 } from "./webtypes-schema";
 import { getFirst } from "../../util/set-util";
 import { relative } from "path";
@@ -138,6 +139,17 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 		});
 		build.slots = slots;
 	}
+
+	// Build CSS
+	const css: CssContributionsHost = {};
+	if (declaration.cssParts && declaration.cssParts.length > 0) {
+		css.parts = declaration.cssParts?.map(part => ({
+			name: part.name,
+			description: part.jsDoc?.description || ""
+		}));
+	}
+
+	if (css.parts) build.css = css;
 
 	return build;
 }

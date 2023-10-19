@@ -154,3 +154,24 @@ tsTest("Transformer: Webtypes: Slots values", t => {
 	t.is(defaultSlot?.description, "Default slot desc");
 	t.is(namedSlot?.description, "Named slot desc");
 });
+
+tsTest("Transformer: Webtypes: CssParts values", t => {
+	const res = runAndParseWebtypesBuild(`
+	/**
+	 * @csspart part1 - Part 1 desc
+	 * @csspart part-2 - Part 2 desc
+	 */
+	@customElement('my-element')
+	class MyElement extends HTMLElement {}
+ 	`);
+
+	const myElement = findHtmlElementOfName(res, "my-element");
+	t.truthy(myElement);
+
+	t.is(myElement?.css?.parts?.length, 2);
+	const defaultSlot = myElement?.css?.parts?.find(slot => slot.name == "part1");
+	const namedSlot = myElement?.css?.parts?.find(slot => slot.name == "part-2");
+
+	t.is(defaultSlot?.description, "Part 1 desc");
+	t.is(namedSlot?.description, "Part 2 desc");
+});
