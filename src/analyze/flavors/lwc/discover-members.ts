@@ -1,4 +1,4 @@
-import { Node, PropertyLikeDeclaration, PropertySignature, SetAccessorDeclaration } from "typescript";
+import type { GetAccessorDeclaration, Node, PropertyDeclaration, PropertySignature, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/features/component-member";
 import { getMemberVisibilityFromNode, getModifiersFromNode } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
@@ -33,7 +33,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
  * @param context
  */
 function parsePropertyDecorator(
-	node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature,
+	node: SetAccessorDeclaration | GetAccessorDeclaration | PropertyDeclaration | PropertySignature,
 	context: AnalyzerDeclarationVisitContext
 ): ComponentMember[] | undefined {
 	const { ts, checker } = context;

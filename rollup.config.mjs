@@ -2,7 +2,9 @@ import ts from "@rollup/plugin-typescript";
 import resolve from "@rollup/plugin-node-resolve";
 import replace from "@rollup/plugin-replace";
 import copy from "rollup-plugin-copy";
-
+// create a require
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
 const { dirname } = require("path");
 const pkg = require("./package.json");
 const watch = { include: "src/**" };

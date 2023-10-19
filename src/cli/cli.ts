@@ -110,7 +110,7 @@ o {tagname}: The element's tag name`,
 		.strict()
 		.alias("h", "help").argv;
 
-	if (argv.verbose) {
+	if ((argv as { verbose: boolean }).verbose) {
 		/* eslint-disable-next-line no-console */
 		console.log("CLI options:", argv);
 	}

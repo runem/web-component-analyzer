@@ -19,7 +19,7 @@ export function discoverMethods(node: Node, context: AnalyzerDeclarationVisitCon
 	}
 
 	// class { myMethod () {} }
-	if ((ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) && !hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+	if ((ts.isMethodDeclaration(node) || ts.isMethodSignature(node)) && !hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		// Outscope static methods for now
 		const name = node.name.getText();
 

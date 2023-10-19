@@ -1,4 +1,4 @@
-import { Node, PropertyLikeDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
+import { GetAccessorDeclaration, Node, PropertyDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
 import { ComponentMember } from "../../types/features/component-member";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLang, hasModifier } from "../../util/ast-util";
@@ -24,7 +24,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 	}
 
 	// static get properties() { return { myProp: {type: String} } }
-	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		const name = node.name.getText();
 		if (name === "properties" && node.body != null) {
 			const returnStatement = node.body.statements.find<ReturnStatement>(ts.isReturnStatement.bind(ts));
@@ -46,7 +46,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
  * @param context
  */
 function parsePropertyDecorator(
-	node: SetAccessorDeclaration | PropertyLikeDeclaration | PropertySignature,
+	node: SetAccessorDeclaration | GetAccessorDeclaration | PropertyDeclaration | PropertySignature,
 	context: AnalyzerDeclarationVisitContext
 ): ComponentMember[] | undefined {
 	const { ts, checker } = context;

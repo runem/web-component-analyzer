@@ -1,5 +1,6 @@
 import { Node, ClassDeclaration } from "typescript";
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
+import { getDecorators } from "../../util/ast-util";
 import { camelToDashCase } from "../../util/text-util";
 import { existsSync, readFileSync } from "fs";
 import { parseJsDocForNode } from "../js-doc/parse-js-doc-for-node";
@@ -127,11 +128,10 @@ function inheritFromLightning(node: ClassDeclaration, context: AnalyzerVisitCont
  * @param context
  */
 export function hasLwcApiPropertyDecorator(node: Node, context: AnalyzerVisitContext): boolean {
-	if (node.decorators == null) return false;
 	const { ts } = context;
 
 	// Find a decorator with "api" name.
-	for (const decorator of node.decorators) {
+	for (const decorator of getDecorators(node, context)) {
 		const expression = decorator.expression;
 
 		// We find the first decorator calling specific identifier name (@api)

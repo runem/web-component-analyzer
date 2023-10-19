@@ -14,9 +14,12 @@ tsTest("analyzeHTMLElement returns correct result", t => {
 	const ext = getAllInheritedNames(result!.heritageClauses);
 
 	// Test that the node extends some of the interfaces
+	if (!tsModule.version.startsWith("5.")) {
+		t.truthy(ext.has("DocumentAndElementEventHandlers"));
+	}
+	t.truthy(ext.has("GlobalEventHandlers"));
 	t.truthy(ext.has("EventTarget"));
 	t.truthy(ext.has("Node"));
-	t.truthy(ext.has("DocumentAndElementEventHandlers"));
 	t.truthy(ext.has("ElementContentEditable"));
 
 	// From ElementContentEditable interface

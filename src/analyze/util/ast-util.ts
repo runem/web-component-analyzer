@@ -1,7 +1,8 @@
 import { isAssignableToSimpleTypeKind } from "ts-simple-type";
-import * as tsModule from "typescript";
-import {
+import type * as tsModule from "typescript";
+import type {
 	Declaration,
+	Decorator,
 	Identifier,
 	InterfaceDeclaration,
 	Node,
@@ -119,11 +120,11 @@ export function isAliasSymbol(symbol: Symbol, ts: typeof tsModule): boolean {
 export function getModifiersFromNode(node: Node, ts: typeof tsModule): Set<ModifierKind> | undefined {
 	const modifiers: Set<ModifierKind> = new Set();
 
-	if (hasModifier(node, ts.SyntaxKind.ReadonlyKeyword)) {
+	if (hasModifier(node, ts.SyntaxKind.ReadonlyKeyword, ts)) {
 		modifiers.add("readonly");
 	}
 
-	if (hasModifier(node, ts.SyntaxKind.StaticKeyword)) {
+	if (hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		modifiers.add("static");
 	}
 
@@ -148,8 +149,12 @@ export function hasFlag(num: number, flag: number): boolean {
  * @param node
  * @param modifierKind
  */
-export function hasModifier(node: Node, modifierKind: SyntaxKind): boolean {
-	if (node.modifiers == null) return false;
+export function hasModifier(node: Node, modifierKind: SyntaxKind, ts: typeof tsModule): boolean {
+	if (!ts.canHaveModifiers(node)) {
+		return false;
+	}
+	const modifiers = ts.getModifiers(node);
+	if (modifiers == null) return false;
 	return (node.modifiers || []).find(modifier => modifier.kind === (modifierKind as unknown)) != null;
 }
 
@@ -160,9 +165,9 @@ export function getMemberVisibilityFromNode(
 	node: PropertyDeclaration | PropertySignature | SetAccessorDeclaration | Node,
 	ts: typeof tsModule
 ): VisibilityKind | undefined {
-	if (hasModifier(node, ts.SyntaxKind.PrivateKeyword) || ("name" in node && ts.isIdentifier(node.name) && isNamePrivate(node.name.text))) {
+	if (hasModifier(node, ts.SyntaxKind.PrivateKeyword, ts) || ("name" in node && ts.isIdentifier(node.name) && isNamePrivate(node.name.text))) {
 		return "private";
-	} else if (hasModifier(node, ts.SyntaxKind.ProtectedKeyword)) {
+	} else if (hasModifier(node, ts.SyntaxKind.ProtectedKeyword, ts)) {
 		return "protected";
 	} else if (getNodeSourceFileLang(node) === "ts") {
 		// Only return "public" in typescript land
@@ -215,11 +220,15 @@ export function getInterfaceKeys(
 }
 
 // noinspection JSUnusedGlobalSymbols
-export function isPropertyRequired(property: PropertySignature | PropertyDeclaration, checker: TypeChecker): boolean {
+export function isPropertyRequired(property: PropertySignature | PropertyDeclaration, checker: TypeChecker, ts: typeof tsModule): boolean {
 	const type = checker.getTypeAtLocation(property);
 
 	// Properties in external modules don't have initializers, so we cannot infer if the property is required or not
 	if (isNodeInDeclarationFile(property)) {
+		return false;
+	}
+
+	if (ts.isPropertySignature(property)) {
 		return false;
 	}
 
@@ -346,4 +355,15 @@ export function getNodeIdentifier(node: Node, context: { ts: typeof tsModule }):
 	}
 
 	return undefined;
+}
+
+/**
+ * Returns all decorators in either the node's `decorators` or `modifiers`.
+ * @param node
+ * @param context
+ */
+export function getDecorators(node: Node, context: { ts: typeof tsModule }): ReadonlyArray<Decorator> {
+	const { ts } = context;
+
+	return ts.canHaveDecorators(node) ? ts.getDecorators(node) ?? [] : [];
 }

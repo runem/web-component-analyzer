@@ -23,7 +23,7 @@ export const discoverGlobalFeatures: AnalyzerFlavor["discoverGlobalFeatures"] = 
 
 					if (name != null && typeof name === "string") {
 						events.push({
-							node: member.initializer || member,
+							node: member,
 							jsDoc: getJsDoc(member, ts),
 							name: name,
 							type: lazy(() => checker.getTypeAtLocation(member))
