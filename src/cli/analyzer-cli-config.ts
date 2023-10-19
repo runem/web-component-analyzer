@@ -21,6 +21,7 @@ export interface AnalyzerCliConfig {
 	analyzeDependencies?: boolean;
 	analyzeDefaultLibrary?: boolean;
 	discoverNodeModules?: boolean;
+	excludeClasses: string;
 
 	markdown?: {
 		headerLevel?: number;
