@@ -159,14 +159,8 @@ tsTest("Correctly discovers multiple declarations", t => {
 
 	t.is(componentDefinitions.length, 1);
 	t.is(componentDefinitions[0].tagName, "my-element");
-	t.is(
-		componentDefinitions[0].declaration?.members?.some(m => m.propName === "prototype"),
-		false
-	);
-	t.is(
-		componentDefinitions[0].declaration?.methods?.some(m => m.name === "new"),
-		false
-	);
+	t.is(componentDefinitions[0].declaration?.members?.some(m => m.propName === "prototype"), false);
+	t.is(componentDefinitions[0].declaration?.methods?.some(m => m.name === "new"), false);
 });
 
 tsTest("Discovers elements using typescript >=4.3 syntax", t => {

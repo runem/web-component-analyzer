@@ -1,6 +1,7 @@
 import { AnalyzerVisitContext } from "../../analyzer-visit-context";
 import { ComponentFeatureBase } from "../../types/features/component-feature";
 import { ComponentMember } from "../../types/features/component-member";
+import { getDecorators } from "../../util/ast-util";
 import { Node, ClassDeclaration } from "typescript";
 
 import { ComponentMethod } from "../../types/features/component-method";
@@ -10,21 +11,25 @@ import { getLwcComponent } from "./utils";
 // In LWC, the public properties & methods must be tagged with @api
 // everything else becomes protected and not accessible externally
 function hasApiDecorator(node: Node | undefined, context: AnalyzerVisitContext) {
-	const { ts } = context;
-	if (node && node.decorators) {
-		for (const decorator of node.decorators) {
-			const expression = decorator.expression;
+	if (!node) {
+		return false;
+	}
 
-			// We find the first decorator calling specific identifier name (found in LWC_PROPERTY_DECORATOR_KINDS)
-			if (ts.isIdentifier(expression)) {
-				const identifier = expression;
-				const kind = identifier.text;
-				if (kind === "api") {
-					return true;
-				}
+	const { ts } = context;
+
+	for (const decorator of getDecorators(node, context)) {
+		const expression = decorator.expression;
+
+		// We find the first decorator calling specific identifier name (found in LWC_PROPERTY_DECORATOR_KINDS)
+		if (ts.isIdentifier(expression)) {
+			const identifier = expression;
+			const kind = identifier.text;
+			if (kind === "api") {
+				return true;
 			}
 		}
 	}
+
 	return false;
 }
 
