@@ -133,3 +133,24 @@ tsTest("Transformer: Webtypes: Enum values", t => {
 	t.true(prop1?.value?.required);
 	t.is(prop1?.value?.default, '"foo"');
 });
+
+tsTest("Transformer: Webtypes: Slots values", t => {
+	const res = runAndParseWebtypesBuild(`
+	/**
+	 * @slot - Default slot desc
+	 * @slot named-slot - Named slot desc
+	 */
+	@customElement('my-element')
+	class MyElement extends HTMLElement {}
+ 	`);
+
+	const myElement = findHtmlElementOfName(res, "my-element");
+	t.truthy(myElement);
+
+	t.is(myElement?.slots?.length, 2);
+	const defaultSlot = myElement?.slots?.find(slot => slot.name == "");
+	const namedSlot = myElement?.slots?.find(slot => slot.name == "named-slot");
+
+	t.is(defaultSlot?.description, "Default slot desc");
+	t.is(namedSlot?.description, "Named slot desc");
+});
