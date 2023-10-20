@@ -140,7 +140,7 @@ function definitionToHTMLElement(definition: ComponentDefinition, checker: TypeC
 		build.slots = slots;
 	}
 
-	// Build CSS
+	// Build component CSS
 	const css: CssContributionsHost = {};
 	if (declaration.cssParts && declaration.cssParts.length > 0) {
 		css.parts = declaration.cssParts?.map(part => ({
@@ -176,6 +176,10 @@ function componentCssPropertiesToAttr(cssProperty: ComponentCssProperty): CssPro
 	};
 
 	if (cssProperty?.jsDoc?.description) builtCssProp.description = cssProperty.jsDoc.description;
+	if (cssProperty.default) {
+		if (builtCssProp.description) builtCssProp.description += "\n\n**Default:** " + cssProperty.default;
+		else builtCssProp.description = "**Default:** " + cssProperty.default;
+	}
 
 	return builtCssProp;
 }
