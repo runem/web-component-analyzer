@@ -1,9 +1,9 @@
 import { toSimpleType } from "ts-simple-type";
-import { BinaryExpression, ExpressionStatement, Node, ReturnStatement } from "typescript";
+import { BinaryExpression, ExpressionStatement, Node, ReturnStatement, Type } from "typescript";
+import { ComponentDeclaration } from "../../types/component-declaration";
 import { ComponentMember } from "../../types/features/component-member";
 import { getMemberVisibilityFromNode, getModifiersFromNode, hasModifier } from "../../util/ast-util";
 import { getJsDoc } from "../../util/js-doc-util";
-import { lazy } from "../../util/lazy";
 import { resolveNodeValue } from "../../util/resolve-node-value";
 import { isNamePrivate } from "../../util/text-util";
 import { relaxType } from "../../util/type-util";
@@ -21,6 +21,31 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 	if (node.parent !== context.declarationNode) {
 		return undefined;
 	}
+
+	// If no `descendant` declaration is given, use the declaration that generated
+	// this member instead. If there are free type parameters in the used
+	// declaration's type, those type parameters will remain free in the type
+	// returned here.
+	const getMemberType = (name: string, descendant: ComponentDeclaration = context.getDeclaration()): Type | undefined => {
+		const declarationNode = context.getDeclaration().node;
+
+		const ancestorType = descendant.ancestorDeclarationNodeToType.get(declarationNode);
+		if (!ancestorType) {
+			return undefined;
+		}
+
+		const property = ancestorType.getProperty(name);
+		if (!property) {
+			return undefined;
+		}
+
+		const type = checker.getTypeOfSymbolAtLocation(property, declarationNode);
+		if (!type) {
+			return undefined;
+		}
+
+		return type;
+	};
 
 	// static get observedAttributes() { return ['c', 'l']; }
 	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
@@ -79,7 +104,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 					kind: "property",
 					jsDoc: getJsDoc(node, ts),
 					propName: name.text,
-					type: lazy(() => checker.getTypeAtLocation(node)),
+					type: (descendant?: ComponentDeclaration) => getMemberType(name.text, descendant) ?? checker.getTypeAtLocation(node),
 					default: def,
 					visibility: getMemberVisibilityFromNode(node, ts),
 					modifiers: getModifiersFromNode(node, ts)
@@ -103,7 +128,7 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 					jsDoc: getJsDoc(node, ts),
 					kind: "property",
 					propName: name.text,
-					type: lazy(() => (parameter == null ? context.checker.getTypeAtLocation(node) : context.checker.getTypeAtLocation(parameter))),
+					type: (descendant?: ComponentDeclaration) => getMemberType(name.text, descendant) ?? checker.getTypeAtLocation(parameter ?? node),
 					visibility: getMemberVisibilityFromNode(node, ts),
 					modifiers: getModifiersFromNode(node, ts)
 				}
@@ -136,7 +161,8 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 							kind: "property",
 							propName,
 							default: def,
-							type: () => relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
+							type: (descendant?: ComponentDeclaration) =>
+								getMemberType(propName, descendant) ?? relaxType(toSimpleType(checker.getTypeAtLocation(right), checker)),
 							jsDoc: getJsDoc(assignment.parent, ts),
 							visibility: isNamePrivate(propName) ? "private" : undefined
 						});

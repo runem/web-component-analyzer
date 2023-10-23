@@ -76,7 +76,13 @@ tsTest("Property assignments in the constructor are picked up", t => {
 				attrName: undefined,
 				jsDoc: undefined,
 				default: { title: "foo", description: "bar" },
-				type: () => ({ kind: "OBJECT" }),
+				type: () => ({
+					kind: "OBJECT",
+					members: [
+						{ name: "title", optional: false, type: { kind: "STRING" } },
+						{ name: "description", optional: false, type: { kind: "STRING" } }
+					]
+				}),
 				visibility: undefined,
 				reflect: undefined,
 				deprecated: undefined,

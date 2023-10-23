@@ -1,4 +1,4 @@
-import { Node } from "typescript";
+import { Node, Type, TypeChecker } from "typescript";
 import { AnalyzerVisitContext } from "../analyzer-visit-context";
 import { AnalyzerDeclarationVisitContext, ComponentFeatureCollection } from "../flavors/analyzer-flavor";
 import { ComponentDeclaration } from "../types/component-declaration";
@@ -51,6 +51,8 @@ export function analyzeComponentDeclaration(
 		}
 	}
 
+	const checker = baseContext.checker;
+
 	// Get symbol of main declaration node
 	const symbol = getSymbol(mainDeclarationNode, baseContext);
 
@@ -69,7 +71,8 @@ export function analyzeComponentDeclaration(
 		members: [],
 		methods: [],
 		slots: [],
-		jsDoc: getJsDoc(mainDeclarationNode, baseContext.ts)
+		jsDoc: getJsDoc(mainDeclarationNode, baseContext.ts),
+		ancestorDeclarationNodeToType: buildAncestorNodeToTypeMap(checker.getTypeAtLocation(mainDeclarationNode), checker)
 	};
 
 	// Add the "get declaration" hook to the context
@@ -136,6 +139,56 @@ export function analyzeComponentDeclaration(
 	baseContext.cache.componentDeclarationCache.set(mainDeclarationNode, baseDeclaration);
 
 	return baseDeclaration;
+}
+
+/**
+ * Generates a map from declaration nodes in the AST to the type they produce in
+ * the base type tree of a given type.
+ *
+ * For example, this snippet contains three class declarations that produce more
+ * than three types:
+ *
+ * ```
+ * class A<T> { p: T; }
+ * class B extends A<number> {}
+ * class C extends A<boolean> {}
+ * ```
+ *
+ * Classes `B` and `C` each extend `A`, but with different arguments for `A`'s
+ * type parameter `T`. This results in the base types of `B` and `C` being
+ * distinct specializations of `A` - one for each choice of type arguments -
+ * which both have the same declaration `Node` in the AST (`class A<T> ...`).
+ *
+ * Calling this function with `B`'s `Type` produces a map with two entries:
+ * `B`'s `Node` mapped to `B`'s `Type` and `A<T>`'s `Node` mapped to
+ * `A<number>`'s `Type`. Calling this function with the `C`'s `Type` produces a
+ * map with two entries: `C`'s `Node` mapped to `C`'s `Type` and `A<T>`'s `Node`
+ * mapped to `A<boolean>`'s `Type`. Calling this function with `A<T>`'s
+ * *unspecialized* type produces a map with one entry: `A<T>`'s `Node` mapped to
+ * `A<T>`'s *unspecialized* `Type` (distinct from the types of `A<number>` and
+ * `A<boolean>`). In each case, the resulting map contains an entry with
+ * `A<T>`'s `Node` as a key but the type that it maps to is different.
+ *
+ * @param node
+ * @param checker
+ */
+function buildAncestorNodeToTypeMap(rootType: Type, checker: TypeChecker): Map<Node, Type> {
+	const m = new Map();
+	const walkAncestorTypeTree = (t: Type) => {
+		// If the type has any declarations, map them to that type.
+		for (const declaration of t.getSymbol()?.getDeclarations() ?? []) {
+			m.set(declaration, t);
+		}
+
+		// Recurse into base types if `t is InterfaceType`.
+		if (t.isClassOrInterface()) {
+			for (const baseType of checker.getBaseTypes(t)) {
+				walkAncestorTypeTree(baseType);
+			}
+		}
+	};
+	walkAncestorTypeTree(rootType);
+	return m;
 }
 
 /**
