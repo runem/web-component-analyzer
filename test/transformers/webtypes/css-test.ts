@@ -21,6 +21,6 @@ tsTest("Transformer: Webtypes: CSS properties test", t => {
 
 	const varTest2 = cssProps?.find(cp => cp.name == "--var-test2");
 	t.truthy(varTest2);
-	t.is(varTest2?.description, "Var test desc with default value");
+	t.is(varTest2?.description, "Var test desc with default value\n\n**Default:** 48px");
 	// default value not put in CSS
 });
