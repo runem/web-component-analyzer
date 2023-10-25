@@ -2,6 +2,7 @@ import * as tsModule from "typescript";
 import { ComponentFeature } from "../analyze/types/features/component-feature";
 import { VisibilityKind } from "../analyze/types/visibility-kind";
 import { TransformerKind } from "../transformers/transformer-kind";
+import { WebTypesTransformerConfig } from "../transformers";
 
 export interface AnalyzerCliConfig {
 	glob?: string[];
@@ -30,4 +31,7 @@ export interface AnalyzerCliConfig {
 
 	ts?: typeof tsModule;
 	cwd?: string;
+
+	webtypesConfig?: string | WebTypesTransformerConfig;
+	parsedWebtypesConfig?: WebTypesTransformerConfig;
 }

@@ -23,7 +23,7 @@ export const analyzeCliCommand: CliCommand = async (config: AnalyzerCliConfig): 
 	const inputGlobs = config.glob || [];
 
 	// Log warning for experimental json format
-	if (config.format === "json" || config.format === "json2" || config.outFile?.endsWith(".json")) {
+	if (config.format === "json" || config.format === "json2" || (config.outFile?.endsWith(".json") && config.format !== "webtypes")) {
 		log(
 			`
 !!!!!!!!!!!!!  WARNING !!!!!!!!!!!!!
@@ -35,6 +35,43 @@ Please follow and contribute to the discussion at:
 `,
 			config
 		);
+	}
+
+	if (config.format === "webtypes") {
+		if (!config.webtypesConfig) throw makeCliError("Missing webtypes-config configuration");
+
+		// Allow object being passed as JSON from command line
+		let cleanedConfiguration;
+		if (typeof config.webtypesConfig === "string") {
+			try {
+				cleanedConfiguration = JSON.parse(config.webtypesConfig);
+			} catch (e) {
+				const message = e instanceof Error ? e.message : e;
+				throw makeCliError("webtypes-config JSON format issue: " + message + "\nReceived value: " + config.webtypesConfig);
+			}
+		} else {
+			cleanedConfiguration = config.webtypesConfig;
+		}
+
+		if (!cleanedConfiguration.name) {
+			// Take package name if ran from npm script
+			if (process.env.npm_package_name) {
+				cleanedConfiguration.name = process.env.npm_package_name;
+			} else {
+				throw makeCliError('Missing webtypes-config "name" property');
+			}
+		}
+
+		if (!cleanedConfiguration.version) {
+			// Take package version if ran from npm script
+			if (process.env.npm_package_version) {
+				cleanedConfiguration.version = process.env.npm_package_version;
+			} else {
+				throw makeCliError('Missing webtypes-config "version" property');
+			}
+		}
+
+		config.parsedWebtypesConfig = cleanedConfiguration;
 	}
 
 	// If no "out" is specified, output to console
@@ -124,6 +161,9 @@ function transformResults(results: AnalyzerResult[] | AnalyzerResult, program: P
 		markdown: config.markdown,
 		cwd: config.cwd
 	};
+	if (format == "webtypes") {
+		transformerConfig.webTypes = config.parsedWebtypesConfig;
+	}
 
 	return transformAnalyzerResult(format, results, program, transformerConfig);
 }
@@ -227,6 +267,7 @@ function formatToExtension(kind: TransformerKind): string {
 	switch (kind) {
 		case "json":
 		case "vscode":
+		case "webtypes":
 			return ".json";
 		case "md":
 		case "markdown":

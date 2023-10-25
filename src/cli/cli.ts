@@ -9,6 +9,7 @@ import { log } from "./util/log";
  */
 export function cli(): void {
 	const argv = yargs
+		.pkgConf("wca")
 		.usage("Usage: $0 <command> [glob..] [options]")
 		.command<AnalyzerCliConfig>({
 			command: ["analyze [glob..]", "$0"],
@@ -50,7 +51,7 @@ o {tagname}: The element's tag name`,
 		})
 		.option("format", {
 			describe: `Specify output format`,
-			choices: ["md", "markdown", "json", "json2", "vscode"],
+			choices: ["md", "markdown", "json", "json2", "vscode", "webtypes"],
 			nargs: 1,
 			alias: "f"
 		})
@@ -102,6 +103,10 @@ o {tagname}: The element's tag name`,
 		.option("cwd", {
 			string: true,
 			hidden: true
+		})
+		.option("webtypesConfig", {
+			describe: "WebTypes header configuration",
+			string: true
 		})
 
 		.alias("v", "version")

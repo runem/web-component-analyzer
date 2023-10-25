@@ -61,7 +61,7 @@ The analyze command analyses an optional `<input glob>` and emits the output to 
 <!-- prettier-ignore -->
 | Option                      | Type                             | Description                                                                  |
 | --------------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
-| `--format <format>`         | `markdown` \| `json` \| `vscode` | Specify output format. Default is `markdown`.                                |
+| `--format <format>`         | `markdown` \| `json` \| `vscode` \| `webtypes` | Specify output format. Default is `markdown`.                  |
 | `--outDir <path>`           | `directory path`                 | Direct output to a directory where each file corresponds to a web component. |
 | `--outFile <path>`          | `file path`                      | Concatenate and emit output to a single file.                                |
 | `--outFiles <path>`         | `file path with pattern`         | Emit output to multiple files using a pattern. Available substitutions:<br>**{dir}**: The directory of the component<br>**{filename}**: The filename (without ext) of the component<br>**{tagname}**: The element's tag name |
@@ -106,6 +106,33 @@ wca analyze src --format vscode --outFile vscode-html-custom-data.json
 ```
 
 VSCode supports a JSON format called [vscode custom data](https://github.com/microsoft/vscode-custom-data) for the built in html editor which is set using `html.customData` vscode setting. Web Component Analyzer can output this format.
+
+### webtypes
+
+<!-- prettier-ignore -->
+```bash
+wca analyze src --format webtypes --outFile web-types-custom.json
+```
+
+To configure web-types (name, version, etc.) add this section to your `package.json`. `name` and `version` fields are required if wca is not ran from npm `package.json` `scripts` section.
+Otherwise it will take `package.json` project `name` and `version`.
+
+You can use the `wca-config` section to configure other options as well.
+
+```json
+"wca": {
+  "webtypesConfig": {
+    "name": "your-project-name",
+    "version": "0.0.1",
+    "framework": "lit",
+    "description-markup": "markdown"
+  }
+}
+```
+
+Web-types format is a description for IDE completion, see [web-types](https://github.com/JetBrains/web-types/tree/master/packages)
+
+See [web-component-analyzer web-types dedicated page](./doc/web-types.md) for project setup.
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#how-does-this-tool-analyze-my-components)
 
