@@ -52,3 +52,29 @@ type AliasedLiteral = StringLiteral;
 		t.is(actualValue, "popsicles", `Resolved value for '${name.getText()}' is invalid`);
 	});
 });
+
+test("resolveNodeValue resolves class properties", t => {
+	const {
+		analyzedSourceFiles: [sourceFile],
+		program
+	} = analyzeText(`
+class FooClass {
+	static readonly FOO_BAR = "foo-bar";
+	readonly barBaz = "bar-baz";
+	fooBaz = "foo-baz";
+}
+	`);
+
+	const checker = program.getTypeChecker();
+
+	const assertPropertyNodeValue = (node: ts.ClassElement, expectedValue: string) => {
+		const propertyNodeValue = resolveNodeValue(node, { checker, ts })?.value;
+		t.is(propertyNodeValue, expectedValue, `Resolved value for '${node.name?.getText()}' is invalid`);
+	};
+
+	findChildren(sourceFile, ts.isClassDeclaration, ({ name, members }) => {
+		assertPropertyNodeValue(members[0], "foo-bar");
+		assertPropertyNodeValue(members[1], "bar-baz");
+		assertPropertyNodeValue(members[2], "foo-baz");
+	});
+});
