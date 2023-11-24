@@ -77,12 +77,14 @@ export function resolveNodeValue(node: Node | undefined, context: Context): { va
 		return resolveNodeValue(node.expression, { ...context, depth });
 	}
 
-	// Resolve initializer value of enum members.
-	else if (ts.isEnumMember(node)) {
+	// Resolve initializer value of enum members or class properties.
+	else if (ts.isEnumMember(node) || ts.isPropertyDeclaration(node)) {
 		if (node.initializer != null) {
 			return resolveNodeValue(node.initializer, { ...context, depth });
-		} else {
+		} else if (node.parent.name) {
 			return { value: `${node.parent.name.text}.${node.name.getText()}`, node };
+		} else {
+			return { value: `${node.name.getText()}`, node };
 		}
 	}
 

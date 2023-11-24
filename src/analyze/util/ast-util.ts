@@ -197,12 +197,16 @@ export function getInterfaceKeys(
 			if (resolvedKey == null) {
 				continue;
 			}
-
+			let keyNode = resolvedKey.node;
 			let identifier: Node | undefined;
 			let declaration: Node | undefined;
 			if (ts.isTypeReferenceNode(member.type)) {
 				// { ____: MyButton; } or { ____: namespace.MyButton; }
 				identifier = member.type.typeName;
+				if (ts.isComputedPropertyName(member.name)) {
+					// e.g. [MyButton.TAG] : MyButton -> use initial member name node instead of resolved node
+					keyNode = member.name.expression;
+				}
 			} else if (ts.isTypeLiteralNode(member.type)) {
 				identifier = undefined;
 				declaration = member.type;
@@ -211,7 +215,7 @@ export function getInterfaceKeys(
 			}
 
 			if (declaration != null || identifier != null) {
-				extensions.push({ key: String(resolvedKey.value), keyNode: resolvedKey.node, declaration, identifier });
+				extensions.push({ key: String(resolvedKey.value), keyNode: keyNode, declaration, identifier });
 			}
 		}
 	}
