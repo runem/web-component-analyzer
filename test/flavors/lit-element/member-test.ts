@@ -50,6 +50,56 @@ tsTest("LitElement: Discovers properties from 'static get properties'", t => {
 	);
 });
 
+tsTest("LitElement: Discovers properties from 'static properties = {}'", t => {
+	const {
+		results: [result],
+		checker
+	} = analyzeTextWithCurrentTsModule(`
+	/**
+	 * @element
+	 */
+	 class MyElement extends HTMLElement { 
+	    static properties = {
+        /**
+         * This is a comment
+         * @default hello 123
+         * @type {String}
+         */
+        myProp: {type: String}
+	    }
+	 }
+	 `);
+
+	const { members = [] } = result.componentDefinitions[0]?.declaration || {};
+
+	assertHasMembers(
+		members,
+		[
+			{
+				kind: "property",
+				propName: "myProp",
+				attrName: "myProp",
+				jsDoc: {
+					description: "This is a comment"
+				},
+				default: "hello 123",
+				typeHint: "String",
+				type: () => ({ kind: "STRING" }),
+				visibility: undefined,
+				reflect: "to-property",
+				deprecated: undefined,
+				required: undefined
+			},
+			{
+				kind: "property",
+				propName: "properties"
+			}
+		],
+		t,
+		checker
+	);
+});
+
 tsTest("LitElement: Discovers properties from '@property'", t => {
 	const {
 		results: [result],

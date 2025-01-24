@@ -1,4 +1,12 @@
-import { GetAccessorDeclaration, Node, PropertyDeclaration, PropertySignature, ReturnStatement, SetAccessorDeclaration } from "typescript";
+import {
+	Expression,
+	GetAccessorDeclaration,
+	Node,
+	PropertyDeclaration,
+	PropertySignature,
+	ReturnStatement,
+	SetAccessorDeclaration
+} from "typescript";
 import { ComponentMember } from "../../types/features/component-member";
 import { LitElementPropertyConfig } from "../../types/features/lit-element-property-config";
 import { getMemberVisibilityFromNode, getModifiersFromNode, getNodeSourceFileLang, hasModifier } from "../../util/ast-util";
@@ -23,13 +31,21 @@ export function discoverMembers(node: Node, context: AnalyzerDeclarationVisitCon
 		return undefined;
 	}
 
+	// static properties = { myProp: {type: String} }
+	if (ts.isPropertyDeclaration(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
+		const name = node.name.getText();
+		if (name === "properties" && node.initializer != null) {
+			return parseStaticProperties(node.initializer, context);
+		}
+	}
+
 	// static get properties() { return { myProp: {type: String} } }
 	if (ts.isGetAccessor(node) && hasModifier(node, ts.SyntaxKind.StaticKeyword, ts)) {
 		const name = node.name.getText();
 		if (name === "properties" && node.body != null) {
 			const returnStatement = node.body.statements.find<ReturnStatement>(ts.isReturnStatement.bind(ts));
-			if (returnStatement != null) {
-				return parseStaticProperties(returnStatement, context);
+			if (returnStatement != null && returnStatement.expression != null) {
+				return parseStaticProperties(returnStatement.expression, context);
 			}
 		}
 	}
@@ -155,17 +171,17 @@ function getLitAttributeName(propName: string, litConfig: LitElementPropertyConf
 /**
  * Visits static properties
  * static get properties() { return { myProp: {type: String, attribute: "my-attr"} } }
- * @param returnStatement
+ * @param expression
  * @param context
  */
-function parseStaticProperties(returnStatement: ReturnStatement, context: AnalyzerDeclarationVisitContext): ComponentMember[] {
+function parseStaticProperties(expression: Expression, context: AnalyzerDeclarationVisitContext): ComponentMember[] {
 	const { ts } = context;
 
 	const memberResults: ComponentMember[] = [];
 
-	if (returnStatement.expression != null && ts.isObjectLiteralExpression(returnStatement.expression)) {
+	if (expression != null && ts.isObjectLiteralExpression(expression)) {
 		// Each property in the object literal expression corresponds to a class field.
-		for (const propNode of returnStatement.expression.properties) {
+		for (const propNode of expression.properties) {
 			// Get propName
 			const propName = propNode.name != null && ts.isIdentifier(propNode.name) ? propNode.name.text : undefined;
 			if (propName == null) {
