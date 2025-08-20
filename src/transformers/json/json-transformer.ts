@@ -1,3 +1,4 @@
+import { isAssignableToSimpleTypeKind, isSimpleType, SimpleType, toSimpleType, typeToString } from "ts-simple-type";
 import { relative } from "path";
 import { Program, TypeChecker } from "typescript";
 import { AnalyzerResult } from "../../analyze/types/analyzer-result";
@@ -118,8 +119,14 @@ function componentSlotToHtmlDataSlot(slot: ComponentSlot, checker: TypeChecker):
 }
 
 function componentEventToHtmlDataEvent(event: ComponentEvent, checker: TypeChecker): HtmlDataEvent | undefined {
+	let typeText = undefined;
+	if(event.type){
+		let type = event.type()
+		typeText = typeof type === "string" ? type : type == null ? undefined : formatType(type, checker);
+	}
 	return {
 		name: event.name,
+		type: typeText,
 		description: getDescriptionFromJsDoc(event.jsDoc),
 		deprecated: event.deprecated === true || undefined,
 		deprecatedMessage: typeof event.deprecated === "string" ? event.deprecated : undefined
@@ -159,4 +166,13 @@ function componentMemberToHtmlDataProperty(member: ComponentMember, checker: Typ
 
 function getDescriptionFromJsDoc(jsDoc: JsDoc | undefined): string | undefined {
 	return jsDoc?.description;
+}
+
+/**
+ * Formats a type to present in documentation
+ * @param type
+ * @param checker
+ */
+function formatType(type: Type | SimpleType, checker: TypeChecker): string | undefined {
+	return !isAssignableToSimpleTypeKind(type, "ANY", checker) ? typeToString(type, checker) : undefined;
 }
